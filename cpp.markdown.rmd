@@ -14,9 +14,12 @@ knitr::opts_chunk$set(echo = TRUE)
 Intaller R + rstudio
 Dossier lynx.ibm complet
 
-dossier appendix_lynxIBM
+dossier appendix_lynxIBM avec fichiers intêret
 
 
+## File order
+
++ "1.lynxIBM.run.gb.r"
 
 
 ```{r cars}

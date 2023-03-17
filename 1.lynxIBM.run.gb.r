@@ -4,6 +4,8 @@ library(igraph)
 library(SpaDES.core)
 library(raster)
 
+# SORTIES SAUVEES DONC PLUS BESOIN DE FAIRE TOURNER
+
 # Where is located your appendix_lynxIBM repo
 pathRepo <- "C:/Users/gbal/Desktop/lynx.ibm/" # change to your path
 
@@ -59,7 +61,8 @@ run.end <- Sys.time()
 
 difftime(run.start, run.end)
 
+P(lynxIBMinit)
+lynx.sim.gb <- list('lynxIBMrun' = lynxIBMrun, 'lynxIBMinit' = lynxIBMinit)
+save(lynx.sim.gb, file = paste0(pathRepo, 'appendix_lynx/IBMlynx.sim.gb.Rdata'))
 # Save the simulation output
-save(mySimOut, file = paste0(pathRepo, "appendix_lynxIBM/module/outputs/lynxIBMrun_", sample(1:100000,1), ".RData"))
-
-
+#save(mySimOut, file = paste0(pathRepo, "appendix_lynxIBM/module/outputs/lynxIBMrun_", sample(1:100000,1), ".RData"))

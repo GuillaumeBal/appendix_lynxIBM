@@ -1,32 +1,40 @@
+rm(list = ls())
+
+require(magrittr)
+wd <- "C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM" %T>% setwd()
 # agent matrix
-lynxIBMrun$lynx %>% head
-sim <- lynxIBMrun
+load("lynx.sim.gb.Rdata")
+lynx.sim.gb$lynxIBMrun
 
-# arguments sarah a changer
-sMaxPs <- 45
-testON <- TRUE
-pMat <- 0.03
-pCorr <- 0.5
-nMatMax <- 10
-corrFactorDisp <- 250 
+# IBM linked packages
+reqdPkgs = list("NetLogoR", "testthat", "SpaDES", "raster", "randomcoloR", "data.table", "dplyr", "doBy")
+reqdPkgs %>% unlist %>% sapply(., FUN = function(x){require(x, character.only = TRUE)})
+
+# some data from outputs
+sim <- lynxIBMinit
+
+# arguments Sarah to get back from inits part of loaded run data
+sMaxPs <- P(lynxIBMinit)$lynxIBM$sMaxPs #45
+testON <- P(lynxIBMinit)$lynxIBM$testON #TRUE
+pMat <- P(lynxIBMinit)$lynxIBM$pMat #0.03
+pCorr <- P(lynxIBMinit)$lynxIBM$pCorr #0.5
+nMatMax <- P(lynxIBMinit)$lynxIBM$nMatMax #10
+corrFactorDisp <- P(lynxIBMinit)$lynxIBM$corrFactorDisp #250 
 # within searchTerritory
-coreTerrSizeFAlps <- 97
-coreTerrSizeFJura <- 126
-coreTerrSizeFVosgesPalatinate <- 126
-coreTerrSizeFBlackForest <- 126
-terrSizeMAlps <- 159
-terrSizeMJura <- 270
-terrSizeMVosgesPalatinate <- 270
-terrSizeMBlackForest <- 270
-
+coreTerrSizeFAlps <- P(lynxIBMinit)$lynxIBM$coreTerrSizeFAlps #97
+coreTerrSizeFJura <- P(lynxIBMinit)$lynxIBM$coreTerrSizeFJura #126
+coreTerrSizeFVosgesPalatinate <- P(lynxIBMinit)$lynxIBM$coreTerrSizeFVosgesPalatinate #126
+coreTerrSizeFBlackForest <- P(lynxIBMinit)$lynxIBM$coreTerrSizeFBlackForest #126
+terrSizeMAlps <- P(lynxIBMinit)$lynxIBM$terrSizeMAlps #159
+terrSizeMJura <- P(lynxIBMinit)$lynxIBM$terrSizeMJura #270
+terrSizeMVosgesPalatinate <- P(lynxIBMinit)$lynxIBM$terrSizeMVosgesPalatinate #270
+terrSizeMBlackForest <- P(lynxIBMinit)$lynxIBM$terrSizeMBlackForest #270
 
 #"C:/Users/gbal/Desktop/lynx.ibm/searchterritory.func.r" %>% 
 #  source()
 
-reqdPkgs = list("NetLogoR", "testthat", "SpaDES", "raster", "randomcoloR", "data.table", "dplyr", "doBy")
-reqdPkgs %>% unlist %>% sapply(., FUN = function(x){require(x, character.only = TRUE)})
-
 # here is where the function start , dispersal <- function(sim) { ===================================================
+# stops before executing part to code within cpp
 
 disperser <- NLwith(agents = sim$lynx, var = "status", val = "disp")
 nDisp <- NLcount(disperser)
@@ -159,10 +167,11 @@ if(nDisp != 0) {
                                       dir = as.numeric(NA))
             for(eachYesCorr in yesCorr) {
               indYessCorr <- turtle(turtles = dispersingInd, who = dispersingID[eachYesCorr])
-              dirCells <- towards(agents = indYessCorr, agents2 = cbind(
-                pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
-                pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"]),
-                torus = FALSE)
+              stop()
+              #dirCells <- towards(agents = indYessCorr, agents2 = cbind(
+              #  pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
+              #  pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"]),
+              #  torus = FALSE)
               nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "dir"] <-
                 round(subHeadings(angle1 = indYessCorr@.Data[, "heading"], angle2 = dirCells,
                                   range360 = TRUE))
