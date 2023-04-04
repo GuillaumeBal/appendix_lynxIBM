@@ -1,8 +1,4 @@
 disp <- turtle(turtles = sim$lynx, who = sim$aliveDispersingIndID)
-# add some females
-disp.gb <- sim$lynx[sim$lynx$status == 'disp']
-write.table(disp.gb, 'disp.csv', sep = ';', row.names = FALSE)
-zob <- print(disp)
 
 if(NLcount(disp) != 0) {
   

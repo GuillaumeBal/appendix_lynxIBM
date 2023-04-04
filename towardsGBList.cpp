@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 
 Rcpp::DataFrame towardsGB(
-    List disp 
+    DataFrame disp
 ) {
   
   // some attributes of input dataframe
@@ -31,10 +31,14 @@ Rcpp::DataFrame towardsGB(
         j++;
       }
     }
-    return index_disp_fem;
+    List DispFem = disp[index_disp_fem];
+    //for(int c = 0; c<disp_list_size; c++){
+      //disp(1);
+    //}
+    return DispFem;
   }
   
   // 
-  List DispFem(disp_list_size);
+  
   stop("'n_fem_disp' must be a positive value.");
 }
