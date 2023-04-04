@@ -1,6 +1,6 @@
 #towards.r <- function(agents, agents2, world, torus = FALSE) {
 
-agents <- indYessCorr
+agents <- indYessCorr # rbind(agents, agents, agents)
 agents2 <- cbind(
   pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
   pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"])

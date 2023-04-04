@@ -1,4 +1,8 @@
 disp <- turtle(turtles = sim$lynx, who = sim$aliveDispersingIndID)
+# add some females
+disp.gb <- sim$lynx[sim$lynx$status == 'disp']
+write.table(disp.gb, 'disp.csv', sep = ';', row.names = FALSE)
+zob <- print(disp)
 
 if(NLcount(disp) != 0) {
   
@@ -10,7 +14,7 @@ if(NLcount(disp) != 0) {
     dispFemID <- dispFemID[sample(length(dispFemID))]
     
     for(searchingFemID in dispFemID) {
-      # To build territory = empty cells of breeding type (= 4)
+      # To build territory = empty cells of breeding type (= 4)=
       searchingFemCell <- patchHere(world = sim$habitatMap, turtles = turtle(turtles = sim$lynx, who = searchingFemID))
       #searchingFemCellType <- of(world = sim$habitatMap, agents = searchingFemCell)
       searchingFemCellType <- sim$habitatMap[searchingFemCell[, 1], searchingFemCell[, 2]] # faster

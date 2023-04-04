@@ -4,14 +4,18 @@ require(magrittr)
 wd <- "C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM" %T>% setwd()
 # agent matrix
 load("lynx.sim.gb.Rdata")
-lynx.sim.gb$lynxIBMrun
+#lynx.sim.gb$lynxIBMrun
+#attach(lynx.sim.gb)
+
+load('../calibr.sarah/calibr1/lynxIBMrun_10319.RData')
+lynxIBMinit <- lynx.sim.gb$lynxIBMinit
 
 # IBM linked packages
 reqdPkgs = list("NetLogoR", "testthat", "SpaDES", "raster", "randomcoloR", "data.table", "dplyr", "doBy")
 reqdPkgs %>% unlist %>% sapply(., FUN = function(x){require(x, character.only = TRUE)})
 
 # some data from outputs
-sim <- lynxIBMinit
+sim <- lynxIBMrun#lynxIBMinit
 
 # arguments Sarah to get back from inits part of loaded run data
 sMaxPs <- P(lynxIBMinit)$lynxIBM$sMaxPs #45
@@ -342,6 +346,7 @@ if(nDisp != 0) {
         sim$lynx <- turtleSet(disperser, nonDisperser)
         sim$lynx <- sortOn(agents = sim$lynx, var = "who")
         #sim <- searchTerritory(sim)
+        stop()
         source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r")
         disperser <- turtle(turtles = sim$lynx, who = disperserID)
         nonDisperser <- turtle(turtles = sim$lynx, who = nonDisperserID)
