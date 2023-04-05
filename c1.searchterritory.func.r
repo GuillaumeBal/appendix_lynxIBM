@@ -1,11 +1,11 @@
-coreTerrSizeFAlps <- 97
-coreTerrSizeFJura <- 126
-coreTerrSizeFVosgesPalatinate <- 126
-coreTerrSizeFBlackForest <- 126
-terrSizeMAlps <- 159
-terrSizeMJura <- 270
-terrSizeMVosgesPalatinate <- 270
-terrSizeMBlackForest <- 270
+#coreTerrSizeFAlps <- 97
+#coreTerrSizeFJura <- 126
+#coreTerrSizeFVosgesPalatinate <- 126
+#coreTerrSizeFBlackForest <- 126
+#terrSizeMAlps <- 159
+#terrSizeMJura <- 270
+#terrSizeMVosgesPalatinate <- 270
+#terrSizeMBlackForest <- 270
 
 searchTerritory <- function(sim) {
   

@@ -348,6 +348,7 @@ if(nDisp != 0) {
         #sim <- searchTerritory(sim)
         stop()
         source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r")
+        #source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r")
         disperser <- turtle(turtles = sim$lynx, who = disperserID)
         nonDisperser <- turtle(turtles = sim$lynx, who = nonDisperserID)
         

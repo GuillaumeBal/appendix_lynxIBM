@@ -7,10 +7,16 @@ using namespace Rcpp;
 // [[Rcpp::export]] // Importe la fonction qui suit dans l'environnement global de R
 
 
-Rcpp::NumericVector towardsGB( // DataFrame, NumericVector
+Rcpp::IntegerVector searchTerritoryGB( // DataFrame, NumericVector
     DataFrame Disp,
     IntegerMatrix HabitatMap,
-    IntegerMatrix TerrMap
+    IntegerMatrix TerrMap,
+    IntegerMatrix availCellsUpdatedRas,
+    IntegerMatrix popDist,
+    NumericVector coreTerrSizeFAlps,
+    NumericVector coreTerrSizeFJura,
+    NumericVector coreTerrSizeFVosgesPalatinate,
+    NumericVector coreTerrSizeFBlackForest
 ) {
   
   // some attributes of input dataframe
@@ -19,6 +25,10 @@ Rcpp::NumericVector towardsGB( // DataFrame, NumericVector
   // dataframe columns to vectors
   NumericVector Disp_xcor = Disp["xcor"], Disp_ycor = Disp["ycor"], Disp_who = Disp["who"], Disp_heading = Disp["heading"], Disp_prevX = Disp["prevX"], Disp_prevY = Disp["prevY"], Disp_age = Disp["age"], Disp_steps = Disp["steps"], Disp_lastDispX = Disp["lastDispX"], Disp_lastDispY = Disp["lastDispY"], Disp_nMat = Disp["nMat"], Disp_maleID = Disp["maleID"], Disp_nFem = Disp["nFem"], Disp_rdMortTerr = Disp["rdMortTerr"]; 
   CharacterVector Disp_breed = Disp["breed"], Disp_color = Disp["color"], Disp_pop = Disp["pop"], Disp_sex = Disp["sex"], Disp_status = Disp["status"];
+  
+  // accessory integers
+  int zero_int = 0; 
+  //int one_int = 1;
   
   // compute number females in disp
   int n_fem_Disp = 0;
@@ -44,21 +54,39 @@ Rcpp::NumericVector towardsGB( // DataFrame, NumericVector
     DataFrame DispFem = DataFrame::create(Named("xcor") = DispFem_xcor, _["ycor"] = DispFem_ycor, _["who"] = DispFem_who, _["heading"] = DispFem_heading, _["prevX"] = DispFem_prevX, _["prevY"] = DispFem_prevY, _["breed"] = DispFem_breed, _["color"] = DispFem_color, _["pop"] = DispFem_pop, _["sex"] = DispFem_sex, _["age"] = DispFem_age, _["status"] = DispFem_status, _["steps"] = DispFem_steps, _["lastDispX"] = DispFem_lastDispX, _["lastDispY"] = DispFem_lastDispY, _["nMat"] = DispFem_nMat, _["maleID"] = DispFem_maleID, _["nFem"] = DispFem_nFem, _["rdMortTerr"] = DispFem_rdMortTerr);
     //return DispFem;
     
-    // loop for female territorry search
+    // loop for female territory search
     NumericVector vec_out = n_fem_Disp;
-    for(int f = 0; f<n_fem_Disp; f++){
-      if(HabitatMap(DispFem_lastDispX(f), DispFem_lastDispY(f)) == 4 & R_IsNA(TerrMap(DispFem_lastDispX(f), DispFem_lastDispX(f)))){
+    for(int f = 0; f<n_fem_Disp; f++){ //for(searchingFemID in dispFemID) {
+      if((HabitatMap(DispFem_lastDispX(f), DispFem_lastDispY(f)) == 4) &
+         (R_IsNA(TerrMap(DispFem_lastDispX(f), DispFem_lastDispX(f))))){
         //if(HabitatMap(1, 1) == 4 & R_IsNA(TerrMap(1, 1))){
-        vec_out(f) = 0;
+        for(int l = 0; l<TerrMap.nrow(); l++){
+          for(int c = 0; c<TerrMap.ncol(); c++){
+            if(R_IsNA(TerrMap(l,c)) == false){
+              availCellsUpdatedRas(l,c) = zero_int;
+            }
+          }
+        }
+        int terrSize = 0; // init terrSize
+        if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == 1){
+          terrSize = ::Rf_fround(coreTerrSizeFAlps(0), 1);
+        }
+        if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == 2){
+          terrSize = ::Rf_fround(coreTerrSizeFJura(0), 1);
+        }
+        if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == 3){
+          terrSize = ::Rf_fround(coreTerrSizeFVosgesPalatinate(0), 1);
+        }
+        if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == 4){
+          terrSize = ::Rf_fround(coreTerrSizeFBlackForest(0), 1);
+        }
       }
-      else{
-        vec_out(f) = 1;
-      }
-    }
-    return vec_out;
-  }// end of if some dispersing females
+    } //for(int f = 0; f<n_fem_Disp; f++){
+    return n_fem_Disp;
+  }//if(n_fem_Disp > 1){
+  else{
+    stop("'n_fem_disp' must be higher than 0.");   
+  }
   
-  // 
-  stop("'n_fem_disp' must be higher than 0.");
   
 }
