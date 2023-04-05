@@ -9,6 +9,7 @@ if(NLcount(disp) != 0) {
     # Shuffle dispFemID so that it's not always the smallest IDs (i.e., the oldest individuals) that go first
     dispFemID <- dispFemID[sample(length(dispFemID))]
     
+    # searchingFemID <- dispFemID[1]
     for(searchingFemID in dispFemID) {
       # To build territory = empty cells of breeding type (= 4)=
       searchingFemCell <- patchHere(world = sim$habitatMap, turtles = turtle(turtles = sim$lynx, who = searchingFemID))
