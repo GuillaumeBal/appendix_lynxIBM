@@ -10,6 +10,7 @@
 searchTerritory <- function(sim) {
   
   disp <- turtle(turtles = sim$lynx, who = sim$aliveDispersingIndID)
+  PtestON <- TRUE
   
   if(NLcount(disp) != 0) {
     

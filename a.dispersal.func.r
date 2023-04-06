@@ -54,6 +54,8 @@ if(nDisp != 0) {
   #disperser <- NLset(turtles = disperser, agents = disperser, var = "steps", val = steps)
   disperser@.Data[, "steps"] <- as.numeric(steps) # faster
   
+  stop()
+  
   for(step in stepsDisp) {
     if(NLcount(disperser) != 0){ # update of the disperser at each "step" loop
       
@@ -171,11 +173,13 @@ if(nDisp != 0) {
                                       dir = as.numeric(NA))
             for(eachYesCorr in yesCorr) {
               indYessCorr <- turtle(turtles = dispersingInd, who = dispersingID[eachYesCorr])
-              stop()
-              #dirCells <- towards(agents = indYessCorr, agents2 = cbind(
-              #  pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
-              #  pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"]),
-              #  torus = FALSE)
+              #stop()
+              start.towards <- Sys.time()
+                dirCells <- towards(agents = indYessCorr, agents2 = cbind(
+                  pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
+                  pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"]),
+                  torus = FALSE)
+                print(paste('towards', start.towards - Sys.time()))
               nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "dir"] <-
                 round(subHeadings(angle1 = indYessCorr@.Data[, "heading"], angle2 = dirCells,
                                   range360 = TRUE))
@@ -345,10 +349,12 @@ if(nDisp != 0) {
         disperserID <- disperser@.Data[, "who"]
         sim$lynx <- turtleSet(disperser, nonDisperser)
         sim$lynx <- sortOn(agents = sim$lynx, var = "who")
-        #sim <- searchTerritory(sim)
-        stop()
-        source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r")
+        #stop()
         #source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r")
+        source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c1.searchterritory.func.r")
+        start.searchTerr <- Sys.time()
+          sim <- searchTerritory(sim)
+         print(paste('searchTerr', start.searchTerr - Sys.time()))
         disperser <- turtle(turtles = sim$lynx, who = disperserID)
         nonDisperser <- turtle(turtles = sim$lynx, who = nonDisperserID)
         
@@ -357,4 +363,5 @@ if(nDisp != 0) {
     } # end of if(NLcount(disperser) != 0)
   } # end of number of steps during the day
 }
+
 
