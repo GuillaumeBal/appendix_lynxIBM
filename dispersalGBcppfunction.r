@@ -28,25 +28,26 @@ cppFunction(
         // if(still_disperser.length()>0){
         //  stop("going within loop");
       }
-      nDispLeft <- still_disperser.size // i.e some steps left
+      int nDispLeft = still_disperser.size(); // i.e some steps left
       if(nDispLeft>0){
-        IntegerMatrix Cells_Dip(nDispLeft*9, 3);
-        for(int i = 0; i<nDispLeft, i++){
-          for(int l = 0, l<3, l++){
-            for(int c = 0, c<3, c++){
-              IntegerMatrix(l + 0 + i * 9, 1) = disperser["lastDispX"](still_disperser(i)) -1 + l
-              IntegerMatrix(l + 1 + i * 9, 2) = disperser["lastDispY"](still_disperser(i)) -1 + l
-              IntegerMatrix(l + 2 + i * 9, 3) = i
+        IntegerMatrix Cells_Disp(nDispLeft * 9, 3);
+        IntegerVector lastDispX = disperser["lastDispX"]; // because cannot do lastDispX(still_disperser(i))
+        IntegerVector lastDispY = disperser["lastDispY"];
+        for(int i = 0; i<nDispLeft; i++){
+          for(int l2 = 0; l2<3; l2++){
+            for(int l1 = 0; l1<3; l1++){
+              Cells_Disp(i * 9 + l1 + l2 * 3, 0) = lastDispX(still_disperser(i)) - 1 + l1;// -1 + l1; // because want square around indiv
+              Cells_Disp(i * 9 + l1 + l2 * 3, 1) = lastDispY(still_disperser(i)) - 1 + l1;// -1 + l1; 
+              Cells_Disp(i * 9 + l1 + l2 * 3, 2) = i;
             }
           }
         }
+        return Cells_Disp;
       }
       
-      return still_disperser;
-      
     }// end step loop
-    
-  }
-
+    //return disperser;
+  }// end of function
+ 
 ')
   
