@@ -4,26 +4,27 @@ require(RcppArmadillo)
 
 # work on search territory part ====================================================
 
-disp.gb <- sim$lynx[sim$lynx$status == 'disp'][ , ]
+lynx.gb <- sim$lynx[,]
+lynx.gb$steps <- NULL # drop it because created within cpp
 habitatMap.gb <- sim$habitatMap@.Data[,]
 terrMap.gb <- sim$terrMap@.Data[,]
 availCellsUpdatedRas.gb <- sim$availCellsRas %>% as.matrix() # in fact before update
 popDist.gb <- sim$popDist@.Data
-trick <- c(1,1)
-source("dispersalGBcppfunction.r")
+trick <- c(1, 1)
+sourceCpp("dispersalGBcpp.cpp")
 dispersalGB(
-  disperser = disperser[,],
+  lynx = lynx.gb,
   sMaxPs = sMaxPs,
-  trick = trick)
-
-terrMap.gb %>% table(., useNA = 'always')
-sim$terrMap@.Data[,] %>% table
-availCellsUpdatedRas.gb %>% class
-popDist.gb %>% class
-sim$habitatMap@.Data %>% c %>% table
-dispFem
-popDist.gb[dispFem[1, "lastDispX"], dispFem[1, "lastDispY"]]
-popDist.gb[297, 425]
-popDist.gb %>% dim
-
-
+  HabitatMap = habitatMap.gb,
+  pMat = round(1/9, 2)  #pMat
+)
+for(i in 1:500){
+  print(
+    dispersalGB(
+      lynx = lynx.gb,
+      sMaxPs = sMaxPs,
+      HabitatMap = habitatMap.gb,
+      pMat = round(1/9, 2)  #pMat
+    ) 
+  )
+}
