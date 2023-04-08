@@ -6,7 +6,7 @@ require(RcppArmadillo)
 
 lynx.gb <- sim$lynx[,]
 lynx.gb$steps <- NULL # drop it because created within cpp
-habitatMap.gb <- sim$habitatMap@.Data[,]
+habitatMap.gb <- sim$habitatMap@.Data[,] %>% t
 terrMap.gb <- sim$terrMap@.Data[,]
 availCellsUpdatedRas.gb <- sim$availCellsRas %>% as.matrix() # in fact before update
 popDist.gb <- sim$popDist@.Data
@@ -16,7 +16,7 @@ dispersalGB(
   lynx = lynx.gb,
   sMaxPs = sMaxPs,
   HabitatMap = habitatMap.gb,
-  pMat = round(1/9, 2)  #pMat
+  pMat = pMat #round(1/9, 2)  #pMat
 )
 for(i in 1:500){
   print(
@@ -24,7 +24,7 @@ for(i in 1:500){
       lynx = lynx.gb,
       sMaxPs = sMaxPs,
       HabitatMap = habitatMap.gb,
-      pMat = round(1/9, 2)  #pMat
+      pMat = pMat #round(1/9, 2)  
     ) 
   )
 }
