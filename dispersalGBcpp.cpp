@@ -28,7 +28,7 @@ int N_Eq_Str(CharacterVector ToCheck, CharacterVector Crit) {
 
 
 // [[Rcpp::export]]
-IntegerVector dispersalGB(// DataFrame, NumericVector
+List dispersalGB(// DataFrame, NumericVector
     DataFrame lynx,
     int sMaxPs, // dispersal
     IntegerMatrix HabitatMap,
@@ -108,7 +108,7 @@ IntegerVector dispersalGB(// DataFrame, NumericVector
             CellsDisp_x(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;// because want square around indiv
             CellsDisp_y(i * 9 + l1 + l2 * 3) = dispersers_lastDispY(dispersing(i)) - 1 + l1;
             CellsDisp_ind(i * 9 + l1 + l2 * 3) = i;
-            CellsDisp_hab(i * 9 + l1 + l2 * 3) = HabitatMap(CellsDisp_x(i * 9 + l1 + l2 * 3), CellsDisp_y(i * 9 + l1 + l2 * 3));
+            CellsDisp_hab(i * 9 + l1 + l2 * 3) = HabitatMap(CellsDisp_y(i * 9 + l1 + l2 * 3),CellsDisp_x(i * 9 + l1 + l2 * 3));
             // here count habitat occurences
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 0){ // barrier
               HabFreqDisp_barrier(i)++;
@@ -126,58 +126,62 @@ IntegerVector dispersalGB(// DataFrame, NumericVector
         }
         //does indiv pick matrix type habitat for next move (pMat * freq hab 2)
         Mat_chosen(i) = R::rbinom(int_1, pMat * HabFreqDisp_matrix(i)); // number of samples is argument 2, ie matrix type
+        //correction in case only habitat 2, otherwise indiv may be trown away
+        if(HabFreqDisp_matrix(i) == 9){
+          Mat_chosen(i) = 1;
+        }
       }// end i loop indiv
-      //return CellsDisp_hab; // works up to here
       
-      
-      // find final number cell for dispersing individuals
-      int nCellsDispLefts = 0;
+      // find final number cell for dispersing individuals, taking matrix or disprep only 
+      int nCellsDispLeft = 0;
       for(int nc = 0; nc<CellsDisp_x.size(); nc++){ // nc number of cells
         if((Mat_chosen(CellsDisp_ind(nc)) == 1) & (CellsDisp_hab(nc) == 2)){
-          nCellsDispLefts++;
+          nCellsDispLeft++;
         }
         if((Mat_chosen(CellsDisp_ind(nc)) == 0) & ((CellsDisp_hab(nc) == 3) | (CellsDisp_hab(nc) == 4))){
-          nCellsDispLefts++;
+          nCellsDispLeft++;
         }
       }
-      return nCellsDispLefts; 
       
       // loop to pick only the right habit for further dispersion based on whether mat_chosen = 1
-      for(int i = 0, p = 0; i<nDispLeft; i++){
-        // cell left to disperse
-        IntegerVector nextCellsType_x(nCellsDispLefts);
-        IntegerVector nextCellsType_y(nCellsDispLefts);
-        IntegerVector nextCellsType_ind(nCellsDispLefts);
-        IntegerVector nextCellsType_hab(nCellsDispLefts);
-        for(int nci = 0; nci<9; nci++){// nci number cell per indiv, fill final dispersal matrix base on choice
-          if((Mat_chosen[i] == 1) & (CellsDisp_hab(nci + i * nci) == 2)){
-            nextCellsType_x(p) = CellsDisp_x(nci + i * nci);
-            nextCellsType_y(p) = CellsDisp_y(nci + i * nci);
-            nextCellsType_ind(p) = CellsDisp_ind(nci + i * nci);
-            nextCellsType_hab(p) = CellsDisp_hab(nci + i * nci);
-            p++;
-          }else{
-            if((Mat_chosen[i] == 0) & (CellsDisp_hab(nci + i * nci) == 3)){
-              //stop("got within");
-              nextCellsType_x(p) = CellsDisp_x(nci + i * nci);
-              nextCellsType_y(p) = CellsDisp_y(nci + i * nci);
-              nextCellsType_ind(p) = CellsDisp_ind(nci + i * nci);
-              nextCellsType_hab(p) = CellsDisp_hab(nci + i * nci);
-              p++;
-            }else{
-              if((Mat_chosen[i] == 0) & (CellsDisp_hab(nci + i * nci) == 4)){
-                //stop("got within");
-                nextCellsType_x(p) = CellsDisp_x(nci + i * nci);
-                nextCellsType_y(p) = CellsDisp_y(nci + i * nci);
-                nextCellsType_ind(p) = CellsDisp_ind(nci + i * nci);
-                nextCellsType_hab(p) = CellsDisp_hab(nci + i * nci);
-                p++;
-              }
-            }
-          }
-          return nextCellsType_hab;
+      IntegerVector nextCellsType_x(nCellsDispLeft);
+      IntegerVector nextCellsType_y(nCellsDispLeft);
+      IntegerVector nextCellsType_ind(nCellsDispLeft);
+      IntegerVector nextCellsType_hab(nCellsDispLeft);
+      int p = 0;
+      for(int i = 0; i<CellsDisp_ind.size(); i++){
+        if((Mat_chosen(CellsDisp_ind(i)) == 1) & (CellsDisp_hab(i) == 2)){
+          //stop("Went into loop");
+          nextCellsType_x(p) = CellsDisp_x(i);
+          nextCellsType_y(p) = CellsDisp_y(i);
+          nextCellsType_ind(p) = CellsDisp_ind(i);
+          nextCellsType_hab(p) = CellsDisp_hab(i);
+          p++;
+        }
+        if((Mat_chosen(CellsDisp_ind(i)) == 0) & ((CellsDisp_hab(i) == 3) | (CellsDisp_hab(i) == 4))){
+          nextCellsType_x(p) = CellsDisp_x(i);
+          nextCellsType_y(p) = CellsDisp_y(i);
+          nextCellsType_ind(p) = CellsDisp_ind(i);
+          nextCellsType_hab(p) = CellsDisp_hab(i);
+          p++;
         }
       }// end second ind loop
+      List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
+                                   _["CellsDisp_ind"] = CellsDisp_ind,
+                                   _["CellsDisp_hab"] = CellsDisp_hab,
+                                   _["CellsDisp_y"] = CellsDisp_y,
+                                   _["CellsDisp_x"] = CellsDisp_x,
+                                   _["HabFreqDisp_matrix"] = HabFreqDisp_matrix,
+                                   _["Mat_chosen"] = Mat_chosen,
+                                   _["HabFreqDisp_barrier"] = HabFreqDisp_barrier,
+                                   _["HabFreqDisp_disprep"] = HabFreqDisp_disprep,
+                                   _["nextCellsType_hab"] = nextCellsType_hab,
+                                   _["nextCellsType_ind"] = nextCellsType_ind,
+                                   _["P"] = p,
+                                   _["nDispLeft"] = nDispLeft);
+      return  L_return;
+      
+      
     }// of if dispersers left
   }// end step loop
 } // end of function
