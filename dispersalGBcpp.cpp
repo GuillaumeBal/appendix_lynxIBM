@@ -49,8 +49,35 @@ IntegerVector IntOrderIndex(IntegerVector x) {
   return Index;
 }
 
+// [[Rcpp::export]]
+IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // check number cells vector matching character string 
+  int n_above = 0;
+  for(int i = 0; i<ToCheck.size();i++){
+    if(ToCheck(i)>Crit){
+      n_above++;
+    }
+  }
+  IntegerVector which_vec(n_above);
+  int p = 0;
+  for(int i = 0; i<ToCheck.size(); i++){
+    if(ToCheck(i)>Crit){
+      which_vec(p) = i;
+      p++;
+    }
+  }
+  return which_vec;
+}
 
-/////////////////////////////////////////////////////////////////////////////////////////////
+// [[Rcpp::export]]
+IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // check number cells vector matching character string 
+  IntegerVector kept(PosToKeep.size());
+  for(int i = 0; i<PosToKeep.size(); i++){
+    kept(i) = ToSub(PosToKeep(i));
+  }
+  return kept;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // [[Rcpp::export]]
 List dispersalGB(// DataFrame, NumericVector
@@ -100,14 +127,14 @@ List dispersalGB(// DataFrame, NumericVector
   
   // work on disperser from now on //////////////////////////////////////////////////////////
   
-  IntegerVector stepsDisp = sample(sMaxPs, nDisp, true); // number of samples is argument 2
-  int maxDisp = max(stepsDisp);
+  IntegerVector dispersers_steps = sample(sMaxPs, nDisp, true); // number of samples is argument 2
+  int maxDisp = max(dispersers_steps);
   // find indiv that are still dispersing, ie have some more steps to do withing the day
   for(int step = 0; step<maxDisp; step++){
     IntegerVector dispersing(nDisp);
     if(nDisp>0){
       for(int d = 0, dp = 0; d<dispersers_status.size(); d++){
-        if(step<stepsDisp(d)){
+        if(step<dispersers_steps(d)){
           dispersing(dp) = d;
           dp++;
         }
@@ -122,17 +149,20 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector CellsDisp_ind(nDispLeft * 9);
       IntegerVector CellsDisp_hab(nDispLeft * 9);
       IntegerVector CellsDisp_who(nDispLeft * 9);
+      IntegerVector CellsDisp_steps(nDispLeft * 9);
       // hab freq indiv
       IntegerVector HabFreqDisp_barrier(nDispLeft);
       IntegerVector HabFreqDisp_matrix(nDispLeft);
       IntegerVector HabFreqDisp_disprep(nDispLeft);
       IntegerVector HabFreqDisp_who(nDispLeft);
+      IntegerVector HabFreqDisp_steps(nDispLeft);
       // vector recording whether next step is in matrix
       IntegerVector Mat_chosen(nDispLeft);
       for(int i = 0; i<nDispLeft; i++){
         for(int l2 = 0; l2<3; l2++){
           for(int l1 = 0; l1<3; l1++){
             CellsDisp_who(i * 9 + l1 + l2 * 3) = dispersers_who(dispersing(i));
+            CellsDisp_steps(i * 9 + l1 + l2 * 3) = dispersers_steps(dispersing(i));
             CellsDisp_x(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;// because want square around indiv
             CellsDisp_y(i * 9 + l1 + l2 * 3) = dispersers_lastDispY(dispersing(i)) - 1 + l1;
             CellsDisp_ind(i * 9 + l1 + l2 * 3) = i;
@@ -140,18 +170,22 @@ List dispersalGB(// DataFrame, NumericVector
             // here count habitat occurences
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 0){ // barrier
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
+              HabFreqDisp_steps(i) = CellsDisp_steps(i * 9 + l1 + l2 * 3);
               HabFreqDisp_barrier(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 2){ // matrix
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
+              HabFreqDisp_steps(i) = CellsDisp_steps(i * 9 + l1 + l2 * 3);
               HabFreqDisp_matrix(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 3){ // dispersing
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
+              HabFreqDisp_steps(i) = CellsDisp_steps(i * 9 + l1 + l2 * 3);
               HabFreqDisp_disprep(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 4){ // breeding
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
+              HabFreqDisp_steps(i) = CellsDisp_steps(i * 9 + l1 + l2 * 3);
               HabFreqDisp_disprep(i)++;
             }
           }
@@ -181,6 +215,7 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector nextCellsType_ind(nCellsDispLeft);
       IntegerVector nextCellsType_hab(nCellsDispLeft);
       IntegerVector nextCellsType_who(nCellsDispLeft);
+      IntegerVector nextCellsType_steps(nCellsDispLeft);
       for(int i = 0, p = 0; i<CellsDisp_ind.size(); i++){
         if((Mat_chosen(CellsDisp_ind(i)) == 1) & (CellsDisp_hab(i) == 2)){
           //stop("Went into loop");
@@ -189,6 +224,7 @@ List dispersalGB(// DataFrame, NumericVector
           nextCellsType_ind(p) = CellsDisp_ind(i);
           nextCellsType_hab(p) = CellsDisp_hab(i);
           nextCellsType_who(p) = CellsDisp_who(i);
+          nextCellsType_steps(p) = CellsDisp_steps(i);
           p++;
         }
         if((Mat_chosen(CellsDisp_ind(i)) == 0) & ((CellsDisp_hab(i) == 3) | (CellsDisp_hab(i) == 4))){
@@ -197,6 +233,7 @@ List dispersalGB(// DataFrame, NumericVector
           nextCellsType_ind(p) = CellsDisp_ind(i);
           nextCellsType_hab(p) = CellsDisp_hab(i);
           nextCellsType_who(p) = CellsDisp_who(i);
+          nextCellsType_steps(p) = CellsDisp_steps(i);
           p++;
         }
       }// end second ind loop
@@ -210,6 +247,7 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector ChosenCell_hab(nDispLeft);
         IntegerVector ChosenCell_ind(nDispLeft);
         IntegerVector ChosenCell_who(nDispLeft);
+        IntegerVector ChosenCell_steps(nDispLeft);
         for(int ind = 0; ind < nDispLeft; ind++){
           double p = 0.5;
           while(p<1){
@@ -220,6 +258,7 @@ List dispersalGB(// DataFrame, NumericVector
                 ChosenCell_hab(ind) = nextCellsType_hab(randLines_move(l));
                 ChosenCell_ind(ind) = nextCellsType_ind(randLines_move(l));
                 ChosenCell_who(ind) = nextCellsType_who(randLines_move(l));
+                ChosenCell_steps(ind) = nextCellsType_steps(randLines_move(l));
                 p = p+1;
               }
             }
@@ -232,7 +271,9 @@ List dispersalGB(// DataFrame, NumericVector
         //                              _["ChosenCell_ind"] = ChosenCell_ind);
         // return  L_return;
       } //Works up to here
-      else{ // i.e if step more than first
+      
+      else{ // i.e if step more than first //////////////////////////////////////////////////
+        
         // sort by ind and add current position next to potential ones in nextCellsType bectors
         IntegerVector nextCellsType_indSortIndex = IntOrderIndex(nextCellsType_ind);
         IntegerVector nextCellsType_indSorted = nextCellsType_ind.size();
@@ -242,12 +283,14 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector nextCellsType_xCurSorted = nextCellsType_ind.size();
         IntegerVector nextCellsType_yCurSorted = nextCellsType_ind.size();
         IntegerVector nextCellsType_whoSorted = nextCellsType_who.size();
+        IntegerVector nextCellsType_stepsSorted = nextCellsType_steps.size();
         for(int l = 0; l< nextCellsType_ind.size(); l++){
           nextCellsType_indSorted(l) = nextCellsType_ind(nextCellsType_indSortIndex(l));
           nextCellsType_xSorted(l) = nextCellsType_x(nextCellsType_indSortIndex(l));
           nextCellsType_ySorted(l) = nextCellsType_y(nextCellsType_indSortIndex(l));
           nextCellsType_habSorted(l) = nextCellsType_hab(nextCellsType_indSortIndex(l));
           nextCellsType_whoSorted(l) = nextCellsType_who(nextCellsType_indSortIndex(l));
+          nextCellsType_stepsSorted(l) = nextCellsType_steps(nextCellsType_indSortIndex(l));
           for(int j = 0; j<dispersers_who.size(); j++){
             if(dispersers_who(j) == nextCellsType_whoSorted(l)){
               nextCellsType_xCurSorted(l) = dispersers_lastDispX(j);
@@ -255,12 +298,24 @@ List dispersalGB(// DataFrame, NumericVector
             }
           }
         }
-        List L_return = List::create(Named("nextCellsType_indSorted") =  nextCellsType_indSorted,
-                                       _["nextCellsType_yCurSorted"] = nextCellsType_yCurSorted,
-                                       _["nextCellsType_ySorted"] = nextCellsType_ySorted,
-                                       _["nextCellsType_xCurSorted"] = nextCellsType_xCurSorted,
-                                       _["nextCellsType_xSorted"] = nextCellsType_xSorted,
-                                       _["nextCellsType_whoSorted"] = nextCellsType_whoSorted);
+        // dispersers with some steps left, ie final matrix
+        IntegerVector WStepsLeft = WhichAbove(nextCellsType_stepsSorted, step - 1);//- 1 because I want >= behavior from > function 
+        IntegerVector nextCellsType_indF = IntVecSubIndex(nextCellsType_indSorted, WStepsLeft);
+        IntegerVector nextCellsType_xF = IntVecSubIndex( nextCellsType_xSorted, WStepsLeft);
+        IntegerVector nextCellsType_yF = IntVecSubIndex(nextCellsType_ySorted, WStepsLeft);
+        IntegerVector nextCellsType_habF = IntVecSubIndex(nextCellsType_habSorted, WStepsLeft);
+        IntegerVector nextCellsType_xCurF = IntVecSubIndex(nextCellsType_xCurSorted, WStepsLeft);
+        IntegerVector nextCellsType_yCurF = IntVecSubIndex(nextCellsType_yCurSorted, WStepsLeft);
+        IntegerVector nextCellsType_whoF = IntVecSubIndex(nextCellsType_whoSorted, WStepsLeft);
+        IntegerVector nextCellsType_stepsF = IntVecSubIndex(nextCellsType_stepsSorted, WStepsLeft);
+        
+        
+        List L_return = List::create(Named("nextCellsType_indF") =  nextCellsType_indF,
+                                     _["nextCellsType_yCurF"] = nextCellsType_yCurF,
+                                     _["nextCellsType_yF"] = nextCellsType_yF,
+                                     _["nextCellsType_xCurF"] = nextCellsType_xCurF,
+                                     _["nextCellsType_xF"] = nextCellsType_xF,
+                                     _["nextCellsType_whoF"] = nextCellsType_whoF);
         return  L_return;
         
       }
