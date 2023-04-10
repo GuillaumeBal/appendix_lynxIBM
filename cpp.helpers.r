@@ -14,5 +14,13 @@ y <- sample.int(5, 13, replace = TRUE)
 y
 index.to.keep <- WhichAbove(y, 3) + 1 #because c++ stats at 0
 index.to.keep 
-
 IntVecSubIndex(y, WhichAbove(y, 3)) # here no +1 as back in cpp
+
+# return index num cells whom values are withing a set
+z <- sample.int(10, 13, replace = TRUE)
+z.sub <- z[sample.int(length(z), 4, replace = FALSE)] %>% unique
+
+which(z %in% z.sub)
+WhichInNum(z, z.sub) + 1
+
+

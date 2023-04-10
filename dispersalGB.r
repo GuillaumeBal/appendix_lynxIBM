@@ -16,7 +16,8 @@ outputs.cpp <- dispersalGB(
   lynx = lynx.gb,
   sMaxPs = sMaxPs,
   HabitatMap = habitatMap.gb,
-  pMat = pMat #round(1/9, 2)  #pMat
+  pMat = pMat, #round(1/9, 2)  #pMat
+  pCorr = pCorr
 )
 outputs.cpp
 for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
@@ -25,7 +26,8 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
       lynx = lynx.gb,
       sMaxPs = sMaxPs,
       HabitatMap = habitatMap.gb,
-      pMat = pMat #round(1/9, 2)  
+      pMat = pMat, #round(1/9, 2)
+      pCorr = pCorr
     ) 
   )
 }

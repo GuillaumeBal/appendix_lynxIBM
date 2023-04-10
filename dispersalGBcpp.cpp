@@ -69,6 +69,25 @@ IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // check number cell
 }
 
 // [[Rcpp::export]]
+IntegerVector WhichEqual(IntegerVector ToCheck, int Crit) { // check number cells vector matching character string 
+  int n_equal = 0;
+  for(int i = 0; i<ToCheck.size();i++){
+    if(ToCheck(i)==Crit){
+      n_equal++;
+    }
+  }
+  IntegerVector which_vec(n_equal);
+  int p = 0;
+  for(int i = 0; i<ToCheck.size(); i++){
+    if(ToCheck(i)==Crit){
+      which_vec(p) = i;
+      p++;
+    }
+  }
+  return which_vec;
+}
+
+// [[Rcpp::export]]
 IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // check number cells vector matching character string 
   IntegerVector kept(PosToKeep.size());
   for(int i = 0; i<PosToKeep.size(); i++){
@@ -77,6 +96,30 @@ IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // 
   return kept;
 }
 
+// [[Rcpp::export]]
+IntegerVector WhichInNum(IntegerVector ToCheck, IntegerVector subset) { // check number cells vector matching character string 
+  int n_in = 0;
+  for(int i = 0; i<ToCheck.size(); i++){
+    for(int j = 0; j<subset.size(); j++){
+      if(ToCheck(i)==subset(j)){
+        n_in++;
+      }
+    }
+  }
+  IntegerVector which_vec(n_in);
+  int p = 0;
+  for(int i = 0; i<ToCheck.size(); i++){
+    for(int j = 0; j<subset.size(); j++){
+      if(ToCheck(i)==subset(j)){
+        which_vec(p) = i;
+        p++;
+      }
+    }
+  }
+  return which_vec;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // [[Rcpp::export]]
@@ -84,7 +127,8 @@ List dispersalGB(// DataFrame, NumericVector
     DataFrame lynx,
     int sMaxPs, // dispersal
     IntegerMatrix HabitatMap,
-    double pMat
+    double pMat,
+    double pCorr
 ){
   
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -309,14 +353,67 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector nextCellsType_whoF = IntVecSubIndex(nextCellsType_whoSorted, WStepsLeft);
         IntegerVector nextCellsType_stepsF = IntVecSubIndex(nextCellsType_stepsSorted, WStepsLeft);
         
+        //individual with correlated movement ?
+        IntegerVector IsMoveCorr_who = unique(nextCellsType_whoF);
+        int nDispF = IsMoveCorr_who.size();
+        IntegerVector IsMoveCorr(nDispF);
+        int nCorr = 0;
+        for(int i = 0; i<nDispF; i++){
+          IsMoveCorr(i) = R::rbinom(int_1, pCorr); // not a prob but a boolean 0/1
+          if(IsMoveCorr(i) == int_1){
+            nCorr++;
+          }
+        }
+        // assign to table for easier work
+        IntegerVector nextCellsType_IsMoveCorrF(nextCellsType_stepsF.size());
+        for(int i= 0; i<nDispF; i++){
+          for(int j = 0; j<nextCellsType_stepsF.size(); j++){
+            if(nextCellsType_whoF(j) == IsMoveCorr_who(i)){
+              nextCellsType_IsMoveCorrF(j) = IsMoveCorr(i);
+            }
+          }
+        }
         
-        List L_return = List::create(Named("nextCellsType_indF") =  nextCellsType_indF,
-                                     _["nextCellsType_yCurF"] = nextCellsType_yCurF,
-                                     _["nextCellsType_yF"] = nextCellsType_yF,
-                                     _["nextCellsType_xCurF"] = nextCellsType_xCurF,
-                                     _["nextCellsType_xF"] = nextCellsType_xF,
-                                     _["nextCellsType_whoF"] = nextCellsType_whoF);
-        return  L_return;
+        if(nCorr< nDispF){ // i.e if some indiv with uncorrelated movement
+          //stop("got in loop");
+          IntegerVector noCorr_Lind = WhichEqual(nextCellsType_IsMoveCorrF, 0); 
+          int nCorr0 = noCorr_Lind.size();
+          // define vector to fill
+          IntegerVector nextCellsTypeNoCorr_indF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_xF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_yF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_habF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_xCurF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_yCurF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_whoF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_stepsF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_IsMoveCorrF(nCorr0);
+          for(int l = 0; l<nCorr0;l++){
+            nextCellsTypeNoCorr_indF(l) = nextCellsType_indF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_xF(l) = nextCellsType_xF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_yF(l) = nextCellsType_yF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_habF(l) = nextCellsType_habF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_xCurF(l) = nextCellsType_xCurF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_yCurF(l) = nextCellsType_yCurF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_whoF(l) = nextCellsType_whoF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_stepsF(l) = nextCellsType_stepsF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_IsMoveCorrF(l) = nextCellsType_IsMoveCorrF(noCorr_Lind(l));
+          }
+          
+          List L_return = List::create(Named("noCorr_Lind") = noCorr_Lind,
+                                       _["nCorr0"] = nCorr0);
+          return  L_return;
+        }
+        
+        // List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
+        //                              _["nextCellsType_yCurF"] = nextCellsType_yCurF,
+        //                              _["nextCellsType_yF"] = nextCellsType_yF,
+        //                              _["nextCellsType_xCurF"] = nextCellsType_xCurF,
+        //                              _["nextCellsType_corrF"] = nextCellsType_corrF,
+        //                              _["nextCellsType_whoF"] = nextCellsType_whoF,
+        //                              //_["noCorr_ind"] = noCorr_ind),
+        //                              _["IsMoveCorr"] = IsMoveCorr);
+        // return  L_return;
         
       }
     }// of if dispersers left

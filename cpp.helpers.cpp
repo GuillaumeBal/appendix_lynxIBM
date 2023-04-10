@@ -70,12 +70,36 @@ IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // check number cell
 
 // [[Rcpp::export]]
 IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // check number cells vector matching character string 
- IntegerVector kept(PosToKeep.size());
-   for(int i = 0; i<PosToKeep.size(); i++){
-     kept(i) = ToSub(PosToKeep(i));
-   }
+  IntegerVector kept(PosToKeep.size());
+  for(int i = 0; i<PosToKeep.size(); i++){
+    kept(i) = ToSub(PosToKeep(i));
+  }
   return kept;
 }
+
+// [[Rcpp::export]]
+IntegerVector WhichInNum(IntegerVector ToCheck, IntegerVector subset) { // check number cells vector matching character string 
+  int n_in = 0;
+  for(int i = 0; i<ToCheck.size(); i++){
+    for(int j = 0; j<subset.size(); j++){
+      if(ToCheck(i)==subset(j)){
+        n_in++;
+      }
+    }
+  }
+  IntegerVector which_vec(n_in);
+  int p = 0;
+  for(int i = 0; i<ToCheck.size(); i++){
+    for(int j = 0; j<subset.size(); j++){
+      if(ToCheck(i)==subset(j)){
+        which_vec(p) = i;
+        p++;
+      }
+    }
+  }
+  return which_vec;
+}
+
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically 
