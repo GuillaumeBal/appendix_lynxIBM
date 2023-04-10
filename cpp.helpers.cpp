@@ -11,8 +11,11 @@ using namespace Rcpp;
 //   http://gallery.rcpp.org/
 //
 
+////////////////////////////////////////////////////////////////////////////////
+// series of helper function for lynx script
+
 // [[Rcpp::export]]
-int N_Eq_Str(CharacterVector ToCheck, CharacterVector Crit) {
+int N_Eq_Str(CharacterVector ToCheck, CharacterVector Crit) { // check number cells vector matching character string 
   int n_equal = 0;
   for(int i = 0; i<ToCheck.size(); i++){
     if(ToCheck(i) == Crit(0)){ 
@@ -20,6 +23,30 @@ int N_Eq_Str(CharacterVector ToCheck, CharacterVector Crit) {
     }
   }
   return n_equal;
+}
+
+// [[Rcpp::export]]
+IntegerVector sortInt(IntegerVector x) { // sort vector of integer
+  IntegerVector y = clone(x);
+  std::sort(y.begin(), y.end());
+  return y;
+}
+
+// [[Rcpp::export]]
+IntegerVector IntOrderIndex(IntegerVector x) {
+  IntegerVector x_uniq = unique(x);
+  IntegerVector x_uniqSorted = sortInt(x_uniq);
+  IntegerVector Index(x.size());
+  int p = 0; 
+  for(int i = 0; i<x_uniqSorted.size(); i++){
+    for(int j = 0; j<x.size(); j++){
+      if(x(j) == x_uniqSorted(i)){
+        Index(p) = j;
+        p++;
+      }
+    }
+  }
+  return Index;
 }
 
 

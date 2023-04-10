@@ -57,7 +57,7 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
   #stop()
   
   #{for(step in stepsDisp) {
-  step <- 1  
+  step <- 2  
   #if(NLcount(disperser) != 0){ # update of the disperser at each "step" loop
   
   dispersingIndNMatMax <- noTurtles()
@@ -123,8 +123,6 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
                                      nextCells[, "id"] %in% c(withoutMatrix,
                                                               withMatrix[choseMatrix == 0]), ])
   
-  stop()
-  
   # Second, selection of cell based on the direction
   if(step == 1) { # no correlation
     
@@ -142,6 +140,8 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
     }
     
   } else { # movement correlation
+    
+    stop()
     
     dispCell <- cbind(patchHere(world = sim$habitatMap, turtles = dispersingInd),
                       id = 1:NLcount(dispersingInd))

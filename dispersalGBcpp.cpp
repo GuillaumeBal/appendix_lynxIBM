@@ -15,7 +15,7 @@ using namespace Rcpp;
 // series of helper function for lynx script
 
 // [[Rcpp::export]]
-int N_Eq_Str(CharacterVector ToCheck, CharacterVector Crit) {
+int N_Eq_Str(CharacterVector ToCheck, CharacterVector Crit) { // check number cells vector matching character string 
   int n_equal = 0;
   for(int i = 0; i<ToCheck.size(); i++){
     if(ToCheck(i) == Crit(0)){ 
@@ -25,7 +25,32 @@ int N_Eq_Str(CharacterVector ToCheck, CharacterVector Crit) {
   return n_equal;
 }
 
+// [[Rcpp::export]]
+IntegerVector sortInt(IntegerVector x) { // sort vector of integer
+  IntegerVector y = clone(x);
+  std::sort(y.begin(), y.end());
+  return y;
+}
 
+// [[Rcpp::export]]
+IntegerVector IntOrderIndex(IntegerVector x) {
+  IntegerVector x_uniq = unique(x);
+  IntegerVector x_uniqSorted = sortInt(x_uniq);
+  IntegerVector Index(x.size());
+  int p = 0; 
+  for(int i = 0; i<x_uniqSorted.size(); i++){
+    for(int j = 0; j<x.size(); j++){
+      if(x(j) == x_uniqSorted(i)){
+        Index(p) = j;
+        p++;
+      }
+    }
+  }
+  return Index;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
 
 // [[Rcpp::export]]
 List dispersalGB(// DataFrame, NumericVector
@@ -96,30 +121,37 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector CellsDisp_y(nDispLeft * 9);
       IntegerVector CellsDisp_ind(nDispLeft * 9);
       IntegerVector CellsDisp_hab(nDispLeft * 9);
+      IntegerVector CellsDisp_who(nDispLeft * 9);
       // hab freq indiv
       IntegerVector HabFreqDisp_barrier(nDispLeft);
       IntegerVector HabFreqDisp_matrix(nDispLeft);
       IntegerVector HabFreqDisp_disprep(nDispLeft);
+      IntegerVector HabFreqDisp_who(nDispLeft);
       // vector recording whether next step is in matrix
       IntegerVector Mat_chosen(nDispLeft);
       for(int i = 0; i<nDispLeft; i++){
         for(int l2 = 0; l2<3; l2++){
           for(int l1 = 0; l1<3; l1++){
+            CellsDisp_who(i * 9 + l1 + l2 * 3) = dispersers_who(dispersing(i));
             CellsDisp_x(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;// because want square around indiv
             CellsDisp_y(i * 9 + l1 + l2 * 3) = dispersers_lastDispY(dispersing(i)) - 1 + l1;
             CellsDisp_ind(i * 9 + l1 + l2 * 3) = i;
             CellsDisp_hab(i * 9 + l1 + l2 * 3) = HabitatMap(CellsDisp_y(i * 9 + l1 + l2 * 3),CellsDisp_x(i * 9 + l1 + l2 * 3));
             // here count habitat occurences
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 0){ // barrier
+              HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
               HabFreqDisp_barrier(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 2){ // matrix
+              HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
               HabFreqDisp_matrix(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 3){ // dispersing
+              HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
               HabFreqDisp_disprep(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 4){ // breeding
+              HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
               HabFreqDisp_disprep(i)++;
             }
           }
@@ -148,14 +180,15 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector nextCellsType_y(nCellsDispLeft);
       IntegerVector nextCellsType_ind(nCellsDispLeft);
       IntegerVector nextCellsType_hab(nCellsDispLeft);
-      int p = 0;
-      for(int i = 0; i<CellsDisp_ind.size(); i++){
+      IntegerVector nextCellsType_who(nCellsDispLeft);
+      for(int i = 0, p = 0; i<CellsDisp_ind.size(); i++){
         if((Mat_chosen(CellsDisp_ind(i)) == 1) & (CellsDisp_hab(i) == 2)){
           //stop("Went into loop");
           nextCellsType_x(p) = CellsDisp_x(i);
           nextCellsType_y(p) = CellsDisp_y(i);
           nextCellsType_ind(p) = CellsDisp_ind(i);
           nextCellsType_hab(p) = CellsDisp_hab(i);
+          nextCellsType_who(p) = CellsDisp_who(i);
           p++;
         }
         if((Mat_chosen(CellsDisp_ind(i)) == 0) & ((CellsDisp_hab(i) == 3) | (CellsDisp_hab(i) == 4))){
@@ -163,25 +196,74 @@ List dispersalGB(// DataFrame, NumericVector
           nextCellsType_y(p) = CellsDisp_y(i);
           nextCellsType_ind(p) = CellsDisp_ind(i);
           nextCellsType_hab(p) = CellsDisp_hab(i);
+          nextCellsType_who(p) = CellsDisp_who(i);
           p++;
         }
       }// end second ind loop
-      List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
-                                   _["CellsDisp_ind"] = CellsDisp_ind,
-                                   _["CellsDisp_hab"] = CellsDisp_hab,
-                                   _["CellsDisp_y"] = CellsDisp_y,
-                                   _["CellsDisp_x"] = CellsDisp_x,
-                                   _["HabFreqDisp_matrix"] = HabFreqDisp_matrix,
-                                   _["Mat_chosen"] = Mat_chosen,
-                                   _["HabFreqDisp_barrier"] = HabFreqDisp_barrier,
-                                   _["HabFreqDisp_disprep"] = HabFreqDisp_disprep,
-                                   _["nextCellsType_hab"] = nextCellsType_hab,
-                                   _["nextCellsType_ind"] = nextCellsType_ind,
-                                   _["P"] = p,
-                                   _["nDispLeft"] = nDispLeft);
-      return  L_return;
       
       
+      // part on potential correlation in movements, none on  first move but then some/////////////////////////////////////////
+      if(step == 0){
+        IntegerVector randLines_move = sample((nextCellsType_hab.size()), (nextCellsType_hab.size()), false) - 1; // number of samples is argument 2;
+        IntegerVector ChosenCell_x(nDispLeft);
+        IntegerVector ChosenCell_y(nDispLeft);
+        IntegerVector ChosenCell_hab(nDispLeft);
+        IntegerVector ChosenCell_ind(nDispLeft);
+        IntegerVector ChosenCell_who(nDispLeft);
+        for(int ind = 0; ind < nDispLeft; ind++){
+          double p = 0.5;
+          while(p<1){
+            for(int l = 0; l<nextCellsType_hab.size(); l++){
+              if(nextCellsType_ind(randLines_move(l)) == ind){ // here keeps last one, while was not working
+                ChosenCell_x(ind) = nextCellsType_x(randLines_move(l));
+                ChosenCell_y(ind) = nextCellsType_y(randLines_move(l));
+                ChosenCell_hab(ind) = nextCellsType_hab(randLines_move(l));
+                ChosenCell_ind(ind) = nextCellsType_ind(randLines_move(l));
+                ChosenCell_who(ind) = nextCellsType_who(randLines_move(l));
+                p = p+1;
+              }
+            }
+          }
+        }
+        // List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
+        //                              _["nDispLeft"] = nDispLeft,
+        //                              //_["randLines_move"] = randLines_move,
+        //                              _["ChosenCell_x"] = ChosenCell_x,
+        //                              _["ChosenCell_ind"] = ChosenCell_ind);
+        // return  L_return;
+      } //Works up to here
+      else{ // i.e if step more than first
+        // sort by ind and add current position next to potential ones in nextCellsType bectors
+        IntegerVector nextCellsType_indSortIndex = IntOrderIndex(nextCellsType_ind);
+        IntegerVector nextCellsType_indSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_xSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_ySorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_habSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_xCurSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_yCurSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_whoSorted = nextCellsType_who.size();
+        for(int l = 0; l< nextCellsType_ind.size(); l++){
+          nextCellsType_indSorted(l) = nextCellsType_ind(nextCellsType_indSortIndex(l));
+          nextCellsType_xSorted(l) = nextCellsType_x(nextCellsType_indSortIndex(l));
+          nextCellsType_ySorted(l) = nextCellsType_y(nextCellsType_indSortIndex(l));
+          nextCellsType_habSorted(l) = nextCellsType_hab(nextCellsType_indSortIndex(l));
+          nextCellsType_whoSorted(l) = nextCellsType_who(nextCellsType_indSortIndex(l));
+          for(int j = 0; j<dispersers_who.size(); j++){
+            if(dispersers_who(j) == nextCellsType_whoSorted(l)){
+              nextCellsType_xCurSorted(l) = dispersers_lastDispX(j);
+              nextCellsType_yCurSorted(l) = dispersers_lastDispY(j);
+            }
+          }
+        }
+        List L_return = List::create(Named("nextCellsType_indSorted") =  nextCellsType_indSorted,
+                                       _["nextCellsType_yCurSorted"] = nextCellsType_yCurSorted,
+                                       _["nextCellsType_ySorted"] = nextCellsType_ySorted,
+                                       _["nextCellsType_xCurSorted"] = nextCellsType_xCurSorted,
+                                       _["nextCellsType_xSorted"] = nextCellsType_xSorted,
+                                       _["nextCellsType_whoSorted"] = nextCellsType_whoSorted);
+        return  L_return;
+        
+      }
     }// of if dispersers left
   }// end step loop
 } // end of function
