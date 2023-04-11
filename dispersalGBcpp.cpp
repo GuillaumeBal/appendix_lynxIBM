@@ -69,7 +69,7 @@ IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // check number cell
 }
 
 // [[Rcpp::export]]
-IntegerVector WhichEqual(IntegerVector ToCheck, int Crit) { // check number cells vector matching character string 
+IntegerVector WhichEqual(IntegerVector ToCheck, int Crit) { // // give index cells valua above crit for IntegerVector  
   int n_equal = 0;
   for(int i = 0; i<ToCheck.size();i++){
     if(ToCheck(i)==Crit){
@@ -88,7 +88,7 @@ IntegerVector WhichEqual(IntegerVector ToCheck, int Crit) { // check number cell
 }
 
 // [[Rcpp::export]]
-IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // check number cells vector matching character string 
+IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // subset integer vector based on index
   IntegerVector kept(PosToKeep.size());
   for(int i = 0; i<PosToKeep.size(); i++){
     kept(i) = ToSub(PosToKeep(i));
@@ -97,7 +97,7 @@ IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // 
 }
 
 // [[Rcpp::export]]
-IntegerVector WhichInNum(IntegerVector ToCheck, IntegerVector subset) { // check number cells vector matching character string 
+IntegerVector WhichInSetInt(IntegerVector ToCheck, IntegerVector subset) { // check cells within subset for integer 
   int n_in = 0;
   for(int i = 0; i<ToCheck.size(); i++){
     for(int j = 0; j<subset.size(); j++){
@@ -117,6 +117,28 @@ IntegerVector WhichInNum(IntegerVector ToCheck, IntegerVector subset) { // check
     }
   }
   return which_vec;
+}
+
+// [[Rcpp::export]]
+// here randomly shuffling line before picking one per unique number of x
+IntegerVector IntPosOneOfEach(IntegerVector x){
+  IntegerVector randLines_move = sample(x.size(), x.size(), false) - 1; // number of samples is argument 2; -1 to make it start at 0
+  IntegerVector unique_x = unique(x);
+  IntegerVector unique_x_ordered = clone(unique_x);
+  unique_x_ordered.sort(false);
+  IntegerVector Chosen_Line(unique_x.size());
+  for(int ind = 0; ind < unique_x_ordered.size(); ind++){
+    double p = 0.5;
+    while(p<1){
+      for(int l = 0; l<x.size(); l++){
+        if(x(randLines_move(l)) == unique_x_ordered(ind)){ // here keeps last one, while was not working
+          Chosen_Line(ind) = randLines_move(l);
+          p = p + 1;
+        }
+      }
+    }
+  }
+  return Chosen_Line;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -283,8 +305,10 @@ List dispersalGB(// DataFrame, NumericVector
       }// end second ind loop
       
       
-      // part on potential correlation in movements, none on  first move but then some/////////////////////////////////////////
+      // part on potential correlation in movements, none on first move but then some/////////////////////////////////////////
+      
       if(step == 0){
+        // here randomly shuffling line before picking one per ind
         IntegerVector randLines_move = sample((nextCellsType_hab.size()), (nextCellsType_hab.size()), false) - 1; // number of samples is argument 2;
         IntegerVector ChosenCell_x(nDispLeft);
         IntegerVector ChosenCell_y(nDispLeft);
@@ -303,7 +327,7 @@ List dispersalGB(// DataFrame, NumericVector
                 ChosenCell_ind(ind) = nextCellsType_ind(randLines_move(l));
                 ChosenCell_who(ind) = nextCellsType_who(randLines_move(l));
                 ChosenCell_steps(ind) = nextCellsType_steps(randLines_move(l));
-                p = p+1;
+                p = p + 1;
               }
             }
           }
@@ -399,9 +423,22 @@ List dispersalGB(// DataFrame, NumericVector
             nextCellsTypeNoCorr_stepsF(l) = nextCellsType_stepsF(noCorr_Lind(l));
             nextCellsTypeNoCorr_IsMoveCorrF(l) = nextCellsType_IsMoveCorrF(noCorr_Lind(l));
           }
+          // now pick just one cell to move to for each ind
+          IntegerVector UniqueLinesIndNoCorr = IntPosOneOfEach(nextCellsTypeNoCorr_indF);
+          IntegerVector chosenCellsNoCorr_ind =  IntVecSubIndex(nextCellsTypeNoCorr_indF, UniqueLinesIndNoCorr);
+          IntegerVector chosenCellsNoCorr_x = IntVecSubIndex(nextCellsTypeNoCorr_xF, UniqueLinesIndNoCorr);
+          IntegerVector chosenCellsNoCorr_y = IntVecSubIndex(nextCellsTypeNoCorr_yF, UniqueLinesIndNoCorr);
+          IntegerVector chosenCellsNoCorr_hab = IntVecSubIndex(nextCellsTypeNoCorr_habF, UniqueLinesIndNoCorr);
+          IntegerVector chosenCellsNoCorr_xCur = IntVecSubIndex(nextCellsTypeNoCorr_xCurF, UniqueLinesIndNoCorr);
+          IntegerVector chosenCellsNoCorr_yCur = IntVecSubIndex(nextCellsTypeNoCorr_yCurF, UniqueLinesIndNoCorr);
+          IntegerVector chosenCellsNoCorr_who = IntVecSubIndex(nextCellsTypeNoCorr_whoF, UniqueLinesIndNoCorr);
+          IntegerVector chosenCellsNoCorr_steps = IntVecSubIndex(nextCellsTypeNoCorr_stepsF, UniqueLinesIndNoCorr);
+          IntegerVector chosenCellsNoCorr_IsMoveCorr = IntVecSubIndex(nextCellsTypeNoCorr_IsMoveCorrF, UniqueLinesIndNoCorr);
           
-          List L_return = List::create(Named("noCorr_Lind") = noCorr_Lind,
-                                       _["nCorr0"] = nCorr0);
+          List L_return = List::create(Named("chosenCellsNoCorr_who") = chosenCellsNoCorr_who,
+                                       _["chosenCellsNoCorr_ind"] = chosenCellsNoCorr_ind,
+                                       _["chosenCellsNoCorr_yCur"] = chosenCellsNoCorr_yCur
+                                       );
           return  L_return;
         }
         

@@ -50,7 +50,7 @@ IntegerVector IntOrderIndex(IntegerVector x) {
 }
 
 // [[Rcpp::export]]
-IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // check number cells vector matching character string 
+IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // give index cells valua above crit for IntegerVector 
   int n_above = 0;
   for(int i = 0; i<ToCheck.size();i++){
     if(ToCheck(i)>Crit){
@@ -69,7 +69,7 @@ IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // check number cell
 }
 
 // [[Rcpp::export]]
-IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // check number cells vector matching character string 
+IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // subset integer vector based on index 
   IntegerVector kept(PosToKeep.size());
   for(int i = 0; i<PosToKeep.size(); i++){
     kept(i) = ToSub(PosToKeep(i));
@@ -78,7 +78,7 @@ IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // 
 }
 
 // [[Rcpp::export]]
-IntegerVector WhichInNum(IntegerVector ToCheck, IntegerVector subset) { // check number cells vector matching character string 
+IntegerVector WhichInSetInt(IntegerVector ToCheck, IntegerVector subset) { // check cells within subset for integer
   int n_in = 0;
   for(int i = 0; i<ToCheck.size(); i++){
     for(int j = 0; j<subset.size(); j++){
@@ -100,6 +100,27 @@ IntegerVector WhichInNum(IntegerVector ToCheck, IntegerVector subset) { // check
   return which_vec;
 }
 
+// [[Rcpp::export]]
+// here randomly shuffling line before picking one per unique number of x
+IntegerVector IntPosOneOfEach(IntegerVector x){
+  IntegerVector randLines_move = sample(x.size(), x.size(), false) - 1; // number of samples is argument 2; -1 to make it start at 0
+  IntegerVector unique_x = unique(x);
+  IntegerVector unique_x_ordered = clone(unique_x);
+  unique_x_ordered.sort(false);
+  IntegerVector Chosen_Line(unique_x.size());
+  for(int ind = 0; ind < unique_x_ordered.size(); ind++){
+    double p = 0.5;
+    while(p<1){
+      for(int l = 0; l<x.size(); l++){
+        if(x(randLines_move(l)) == unique_x_ordered(ind)){ // here keeps last one, while was not working
+          Chosen_Line(ind) = randLines_move(l);
+          p = p + 1;
+        }
+      }
+    }
+  }
+  return Chosen_Line;
+}
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically 

@@ -19,8 +19,12 @@ IntVecSubIndex(y, WhichAbove(y, 3)) # here no +1 as back in cpp
 # return index num cells whom values are withing a set
 z <- sample.int(10, 13, replace = TRUE)
 z.sub <- z[sample.int(length(z), 4, replace = FALSE)] %>% unique
-
 which(z %in% z.sub)
-WhichInNum(z, z.sub) + 1
+WhichInSetInt(z, z.sub) + 1
 
+# return a random line for index from Integer vactor with rep
+zz <- sample.int(10, 20, replace = TRUE)
+zz
+unique(zz) %>% length
+zz[IntPosOneOfEach(zz) + 1] #%>% length
 
