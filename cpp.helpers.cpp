@@ -69,6 +69,25 @@ IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // give index cells 
 }
 
 // [[Rcpp::export]]
+IntegerVector WhichEqual(IntegerVector ToCheck, int Crit) { // // give index cells valua above crit for IntegerVector  
+  int n_equal = 0;
+  for(int i = 0; i<ToCheck.size();i++){
+    if(ToCheck(i)==Crit){
+      n_equal++;
+    }
+  }
+  IntegerVector which_vec(n_equal);
+  int p = 0;
+  for(int i = 0; i<ToCheck.size(); i++){
+    if(ToCheck(i)==Crit){
+      which_vec(p) = i;
+      p++;
+    }
+  }
+  return which_vec;
+}
+
+// [[Rcpp::export]]
 IntegerVector IntVecSubIndex(IntegerVector ToSub, IntegerVector PosToKeep) { // subset integer vector based on index 
   IntegerVector kept(PosToKeep.size());
   for(int i = 0; i<PosToKeep.size(); i++){

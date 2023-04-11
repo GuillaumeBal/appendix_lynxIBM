@@ -21,7 +21,7 @@ outputs.cpp <- dispersalGB(
 )
 outputs.cpp
 for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
-  print(
+  try(print(
     dispersalGB(
       lynx = lynx.gb,
       sMaxPs = sMaxPs,
@@ -29,5 +29,5 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
       pMat = pMat, #round(1/9, 2)
       pCorr = pCorr
     ) 
-  )
+  ))
 }

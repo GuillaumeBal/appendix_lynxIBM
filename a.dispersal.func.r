@@ -141,8 +141,6 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
     
   } else { # movement correlation
     
-    stop()
-    
     dispCell <- cbind(patchHere(world = sim$habitatMap, turtles = dispersingInd),
                       id = 1:NLcount(dispersingInd))
     colnames(dispCell)[c(1, 2)] <- c("pxcorHere", "pycorHere")
@@ -167,6 +165,8 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
       chosenCellsNoCorr <- chosenCellsNoCorr[, c("pxcor", "pycor", "id", "cellType")]
     }
     
+    #stop()
+    
     # Individuals with a correlated movement
     yesCorr <- unique(nextCellsType[, "id"])[probCorr == 1]
     chosenCellsYesCorrSelect <- cbind(pxcor = numeric(), pycor = numeric(),  id = numeric(),
@@ -176,7 +176,7 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
                                 dir = as.numeric(NA))
       for(eachYesCorr in yesCorr) {
         indYessCorr <- turtle(turtles = dispersingInd, who = dispersingID[eachYesCorr])
-        #stop()
+        stop()
         start.towards <- Sys.time()
         dirCells <- towards(agents = indYessCorr, agents2 = cbind(
           pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],

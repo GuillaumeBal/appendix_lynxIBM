@@ -28,3 +28,10 @@ zz
 unique(zz) %>% length
 zz[IntPosOneOfEach(zz) + 1] #%>% length
 
+
+# check Whixh Equal for 1
+OneAndZero <- rbinom(13, 1, .5)
+OneAndZero
+WhichEqual(OneAndZero, 1) +1 
+
+
