@@ -176,6 +176,7 @@ List dispersalGB(// DataFrame, NumericVector
   int int_3 = 3;
   int int_4 = 4;
   int int_5 = 5;
+  int int_100 = 100;
   
   ///////////////////////////////////////////////////////////////////////////////////////
   // LYNX DATA PROCESSING
@@ -458,21 +459,21 @@ List dispersalGB(// DataFrame, NumericVector
           //return  L_return;
         }// end noCorr move indiv, works up to here
         
-        // now deal with indicv with correlated movement
+        // now deal with indiv with correlated movement
         if(nCorr1 > int_0){
           //stop("got into loop");
           IntegerVector YesCorr_Lind = WhichEqual(nextCellsType_IsMoveCorrF, int_1);
           //define vector to fill
-          IntegerVector nextCellsTypeYesCorr_indF(nCorr1);
-          IntegerVector nextCellsTypeYesCorr_xF(nCorr1);
-          IntegerVector nextCellsTypeYesCorr_yF(nCorr1);
-          IntegerVector nextCellsTypeYesCorr_habF(nCorr1);
-          IntegerVector nextCellsTypeYesCorr_xCurF(nCorr1);
-          IntegerVector nextCellsTypeYesCorr_yCurF(nCorr1);
-          IntegerVector nextCellsTypeYesCorr_whoF(nCorr1);
-          IntegerVector nextCellsTypeYesCorr_stepsF(nCorr1);
-          IntegerVector nextCellsTypeYesCorr_IsMoveCorrF(nCorr1);
-          for(int l = 0; l<nCorr1; l++){
+          IntegerVector nextCellsTypeYesCorr_indF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_xF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_yF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_habF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_xCurF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_yCurF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_whoF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_stepsF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_IsMoveCorrF(YesCorr_Lind.size());
+          for(int l = 0; l<YesCorr_Lind.size(); l++){
             nextCellsTypeYesCorr_indF(l) = nextCellsType_indF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_xF(l) = nextCellsType_xF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_yF(l) = nextCellsType_yF(YesCorr_Lind(l));
@@ -484,26 +485,40 @@ List dispersalGB(// DataFrame, NumericVector
             nextCellsTypeYesCorr_IsMoveCorrF(l) = nextCellsType_IsMoveCorrF(YesCorr_Lind(l));
           }
           // add dir to nextCellsTypeYesCorr
-          IntegerVector nextCellsTypeYesCorr_DirF(nextCellsType_IsMoveCorrF.size());
-          IntegerVector nextCellsType_prefDirF(nextCellsType_IsMoveCorrF.size());
-          for(int l = 0; l<nextCellsType_IsMoveCorrF.size(); l++){
-            nextCellsTypeYesCorr_DirF(l) = towards_simple_unique(nextCellsType_xCurF(l), nextCellsType_yCurF(l), 
-                                      nextCellsType_xF(l), nextCellsType_yF(l));
-            nextCellsType_prefDirF(l) = int_1; // set to one then modify
+          IntegerVector nextCellsTypeYesCorr_DirF(nextCellsTypeYesCorr_IsMoveCorrF.size());
+          IntegerVector nextCellsTypeYesCorr_prefDirF(nextCellsTypeYesCorr_IsMoveCorrF.size());
+          for(int l = 0; l<nextCellsTypeYesCorr_IsMoveCorrF.size(); l++){
+            nextCellsTypeYesCorr_DirF(l) = towards_simple_unique(nextCellsTypeYesCorr_xCurF(l), nextCellsTypeYesCorr_yCurF(l), 
+                                      nextCellsTypeYesCorr_xF(l), nextCellsTypeYesCorr_yF(l));
+            nextCellsTypeYesCorr_prefDirF(l) = int_1; // set to one then modify
             if((nextCellsTypeYesCorr_DirF(l) >= 45) & (nextCellsTypeYesCorr_DirF(l) <= 315)){
-              nextCellsType_prefDirF(l) = int_2;
+              nextCellsTypeYesCorr_prefDirF(l) = int_2;
             }
             if((nextCellsTypeYesCorr_DirF(l) >= 90) & (nextCellsTypeYesCorr_DirF(l) <= 270)){
-              nextCellsType_prefDirF(l) = int_3;
+              nextCellsTypeYesCorr_prefDirF(l) = int_3;
             }
             if((nextCellsTypeYesCorr_DirF(l) >= 135) & (nextCellsTypeYesCorr_DirF(l) <= 225)){
-              nextCellsType_prefDirF(l) = int_4;
+              nextCellsTypeYesCorr_prefDirF(l) = int_4;
             }
             if(nextCellsTypeYesCorr_DirF(l) == 180){
-              nextCellsType_prefDirF(l) = int_5;
+              nextCellsTypeYesCorr_prefDirF(l) = int_5;
             }
-            if((nextCellsType_xCurF(l) == nextCellsType_xF(l)) & (nextCellsType_yCurF(l) == nextCellsType_yF(l))){
-              nextCellsType_prefDirF(l) = int_3;
+            if((nextCellsTypeYesCorr_xCurF(l) == nextCellsTypeYesCorr_xF(l)) & (nextCellsTypeYesCorr_yCurF(l) == nextCellsTypeYesCorr_yF(l))){
+              nextCellsTypeYesCorr_prefDirF(l) = int_3;
+            }
+          }
+          // keep only one line per indiv, with lowest value of rank
+          IntegerVector unique_nextCellsTypeYesCorr_whoF = unique(nextCellsTypeYesCorr_whoF);
+          unique_nextCellsTypeYesCorr_whoF = sortInt(unique_nextCellsTypeYesCorr_whoF);
+          IntegerVector chosenCellsYesCorr_who(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector chosenCellsYesCorr_pref(unique_nextCellsTypeYesCorr_whoF.size());
+          // subset for one of the lower prefdir values
+          for(int i = 0; i<unique_nextCellsTypeYesCorr_whoF.size(); i++){
+            chosenCellsYesCorr_pref(i) = 100;// set to 100 to be able to replace by values within table
+            for(int l = 0; l<nextCellsTypeYesCorr_whoF.size() ; l++){
+              if(nextCellsType_whoF(l)< chosenCellsYesCorr_pref(i)){
+                chosenCellsYesCorr_pref(i) = nextCellsTypeYesCorr_whoF(l);
+              }
             }
           }
           
@@ -517,7 +532,8 @@ List dispersalGB(// DataFrame, NumericVector
                                        _["nextCellsTypeYesCorr_indF"] = nextCellsTypeYesCorr_indF,
                                        _["nextCellsTypeYesCorr_whoF"] = nextCellsTypeYesCorr_whoF,
                                        _["nextCellsTypeYesCorr_DirF"] = nextCellsTypeYesCorr_DirF,
-                                       _["nextCellsType_prefDirF"] = nextCellsType_prefDirF);
+                                       _["nextCellsTypeYesCorr_prefDirF"] = nextCellsTypeYesCorr_prefDirF,
+                                       _["chosenCellsYesCorr_pref"] = chosenCellsYesCorr_pref);
           return  L_return;
           
         }
