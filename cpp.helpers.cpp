@@ -1,5 +1,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
+#include <math.h>       /* atan2 */
+#define PI 3.14159265
 
 // This is a simple example of exporting a C++ function to R. You can
 // source this function into an R session using the Rcpp::sourceCpp 
@@ -140,6 +142,31 @@ IntegerVector IntPosOneOfEach(IntegerVector x){
   }
   return Chosen_Line;
 }
+
+// [[Rcpp::export]]
+// towards simple,  convert radians to degrees
+IntegerVector towards_simple(int x_cur, int y_cur, IntegerVector x_to, IntegerVector y_to){
+  IntegerVector degrees(x_to.size());
+  for(int i = 0; i<x_to.size(); i++){
+    degrees(i) = atan2(y_to(i) - y_cur, x_to(i) - x_cur) * (180 / PI);
+    if(degrees(i)<0){
+      degrees(i) = degrees(i) + 360;
+    }
+  }
+  return degrees;
+}
+
+// [[Rcpp::export]]
+// towards simple,  convert radians to degrees
+int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
+  int degrees = 0;
+  degrees = atan2(y_to - y_cur, x_to - x_cur) * (180 / PI);
+  if(degrees<0){
+    degrees = degrees + 360;
+  }
+  return degrees;
+}
+
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically 

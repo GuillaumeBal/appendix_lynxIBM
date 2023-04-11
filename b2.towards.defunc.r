@@ -1,10 +1,17 @@
 #towards.r <- function(agents, agents2, world, torus = FALSE) {
+stop()
 
 agents <- indYessCorr # rbind(agents, agents, agents)
 agents2 <- cbind(
   pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
   pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"])
 torus <- FALSE
+
+# agent in changed within code
+agents <- agents@.Data[, c("xcor", "ycor"), drop = FALSE]
+
+inherits(agents, "agentMatrix")
+inherits(tCoords, "agentMatrix")
 
 if (!inherits(agents, "agentMatrix") & !inherits(agents2, "agentMatrix")) {
   print("check")
@@ -74,7 +81,7 @@ if (!inherits(agents, "agentMatrix") & !inherits(agents2, "agentMatrix")) {
     heading[heading < 0] <- heading[heading < 0] + 360
   }
   
-} else if (inherits(agents, "agentMatrix") & !inherits(agents2, "agentMatrix")) {
+} else if (inherits(agents, "agentMatrix") & !inherits(agents2, "agentMatrix")) { #in fact change data format and goes back in code above
   # turtles to patches
   tCoords <- agents@.Data[, c("xcor", "ycor"), drop = FALSE]
   heading <- towards(agents = tCoords, agents2 = agents2, world = world, torus = torus)

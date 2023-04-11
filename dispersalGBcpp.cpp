@@ -1,5 +1,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
+#include <math.h>       /* atan2 */
+#define PI 3.14159265
 
 // This is a simple example of exporting a C++ function to R. You can
 // source this function into an R session using the Rcpp::sourceCpp 
@@ -141,6 +143,17 @@ IntegerVector IntPosOneOfEach(IntegerVector x){
   return Chosen_Line;
 }
 
+// [[Rcpp::export]]
+// towards simple,  convert radians to degrees
+int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
+  int degrees = 0;
+  degrees = atan2(y_to - y_cur, x_to - x_cur) * (180 / PI);
+  if(degrees<0){
+    degrees = degrees + 360;
+  }
+  return degrees;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -159,6 +172,10 @@ List dispersalGB(// DataFrame, NumericVector
   // some integer def because IntegerVector v(1) = 1 does not work
   int int_0 = 0;
   int int_1 = 1;
+  int int_2 = 2;
+  int int_3 = 3;
+  int int_4 = 4;
+  int int_5 = 5;
   
   ///////////////////////////////////////////////////////////////////////////////////////
   // LYNX DATA PROCESSING
@@ -455,7 +472,7 @@ List dispersalGB(// DataFrame, NumericVector
           IntegerVector nextCellsTypeYesCorr_whoF(nCorr1);
           IntegerVector nextCellsTypeYesCorr_stepsF(nCorr1);
           IntegerVector nextCellsTypeYesCorr_IsMoveCorrF(nCorr1);
-          for(int l = 0; l<nCorr1;l++){
+          for(int l = 0; l<nCorr1; l++){
             nextCellsTypeYesCorr_indF(l) = nextCellsType_indF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_xF(l) = nextCellsType_xF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_yF(l) = nextCellsType_yF(YesCorr_Lind(l));
@@ -466,13 +483,41 @@ List dispersalGB(// DataFrame, NumericVector
             nextCellsTypeYesCorr_stepsF(l) = nextCellsType_stepsF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_IsMoveCorrF(l) = nextCellsType_IsMoveCorrF(YesCorr_Lind(l));
           }
+          // add dir to nextCellsTypeYesCorr
+          IntegerVector nextCellsTypeYesCorr_DirF(nextCellsType_IsMoveCorrF.size());
+          IntegerVector nextCellsType_prefDirF(nextCellsType_IsMoveCorrF.size());
+          for(int l = 0; l<nextCellsType_IsMoveCorrF.size(); l++){
+            nextCellsTypeYesCorr_DirF(l) = towards_simple_unique(nextCellsType_xCurF(l), nextCellsType_yCurF(l), 
+                                      nextCellsType_xF(l), nextCellsType_yF(l));
+            nextCellsType_prefDirF(l) = int_1; // set to one then modify
+            if((nextCellsTypeYesCorr_DirF(l) >= 45) & (nextCellsTypeYesCorr_DirF(l) <= 315)){
+              nextCellsType_prefDirF(l) = int_2;
+            }
+            if((nextCellsTypeYesCorr_DirF(l) >= 90) & (nextCellsTypeYesCorr_DirF(l) <= 270)){
+              nextCellsType_prefDirF(l) = int_3;
+            }
+            if((nextCellsTypeYesCorr_DirF(l) >= 135) & (nextCellsTypeYesCorr_DirF(l) <= 225)){
+              nextCellsType_prefDirF(l) = int_4;
+            }
+            if(nextCellsTypeYesCorr_DirF(l) == 180){
+              nextCellsType_prefDirF(l) = int_5;
+            }
+            if((nextCellsType_xCurF(l) == nextCellsType_xF(l)) & (nextCellsType_yCurF(l) == nextCellsType_yF(l))){
+              nextCellsType_prefDirF(l) = int_3;
+            }
+          }
+          
+          //chosenCellsYesCorrDT <- nextCellsTypeDirDT[nextCellsTypeDirDT[, .I[sample(.N,1)],
+          //by = c("id","prefDir")]$V1]
+          
           
           List L_return = List::create(Named("nextCellsType_IsMoveCorrF") = nextCellsType_IsMoveCorrF,
                                        //_["YesCorr_Lind"] = YesCorr_Lind,
                                        _["nCorr1"] = nCorr1,
                                        _["nextCellsTypeYesCorr_indF"] = nextCellsTypeYesCorr_indF,
                                        _["nextCellsTypeYesCorr_whoF"] = nextCellsTypeYesCorr_whoF,
-                                       _["nextCellsTypeYesCorr_yCurF"] = nextCellsTypeYesCorr_yCurF);
+                                       _["nextCellsTypeYesCorr_DirF"] = nextCellsTypeYesCorr_DirF,
+                                       _["nextCellsType_prefDirF"] = nextCellsType_prefDirF);
           return  L_return;
           
         }

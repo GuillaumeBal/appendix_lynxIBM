@@ -176,12 +176,13 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
                                 dir = as.numeric(NA))
       for(eachYesCorr in yesCorr) {
         indYessCorr <- turtle(turtles = dispersingInd, who = dispersingID[eachYesCorr])
-        stop()
-        start.towards <- Sys.time()
-        dirCells <- towards(agents = indYessCorr, agents2 = cbind(
-          pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
-          pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"]),
-          torus = FALSE)
+        #stop()
+        source("b2.towards.defunc.r")
+        #start.towards <- Sys.time()
+        #dirCells <- towards(agents = indYessCorr, agents2 = cbind(
+        #  pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
+        #  pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"]),
+        #  torus = FALSE)
         print(paste('towards', start.towards - Sys.time()))
         nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "dir"] <-
           round(subHeadings(angle1 = indYessCorr@.Data[, "heading"], angle2 = dirCells,

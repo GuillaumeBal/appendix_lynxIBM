@@ -28,10 +28,17 @@ zz
 unique(zz) %>% length
 zz[IntPosOneOfEach(zz) + 1] #%>% length
 
-
 # check Whixh Equal for 1
 OneAndZero <- rbinom(13, 1, .5)
 OneAndZero
 WhichEqual(OneAndZero, 1) +1 
+
+# check towards
+x_to = c(296,297,298,296,298,296,297,298,297)
+y_to = c(426,426,426,425,425,424,424,424,425)
+x_cur = 297
+y_cur = 425
+towards_simple(x_to = x_to, y_to = y_to, x_cur = x_cur, y_cur = y_cur)
+
 
 
