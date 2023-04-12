@@ -360,30 +360,7 @@ List dispersalGB(// DataFrame, NumericVector
       
       else{ // i.e if step more than first //////////////////////////////////////////////////
         
-        //Have to define here and push_back values to be able to use latter on outside loop where it is filled up
-        // final move of indiv with no correlated movements
-        IntegerVector ChosenCellsNoCorr_ind(0);
-        IntegerVector ChosenCellsNoCorr_x(0);
-        IntegerVector ChosenCellsNoCorr_y(0);
-        IntegerVector ChosenCellsNoCorr_hab(0);
-        IntegerVector ChosenCellsNoCorr_xCur(0);
-        IntegerVector ChosenCellsNoCorr_yCur(0);
-        IntegerVector ChosenCellsNoCorr_who(0);
-        IntegerVector ChosenCellsNoCorr_steps(0);
-        IntegerVector ChosenCellsNoCorr_IsMoveCorr(0);
-        // final moce infiv with correlatedmovement
-        IntegerVector ChosenCellsYesCorr_who(0);
-        IntegerVector ChosenCellsYesCorr_prefDir(0);
-        IntegerVector ChosenCellsYesCorr_ind(0);
-        IntegerVector ChosenCellsYesCorr_x(0);
-        IntegerVector ChosenCellsYesCorr_y(0);
-        IntegerVector ChosenCellsYesCorr_hab(0);
-        IntegerVector ChosenCellsYesCorr_xCur(0);
-        IntegerVector ChosenCellsYesCorr_yCur(0);
-        IntegerVector ChosenCellsYesCorr_steps(0);
-        IntegerVector ChosenCellsYesCorr_IsMoveCorr(0);
-        
-        // sort by ind and add current position next to potential ones in nextCellsType vectors
+        // sort by ind and add current position next to potential ones in nextCellsType bectors
         IntegerVector nextCellsType_indSortIndex = IntOrderIndex(nextCellsType_ind);
         IntegerVector nextCellsType_indSorted = nextCellsType_ind.size();
         IntegerVector nextCellsType_xSorted = nextCellsType_ind.size();
@@ -466,26 +443,16 @@ List dispersalGB(// DataFrame, NumericVector
           }
           // now pick just one cell to move to for each ind
           IntegerVector UniqueLinesIndNoCorr = IntPosOneOfEach(nextCellsTypeNoCorr_indF);
-          //IntegerVector ChosenCellsNoCorr_ind(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_x(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_y(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_hab(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_xCur(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_yCur(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_who(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_steps(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_IsMoveCorr(UniqueLinesIndNoCorr.size());
-          for(int i = 0; i<UniqueLinesIndNoCorr.size(); i++){
-            ChosenCellsNoCorr_ind.push_back(nextCellsTypeNoCorr_indF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_x.push_back(nextCellsTypeNoCorr_xF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_y.push_back(nextCellsTypeNoCorr_yF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_hab.push_back(nextCellsTypeNoCorr_habF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_xCur.push_back(nextCellsTypeNoCorr_xCurF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_yCur.push_back(nextCellsTypeNoCorr_yCurF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_who.push_back(nextCellsTypeNoCorr_whoF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_steps.push_back(nextCellsTypeNoCorr_stepsF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_IsMoveCorr.push_back(nextCellsTypeNoCorr_IsMoveCorrF(UniqueLinesIndNoCorr(i)));
-          }
+          IntegerVector ChosenCellsNoCorr_ind =  IntVecSubIndex(nextCellsTypeNoCorr_indF, UniqueLinesIndNoCorr);
+          IntegerVector ChosenCellsNoCorr_x = IntVecSubIndex(nextCellsTypeNoCorr_xF, UniqueLinesIndNoCorr);
+          IntegerVector ChosenCellsNoCorr_y = IntVecSubIndex(nextCellsTypeNoCorr_yF, UniqueLinesIndNoCorr);
+          IntegerVector ChosenCellsNoCorr_hab = IntVecSubIndex(nextCellsTypeNoCorr_habF, UniqueLinesIndNoCorr);
+          IntegerVector ChosenCellsNoCorr_xCur = IntVecSubIndex(nextCellsTypeNoCorr_xCurF, UniqueLinesIndNoCorr);
+          IntegerVector ChosenCellsNoCorr_yCur = IntVecSubIndex(nextCellsTypeNoCorr_yCurF, UniqueLinesIndNoCorr);
+          IntegerVector ChosenCellsNoCorr_who = IntVecSubIndex(nextCellsTypeNoCorr_whoF, UniqueLinesIndNoCorr);
+          IntegerVector ChosenCellsNoCorr_steps = IntVecSubIndex(nextCellsTypeNoCorr_stepsF, UniqueLinesIndNoCorr);
+          IntegerVector ChosenCellsNoCorr_IsMoveCorr = IntVecSubIndex(nextCellsTypeNoCorr_IsMoveCorrF, UniqueLinesIndNoCorr);
+          
           // List L_return = List::create(Named("ChosenCellsNoCorr_who") = ChosenCellsNoCorr_who,
           //                              _["ChosenCellsNoCorr_ind"] = ChosenCellsNoCorr_ind,
           //                              _["ChosenCellsNoCorr_yCur"] = ChosenCellsNoCorr_yCur);
@@ -543,33 +510,33 @@ List dispersalGB(// DataFrame, NumericVector
           // keep only one line per indiv, with lowest value of rank
           IntegerVector unique_nextCellsTypeYesCorr_whoF = unique(nextCellsTypeYesCorr_whoF);
           unique_nextCellsTypeYesCorr_whoF = sortInt(unique_nextCellsTypeYesCorr_whoF);
-          // IntegerVector ChosenCellsYesCorr_who(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_prefDir(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_ind(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_x(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_y(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_hab(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_xCur(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_yCur(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_steps(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_IsMoveCorr(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_who(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_prefDir(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_ind(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_x(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_y(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_hab(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_xCur(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_yCur(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_steps(unique_nextCellsTypeYesCorr_whoF.size());
+          IntegerVector ChosenCellsYesCorr_IsMoveCorr(unique_nextCellsTypeYesCorr_whoF.size());
           // subset for one of the lower prefdir values
           for(int i = 0; i<unique_nextCellsTypeYesCorr_whoF.size(); i++){
-            ChosenCellsYesCorr_prefDir.push_back(int_100);// set to 100 to be able to replace by values within table
+            ChosenCellsYesCorr_prefDir(i) = int_100;// set to 100 to be able to replace by values within table
             for(int l = 0; l<nextCellsTypeYesCorr_whoF.size() ; l++){
               if((nextCellsTypeYesCorr_prefDirF(l) < ChosenCellsYesCorr_prefDir(i)) &
                  (nextCellsTypeYesCorr_whoF(l) == unique_nextCellsTypeYesCorr_whoF(i))){
                 ChosenCellsYesCorr_prefDir(i) = nextCellsTypeYesCorr_prefDirF(l);
-                ChosenCellsYesCorr_who.push_back(nextCellsTypeYesCorr_whoF(l));
-                ChosenCellsYesCorr_prefDir.push_back(nextCellsTypeYesCorr_prefDirF(l));
-                ChosenCellsYesCorr_ind.push_back(nextCellsTypeYesCorr_indF(l));
-                ChosenCellsYesCorr_x.push_back(nextCellsTypeYesCorr_xF(l));
-                ChosenCellsYesCorr_y.push_back(nextCellsTypeYesCorr_yF(l));
-                ChosenCellsYesCorr_hab.push_back(nextCellsTypeYesCorr_habF(l));
-                ChosenCellsYesCorr_xCur.push_back(nextCellsTypeYesCorr_xCurF(l));
-                ChosenCellsYesCorr_yCur.push_back(nextCellsTypeYesCorr_yCurF(l));
-                ChosenCellsYesCorr_steps.push_back(nextCellsTypeYesCorr_stepsF(l));
-                ChosenCellsYesCorr_IsMoveCorr.push_back(nextCellsTypeYesCorr_IsMoveCorrF(l));
+                ChosenCellsYesCorr_who(i) = nextCellsTypeYesCorr_whoF(l);
+                ChosenCellsYesCorr_prefDir(i) = nextCellsTypeYesCorr_prefDirF(l);
+                ChosenCellsYesCorr_ind(i) = nextCellsTypeYesCorr_indF(l);
+                ChosenCellsYesCorr_x(i) = nextCellsTypeYesCorr_xF(l);
+                ChosenCellsYesCorr_y(i) = nextCellsTypeYesCorr_yF(l);
+                ChosenCellsYesCorr_hab(i) = nextCellsTypeYesCorr_habF(l);
+                ChosenCellsYesCorr_xCur(i) = nextCellsTypeYesCorr_xCurF(l);
+                ChosenCellsYesCorr_yCur(i) = nextCellsTypeYesCorr_yCurF(l);
+                ChosenCellsYesCorr_steps(i) = nextCellsTypeYesCorr_stepsF(l);
+                ChosenCellsYesCorr_IsMoveCorr(i) = nextCellsTypeYesCorr_IsMoveCorrF(l);
                 
               }
             }

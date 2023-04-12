@@ -6,7 +6,7 @@ require(RcppArmadillo)
 
 lynx.gb <- sim$lynx[,]
 lynx.gb$steps <- NULL # drop it because created within cpp
-habitatMap.gb <- sim$habitatMap@.Data[,] # x coords are on coulumns and y on lines
+habitatMap.gb <- sim$habitatMap@.Data[,] # x coords are on columns and y on lines
 terrMap.gb <- sim$terrMap@.Data[,]
 availCellsUpdatedRas.gb <- sim$availCellsRas %>% as.matrix() # in fact before update
 popDist.gb <- sim$popDist@.Data
