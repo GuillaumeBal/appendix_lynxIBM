@@ -183,7 +183,7 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
           pxcor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pxcor"],
           pycor = nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "pycor"]),
           torus = FALSE)
-        print(paste('towards', start.towards - Sys.time()))
+        #print(paste('towards', start.towards - Sys.time()))
         nextCellsTypeDir[nextCellsTypeDir[, "id"] == eachYesCorr, "dir"] <-
           round(subHeadings(angle1 = indYessCorr@.Data[, "heading"], angle2 = dirCells,
                             range360 = TRUE))
@@ -215,6 +215,8 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
       chosenCellsYesCorrSelect <- cbind(pxcor = chosenCellsYesCorrSelectDT$pxcor, pycor = chosenCellsYesCorrSelectDT$pycor,
                                         id = chosenCellsYesCorrSelectDT$id, cellType = chosenCellsYesCorrSelectDT$cellType)
     }
+    
+    stop()
     
     # Regroup the individuals that had not a correlation movement and the ones that had
     chosenCells <- rbind(chosenCellsNoCorr, chosenCellsYesCorrSelect)
