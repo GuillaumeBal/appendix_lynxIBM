@@ -216,8 +216,6 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
                                         id = chosenCellsYesCorrSelectDT$id, cellType = chosenCellsYesCorrSelectDT$cellType)
     }
     
-    stop()
-    
     # Regroup the individuals that had not a correlation movement and the ones that had
     chosenCells <- rbind(chosenCellsNoCorr, chosenCellsYesCorrSelect)
     chosenCells <- chosenCells[order(chosenCells[, "id"]), , drop = FALSE]
@@ -229,6 +227,8 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
       expect_equivalent(NROW(chosenCells), NLcount(dispersingInd))
     }
   }
+  
+  stop()
   
   # Lynx memory
   chosenMat <- chosenCells[chosenCells[, "cellType"] == 2, , drop = FALSE]
