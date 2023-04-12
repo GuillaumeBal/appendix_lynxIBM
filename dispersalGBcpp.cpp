@@ -322,29 +322,33 @@ List dispersalGB(// DataFrame, NumericVector
         }
       }// end second ind loop
       
+      // final steps elements def here fopr push back
+      IntegerVector ChosenCells_x(0);
+      IntegerVector ChosenCells_y(0);
+      IntegerVector ChosenCells_hab(0);
+      IntegerVector ChosenCells_ind(0);
+      IntegerVector ChosenCells_who(0);
+      IntegerVector ChosenCells_steps(0);
+      IntegerVector ChosenCells_IsMoveCorr(0);
+      
       
       // part on potential correlation in movements, none on first move but then some/////////////////////////////////////////
       
       if(step == 0){
         // here randomly shuffling line before picking one per ind
         IntegerVector randLines_move = sample((nextCellsType_hab.size()), (nextCellsType_hab.size()), false) - 1; // number of samples is argument 2;
-        IntegerVector ChosenCell_x(nDispLeft);
-        IntegerVector ChosenCell_y(nDispLeft);
-        IntegerVector ChosenCell_hab(nDispLeft);
-        IntegerVector ChosenCell_ind(nDispLeft);
-        IntegerVector ChosenCell_who(nDispLeft);
-        IntegerVector ChosenCell_steps(nDispLeft);
         for(int ind = 0; ind < nDispLeft; ind++){
           double p = 0.5;
           while(p<1){
             for(int l = 0; l<nextCellsType_hab.size(); l++){
               if(nextCellsType_ind(randLines_move(l)) == ind){ // here keeps last one, while was not working
-                ChosenCell_x(ind) = nextCellsType_x(randLines_move(l));
-                ChosenCell_y(ind) = nextCellsType_y(randLines_move(l));
-                ChosenCell_hab(ind) = nextCellsType_hab(randLines_move(l));
-                ChosenCell_ind(ind) = nextCellsType_ind(randLines_move(l));
-                ChosenCell_who(ind) = nextCellsType_who(randLines_move(l));
-                ChosenCell_steps(ind) = nextCellsType_steps(randLines_move(l));
+                ChosenCells_x.push_back(nextCellsType_x(randLines_move(l)));
+                ChosenCells_y.push_back(nextCellsType_y(randLines_move(l)));
+                ChosenCells_hab.push_back(nextCellsType_hab(randLines_move(l)));
+                ChosenCells_ind.push_back(nextCellsType_ind(randLines_move(l)));
+                ChosenCells_who.push_back(nextCellsType_who(randLines_move(l)));
+                ChosenCells_steps.push_back(nextCellsType_steps(randLines_move(l)));
+                ChosenCells_IsMoveCorr.push_back(0);
                 p = p + 1;
               }
             }
@@ -556,21 +560,28 @@ List dispersalGB(// DataFrame, NumericVector
           // subset for one of the lower prefdir values
           for(int i = 0; i<unique_nextCellsTypeYesCorr_whoF.size(); i++){
             ChosenCellsYesCorr_prefDir.push_back(int_100);// set to 100 to be able to replace by values within table
+            ChosenCellsYesCorr_who.push_back(int_100);
+            ChosenCellsYesCorr_ind.push_back(int_100);
+            ChosenCellsYesCorr_x.push_back(int_100);
+            ChosenCellsYesCorr_y.push_back(int_100);
+            ChosenCellsYesCorr_hab.push_back(int_100);
+            ChosenCellsYesCorr_xCur.push_back(int_100);
+            ChosenCellsYesCorr_yCur.push_back(int_100);
+            ChosenCellsYesCorr_steps.push_back(int_100);
+            ChosenCellsYesCorr_IsMoveCorr.push_back(int_100);
             for(int l = 0; l<nextCellsTypeYesCorr_whoF.size() ; l++){
               if((nextCellsTypeYesCorr_prefDirF(l) < ChosenCellsYesCorr_prefDir(i)) &
                  (nextCellsTypeYesCorr_whoF(l) == unique_nextCellsTypeYesCorr_whoF(i))){
                 ChosenCellsYesCorr_prefDir(i) = nextCellsTypeYesCorr_prefDirF(l);
-                ChosenCellsYesCorr_who.push_back(nextCellsTypeYesCorr_whoF(l));
-                ChosenCellsYesCorr_prefDir.push_back(nextCellsTypeYesCorr_prefDirF(l));
-                ChosenCellsYesCorr_ind.push_back(nextCellsTypeYesCorr_indF(l));
-                ChosenCellsYesCorr_x.push_back(nextCellsTypeYesCorr_xF(l));
-                ChosenCellsYesCorr_y.push_back(nextCellsTypeYesCorr_yF(l));
-                ChosenCellsYesCorr_hab.push_back(nextCellsTypeYesCorr_habF(l));
-                ChosenCellsYesCorr_xCur.push_back(nextCellsTypeYesCorr_xCurF(l));
-                ChosenCellsYesCorr_yCur.push_back(nextCellsTypeYesCorr_yCurF(l));
-                ChosenCellsYesCorr_steps.push_back(nextCellsTypeYesCorr_stepsF(l));
-                ChosenCellsYesCorr_IsMoveCorr.push_back(nextCellsTypeYesCorr_IsMoveCorrF(l));
-                
+                ChosenCellsYesCorr_who(i) = nextCellsTypeYesCorr_whoF(l);
+                ChosenCellsYesCorr_ind(i) = nextCellsTypeYesCorr_indF(l);
+                ChosenCellsYesCorr_x(i) = nextCellsTypeYesCorr_xF(l);
+                ChosenCellsYesCorr_y(i) = nextCellsTypeYesCorr_yF(l);
+                ChosenCellsYesCorr_hab(i) = nextCellsTypeYesCorr_habF(l);
+                ChosenCellsYesCorr_xCur(i) = nextCellsTypeYesCorr_xCurF(l);
+                ChosenCellsYesCorr_yCur(i) = nextCellsTypeYesCorr_yCurF(l);
+                ChosenCellsYesCorr_steps(i) = nextCellsTypeYesCorr_stepsF(l);
+                ChosenCellsYesCorr_IsMoveCorr(i) = nextCellsTypeYesCorr_IsMoveCorrF(l);
               }
             }
           }
@@ -588,37 +599,44 @@ List dispersalGB(// DataFrame, NumericVector
           // return  L_return;
           
           // get together moves for correlated and uncorrelated individuals
-          // int nLChosenCellYesCorr = ChosenCellsYesCorr_who.size();
-          // int nLChosenCellNoCorr = ChosenCellsNoCorr_who.size(); //ChosenCellsNoCorr
-          // int nChosenCells = nLChosenCellYesCorr + nLChosenCellNoCorr;
+          int nLChosenCellsYesCorr = ChosenCellsYesCorr_who.size();
+          int nLChosenCellsNoCorr = ChosenCellsNoCorr_who.size(); //ChosenCellsNoCorr
+          int nChosenCells = nLChosenCellsYesCorr + nLChosenCellsNoCorr;
           // IntegerVector ChosenCells_who(nChosenCells);
           // IntegerVector ChosenCells_ind(nChosenCells);
           // IntegerVector ChosenCells_hab(nChosenCells);
           // IntegerVector ChosenCells_x(nChosenCells);
           // IntegerVector ChosenCells_y(nChosenCells);
-          // for(int l = 0; l<nChosenCells; l++){
-          //   if(l < nLChosenCellYesCorr){
-          //     ChosenCells_who(l) = ChosenCellsYesCorr_who(l);
-          //     ChosenCells_ind(l) = ChosenCellsYesCorr_ind(l);
-          //     ChosenCells_hab(l) = ChosenCellsYesCorr_hab(l);
-          //     ChosenCells_x(l) = ChosenCellsYesCorr_x(l);
-          //     ChosenCells_y(l) = ChosenCellsYesCorr_y(l);
-          //   }else{
-          //     ChosenCells_who(l) = ChosenCellsNoCorr_who(l - nLChosenCellYesCorr);
-          //     ChosenCells_ind(l) = ChosenCellsNoCorr_ind(l - nLChosenCellYesCorr);
-          //     ChosenCells_hab(l) = ChosenCellsNoCorr_hab(l - nLChosenCellYesCorr);
-          //     ChosenCells_x(l) = ChosenCellsNoCorr_x(l - nLChosenCellYesCorr);
-          //     ChosenCells_y(l) = ChosenCellsNoCorr_y(l - nLChosenCellYesCorr);
-          //   }
-          // }
-          
+          for(int l = 0; l<nChosenCells; l++){
+            if(l < nLChosenCellsYesCorr){
+              ChosenCells_who.push_back(ChosenCellsYesCorr_who(l));
+              ChosenCells_ind.push_back(ChosenCellsYesCorr_ind(l));
+              ChosenCells_hab.push_back(ChosenCellsYesCorr_hab(l));
+              ChosenCells_x.push_back(ChosenCellsYesCorr_x(l));
+              ChosenCells_y.push_back(ChosenCellsYesCorr_y(l));
+              ChosenCells_IsMoveCorr.push_back(ChosenCellsYesCorr_IsMoveCorr(l));
+            }else{
+              ChosenCells_who.push_back(ChosenCellsNoCorr_who(l - nLChosenCellsYesCorr));
+              ChosenCells_ind.push_back(ChosenCellsNoCorr_ind(l - nLChosenCellsYesCorr));
+              ChosenCells_hab.push_back(ChosenCellsNoCorr_hab(l - nLChosenCellsYesCorr));
+              ChosenCells_x.push_back(ChosenCellsNoCorr_x(l - nLChosenCellsYesCorr));
+              ChosenCells_y.push_back(ChosenCellsNoCorr_y(l - nLChosenCellsYesCorr));
+              ChosenCells_IsMoveCorr.push_back(ChosenCellsNoCorr_IsMoveCorr(l - nLChosenCellsYesCorr));
+            }
+          }
         }
         
         List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
                                      _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
                                      _["nextCellsType_yF"] = nextCellsType_yF,
                                      _["IsMoveCorr"] = IsMoveCorr,
-                                     _["nCorr1"] = nCorr1);
+                                     _["nCorr1"] = nCorr1,
+                                     _["ChosenCellsYesCorr_prefDir"] = ChosenCellsYesCorr_prefDir,
+                                     _["ChosenCellsYesCorr_ind"] = ChosenCellsYesCorr_ind,
+                                     _["ChosenCells_y"] = ChosenCells_y,
+                                     _["ChosenCells_who"] = ChosenCells_who,
+                                     _["ChosenCells_ind"] = ChosenCells_ind,
+                                     _["ChosenCells_IsMoveCorr"] = ChosenCells_IsMoveCorr);
         return  L_return;
         
       }
