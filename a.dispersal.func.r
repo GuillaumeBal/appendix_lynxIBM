@@ -228,8 +228,6 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
     }
   }
   
-  stop()
-  
   # Lynx memory
   chosenMat <- chosenCells[chosenCells[, "cellType"] == 2, , drop = FALSE]
   if(NROW(chosenMat) != 0) {
@@ -237,7 +235,8 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
     dispersingIndMatnSteps <- dispersingIndMat@.Data[, "nMat"]
     #dispersingInd <- NLset(turtles = dispersingInd, agents = dispersingIndMat, var = "nMat",
     #                       val = dispersingIndMatnSteps + 1)
-    dispersingInd@.Data[match(dispersingIndMat@.Data[, "who"], dispersingInd@.Data[, "who"]), "nMat"] <- as.numeric(dispersingIndMatnSteps + 1) # faster
+    dispersingInd@.Data[match(dispersingIndMat@.Data[, "who"], 
+                              dispersingInd@.Data[, "who"]), "nMat"] <- as.numeric(dispersingIndMatnSteps + 1) # faster
     
     # Use memory to find a dispersal cell
     if(sum(dispersingIndMatnSteps + 1 == nMatMax) != 0) { # GB_change P(sim)$nMatMax
@@ -291,6 +290,8 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
                                        lastDispY = chosenDisp[, "pycor"],
                                        nMat = 0))
   }
+  
+  stop()
   
   # Movement
   chosenCellsCoords <- cbind(pxcor = chosenCells[, "pxcor"], pycor = chosenCells[, "pycor"])

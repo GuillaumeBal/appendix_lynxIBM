@@ -2,6 +2,7 @@
 using namespace Rcpp;
 #include <math.h>       /* atan2 */
 #define PI 3.14159265
+#include <algorithm>
 
 // This is a simple example of exporting a C++ function to R. You can
 // source this function into an R session using the Rcpp::sourceCpp 
@@ -163,7 +164,8 @@ List dispersalGB(// DataFrame, NumericVector
     int sMaxPs, // dispersal
     IntegerMatrix HabitatMap,
     double pMat,
-    double pCorr
+    double pCorr,
+    int nMatMax
 ){
   
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -683,33 +685,69 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector ChosenDisp_xCur(nDispInd);
         IntegerVector ChosenDisp_yCur(nDispInd);
         IntegerVector ChosenDisp_nMat(nDispInd);
-        // for(int l = 0, p = 0, q = 0; l<ChosenCells_nMat.size(); l++){
-        //   if(ChosenCells_hab(l) == int_2){
-        //     if(nMatInd>0){
-        //       ChosenMat_who(p) = ChosenCells_who(l);
-        //       ChosenMat_ind(p) = ChosenCells_ind(l);
-        //       ChosenMat_hab(p) = ChosenCells_hab(l);
-        //       ChosenMat_x(p) = ChosenCells_x(l);
-        //       ChosenMat_y(p) = ChosenCells_y(l);
-        //       ChosenMat_xCur(p) = ChosenCells_xCur(l);
-        //       ChosenMat_yCur(p) = ChosenCells_yCur(l);
-        //       ChosenMat_nMat(p) = ChosenCells_nMat(l) + 1;
-        //       p++;
-        //     }
-        //   }else{
-        //     if(nDispInd>0){
-        //       ChosenDisp_who(q) = ChosenCells_who(l);
-        //       ChosenDisp_ind(q) = ChosenCells_ind(l);
-        //       ChosenDisp_hab(q) = ChosenCells_hab(l);
-        //       ChosenDisp_x(q) = ChosenCells_x(l);
-        //       ChosenDisp_y(q) = ChosenCells_y(l);
-        //       ChosenDisp_xCur(q) = ChosenCells_xCur(l);
-        //       ChosenDisp_yCur(q) = ChosenCells_yCur(l);
-        //       ChosenMat_nMat(q) = 0;
-        //       q++;
-        //     }
-        //   }
-        // }
+        for(int l = 0, p = 0, q = 0; l<ChosenCells_nMat.size(); l++){
+          if(ChosenCells_hab(l) == 2){
+            if(nMatInd>0){
+              ChosenMat_who(p) = ChosenCells_who(l);
+              ChosenMat_ind(p) = ChosenCells_ind(l);
+              ChosenMat_hab(p) = ChosenCells_hab(l);
+              ChosenMat_x(p) = ChosenCells_x(l);
+              ChosenMat_y(p) = ChosenCells_y(l);
+              ChosenMat_xCur(p) = ChosenCells_xCur(l);
+              ChosenMat_yCur(p) = ChosenCells_yCur(l);
+              ChosenMat_nMat(p) = ChosenCells_nMat(l) + 1;
+              // code memory bit here
+              if((ChosenMat_nMat(p) + 1) == nMatMax){
+                ChosenMat_x(p) = ChosenMat_xCur(p);
+                ChosenMat_y(p) = ChosenMat_yCur(p);
+              }if(ChosenMat_nMat(p) == nMatMax){ // reset nMat
+                ChosenMat_nMat(p) = 0;
+              }
+              p++;
+            }
+          }
+          if((ChosenCells_hab(l) == 3) | (ChosenCells_hab(l) == 4)){
+            if(nDispInd>0){
+              ChosenDisp_who(q) = ChosenCells_who(l);
+              ChosenDisp_ind(q) = ChosenCells_ind(l);
+              ChosenDisp_hab(q) = ChosenCells_hab(l);
+              ChosenDisp_x(q) = ChosenCells_x(l);
+              ChosenDisp_y(q) = ChosenCells_y(l);
+              ChosenDisp_xCur(q) = ChosenCells_xCur(l);
+              ChosenDisp_yCur(q) = ChosenCells_yCur(l);
+              ChosenDisp_nMat(q) = 0;
+              q++;
+            }
+          }
+        }
+        
+        // process ChosenMat lynxMemory already integrated within loops above
+        // same for pxcor /lastdisp update  
+        
+        // now reupdate chosen cells matrix by binding ChosenDisp and ChosenMat 
+        for(int l = 0; l<ChosenCells_who.size(); l++){
+          if(l<nDispInd){
+            ChosenCells_who(l) = ChosenDisp_who(l);
+            ChosenCells_ind(l) = ChosenDisp_ind(l);
+            ChosenCells_hab(l) =ChosenDisp_hab(l);
+            ChosenCells_x(l) = ChosenDisp_x(l);
+            ChosenCells_y(l) = ChosenDisp_y(l);
+            ChosenCells_xCur(l) = ChosenDisp_xCur(l);
+            ChosenCells_yCur(l) = ChosenDisp_yCur(l);
+            ChosenCells_nMat(l) = ChosenDisp_nMat(l);
+          }
+          else{
+            ChosenCells_who(l) = ChosenMat_who(l - nDispInd);
+            ChosenCells_ind(l) = ChosenMat_ind(l - nDispInd);
+            ChosenCells_hab(l) =ChosenMat_hab(l - nDispInd);
+            ChosenCells_x(l) = ChosenMat_x(l - nDispInd);
+            ChosenCells_y(l) = ChosenMat_y(l - nDispInd);
+            ChosenCells_xCur(l) = ChosenMat_xCur(l - nDispInd);
+            ChosenCells_yCur(l) = ChosenMat_yCur(l - nDispInd);
+            ChosenCells_nMat(l) = ChosenMat_nMat(l - nDispInd);
+          }
+        }
+        
         
         List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
                                      _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,

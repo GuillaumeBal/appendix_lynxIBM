@@ -11,23 +11,29 @@ terrMap.gb <- sim$terrMap@.Data[,]
 availCellsUpdatedRas.gb <- sim$availCellsRas %>% as.matrix() # in fact before update
 popDist.gb <- sim$popDist@.Data
 trick <- c(1, 1)
+
 sourceCpp("dispersalGBcpp.cpp")
 outputs.cpp <- dispersalGB(
   lynx = lynx.gb,
   sMaxPs = sMaxPs,
   HabitatMap = habitatMap.gb,
   pMat = pMat, #round(1/9, 2)  #pMat
-  pCorr = pCorr
+  pCorr = pCorr,
+  nMatMax = nMatMax
 )
 outputs.cpp
+
 for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
-  try(print(
+  outputs.loop <- try(
     dispersalGB(
       lynx = lynx.gb,
       sMaxPs = sMaxPs,
       HabitatMap = habitatMap.gb,
       pMat = pMat, #round(1/9, 2)
-      pCorr = pCorr
+      pCorr = pCorr,
+      nMatMax = nMatMax
     ) 
-  ))
+  )
+  print(outputs.loop)
+  #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }
