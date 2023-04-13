@@ -27,7 +27,7 @@ outputs.cpp <- dispersalGB(
   startSimYear = start(sim, "year")[1],
   ncoll_ncoll = sim$nColl$ncoll,
   ncoll_time = sim$nColl$time,
-  deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]]
+  deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,]
 )
 outputs.cpp
 
@@ -47,6 +47,7 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
       startSimYear = start(sim, "year")[1],
       ncoll_ncoll = sim$nColl$ncoll,
       ncoll_time = sim$nColl$time,
+      deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,]
     ) 
   )
   print(outputs.loop)

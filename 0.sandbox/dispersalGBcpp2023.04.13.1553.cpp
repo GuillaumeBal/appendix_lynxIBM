@@ -239,12 +239,8 @@ List dispersalGB(// DataFrame, NumericVector
     int nDispLeft = dispersing.size(); // i.e are there some steps left for the indiv ?
     if(nDispLeft>0){
       //mat with X / Y / id ind / Habitat cell
-      IntegerVector CellsDisp_lastDispX(nDispLeft * 9);
-      IntegerVector CellsDisp_lastDispY(nDispLeft * 9);
-      IntegerVector CellsDisp_pxcor(nDispLeft * 9);
-      IntegerVector CellsDisp_pycor(nDispLeft * 9);
-      IntegerVector CellsDisp_pxcorHere(nDispLeft * 9);
-      IntegerVector CellsDisp_pycorHere(nDispLeft * 9);
+      IntegerVector CellsDisp_x(nDispLeft * 9);
+      IntegerVector CellsDisp_y(nDispLeft * 9);
       IntegerVector CellsDisp_ind(nDispLeft * 9);
       IntegerVector CellsDisp_hab(nDispLeft * 9);
       IntegerVector CellsDisp_who(nDispLeft * 9);
@@ -268,14 +264,10 @@ List dispersalGB(// DataFrame, NumericVector
             CellsDisp_steps(i * 9 + l1 + l2 * 3) = dispersers_steps(dispersing(i));
             CellsDisp_nMat(i * 9 + l1 + l2 * 3) = dispersers_nMat(dispersing(i));
             CellsDisp_heading(i * 9 + l1 + l2 * 3) = dispersers_heading(dispersing(i));
-            CellsDisp_lastDispX(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;// because want square around indiv
-            CellsDisp_lastDispY(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;
-            CellsDisp_pxcor(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;// because want square around indiv
-            CellsDisp_pycor(i * 9 + l1 + l2 * 3) = dispersers_lastDispY(dispersing(i)) - 1 + l1;
-            CellsDisp_pxcorHere(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;// because want square around indiv
-            CellsDisp_pycorHere(i * 9 + l1 + l2 * 3) = dispersers_lastDispY(dispersing(i)) - 1 + l1;// THERE IS A lOT oS SUCCESSIVE RENAMING IN SARAH'S SCRIPT
+            CellsDisp_x(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;// because want square around indiv
+            CellsDisp_y(i * 9 + l1 + l2 * 3) = dispersers_lastDispY(dispersing(i)) - 1 + l1;
             CellsDisp_ind(i * 9 + l1 + l2 * 3) = i;
-            CellsDisp_hab(i * 9 + l1 + l2 * 3) = HabitatMap(CellsDisp_lastDispY(i * 9 + l1 + l2 * 3), CellsDisp_lastDispX(i * 9 + l1 + l2 * 3));
+            CellsDisp_hab(i * 9 + l1 + l2 * 3) = HabitatMap(CellsDisp_y(i * 9 + l1 + l2 * 3),CellsDisp_x(i * 9 + l1 + l2 * 3));
             // here count habitat occurences
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 0){ // barrier
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
@@ -317,7 +309,7 @@ List dispersalGB(// DataFrame, NumericVector
       
       // find final number cell for dispersing individuals, taking matrix or disprep only 
       int nCellsDispLeft = 0;
-      for(int nc = 0; nc<CellsDisp_lastDispX.size(); nc++){ // nc number of cells
+      for(int nc = 0; nc<CellsDisp_x.size(); nc++){ // nc number of cells
         if((Mat_Chosen(CellsDisp_ind(nc)) == 1) & (CellsDisp_hab(nc) == 2)){
           nCellsDispLeft++;
         }
@@ -327,12 +319,8 @@ List dispersalGB(// DataFrame, NumericVector
       }
       
       // loop to pick only the right habit for further dispersion based on whether mat_Chosen = 1
-      IntegerVector nextCellsType_lastDispX(nCellsDispLeft);
-      IntegerVector nextCellsType_lastDispY(nCellsDispLeft);
-      IntegerVector nextCellsType_pxcor(nCellsDispLeft);
-      IntegerVector nextCellsType_pycor(nCellsDispLeft);
-      IntegerVector nextCellsType_pxcorHere(nCellsDispLeft);
-      IntegerVector nextCellsType_pycorHere(nCellsDispLeft);
+      IntegerVector nextCellsType_x(nCellsDispLeft);
+      IntegerVector nextCellsType_y(nCellsDispLeft);
       IntegerVector nextCellsType_ind(nCellsDispLeft);
       IntegerVector nextCellsType_hab(nCellsDispLeft);
       IntegerVector nextCellsType_who(nCellsDispLeft);
@@ -342,12 +330,8 @@ List dispersalGB(// DataFrame, NumericVector
       for(int i = 0, p = 0; i<CellsDisp_ind.size(); i++){
         if((Mat_Chosen(CellsDisp_ind(i)) == 1) & (CellsDisp_hab(i) == 2)){
           //stop("Went into loop");
-          nextCellsType_lastDispX(p) = CellsDisp_lastDispX(i);
-          nextCellsType_lastDispY(p) = CellsDisp_lastDispY(i);
-          nextCellsType_pxcor(p) = CellsDisp_pxcor(i);
-          nextCellsType_pycor(p) = CellsDisp_pycor(i);
-          nextCellsType_pxcorHere(p) = CellsDisp_pxcorHere(i);
-          nextCellsType_pycorHere(p) = CellsDisp_pycorHere(i);
+          nextCellsType_x(p) = CellsDisp_x(i);
+          nextCellsType_y(p) = CellsDisp_y(i);
           nextCellsType_ind(p) = CellsDisp_ind(i);
           nextCellsType_hab(p) = CellsDisp_hab(i);
           nextCellsType_who(p) = CellsDisp_who(i);
@@ -357,12 +341,8 @@ List dispersalGB(// DataFrame, NumericVector
           p++;
         }
         if((Mat_Chosen(CellsDisp_ind(i)) == 0) & ((CellsDisp_hab(i) == 3) | (CellsDisp_hab(i) == 4))){
-          nextCellsType_lastDispX(p) = CellsDisp_lastDispX(i);
-          nextCellsType_lastDispY(p) = CellsDisp_lastDispY(i);
-          nextCellsType_pxcor(p) = CellsDisp_pxcor(i);
-          nextCellsType_pycor(p) = CellsDisp_pycor(i);
-          nextCellsType_pxcorHere(p) = CellsDisp_pxcorHere(i);
-          nextCellsType_pycorHere(p) = CellsDisp_pycorHere(i);
+          nextCellsType_x(p) = CellsDisp_x(i);
+          nextCellsType_y(p) = CellsDisp_y(i);
           nextCellsType_ind(p) = CellsDisp_ind(i);
           nextCellsType_hab(p) = CellsDisp_hab(i);
           nextCellsType_who(p) = CellsDisp_who(i);
@@ -374,12 +354,10 @@ List dispersalGB(// DataFrame, NumericVector
       }// end second ind loop
       
       // final steps elements def here fopr push back
-      IntegerVector ChosenCells_lastDispX(0);
-      IntegerVector ChosenCells_lastDispY(0);
-      IntegerVector ChosenCells_pxcor(0);
-      IntegerVector ChosenCells_pycor(0);
-      IntegerVector ChosenCells_pxcorHere(0);
-      IntegerVector ChosenCells_pycorHere(0);
+      IntegerVector ChosenCells_x(0);
+      IntegerVector ChosenCells_y(0);
+      IntegerVector ChosenCells_xCur(0);
+      IntegerVector ChosenCells_yCur(0);
       IntegerVector ChosenCells_hab(0);
       IntegerVector ChosenCells_ind(0);
       IntegerVector ChosenCells_who(0);
@@ -398,12 +376,8 @@ List dispersalGB(// DataFrame, NumericVector
           while(p<1){
             for(int l = 0; l<nextCellsType_hab.size(); l++){
               if(nextCellsType_ind(randLines_move(l)) == ind){ // here keeps last one, while was not working
-                ChosenCells_lastDispX.push_back(nextCellsType_lastDispX(randLines_move(l)));
-                ChosenCells_lastDispY.push_back(nextCellsType_lastDispY(randLines_move(l)));
-                ChosenCells_pxcor.push_back(nextCellsType_pxcor(randLines_move(l)));
-                ChosenCells_pycor.push_back(nextCellsType_pycor(randLines_move(l)));
-                ChosenCells_pxcorHere.push_back(nextCellsType_pxcorHere(randLines_move(l)));
-                ChosenCells_pycorHere.push_back(nextCellsType_pycorHere(randLines_move(l)));
+                ChosenCells_x.push_back(nextCellsType_x(randLines_move(l)));
+                ChosenCells_y.push_back(nextCellsType_y(randLines_move(l)));
                 ChosenCells_hab.push_back(nextCellsType_hab(randLines_move(l)));
                 ChosenCells_ind.push_back(nextCellsType_ind(randLines_move(l)));
                 ChosenCells_who.push_back(nextCellsType_who(randLines_move(l)));
@@ -428,30 +402,26 @@ List dispersalGB(// DataFrame, NumericVector
         
         //Have to define here and push_back values to be able to use latter on outside loop where it is filled up
         // final move of indiv with no correlated movements
-        IntegerVector ChosenCellsNoCorr_who(0);
         IntegerVector ChosenCellsNoCorr_ind(0);
+        IntegerVector ChosenCellsNoCorr_x(0);
+        IntegerVector ChosenCellsNoCorr_y(0);
         IntegerVector ChosenCellsNoCorr_hab(0);
-        IntegerVector ChosenCellsNoCorr_lastDispX(0);
-        IntegerVector ChosenCellsNoCorr_lastDispY(0);
-        IntegerVector ChosenCellsNoCorr_pxcor(0);
-        IntegerVector ChosenCellsNoCorr_pycor(0);
-        IntegerVector ChosenCellsNoCorr_pxcorHere(0);
-        IntegerVector ChosenCellsNoCorr_pycorHere(0);
+        IntegerVector ChosenCellsNoCorr_xCur(0);
+        IntegerVector ChosenCellsNoCorr_yCur(0);
+        IntegerVector ChosenCellsNoCorr_who(0);
         IntegerVector ChosenCellsNoCorr_steps(0);
         IntegerVector ChosenCellsNoCorr_nMat(0);
         IntegerVector ChosenCellsNoCorr_heading(0);
         IntegerVector ChosenCellsNoCorr_IsMoveCorr(0);
-        // final move indiv with correlated movement
+        // final moce infiv with correlatedmovement
         IntegerVector ChosenCellsYesCorr_who(0);
-        IntegerVector ChosenCellsYesCorr_ind(0);
-        IntegerVector ChosenCellsYesCorr_hab(0);
         IntegerVector ChosenCellsYesCorr_prefDir(0);
-        IntegerVector ChosenCellsYesCorr_pxcor(0);
-        IntegerVector ChosenCellsYesCorr_pycor(0);
-        IntegerVector ChosenCellsYesCorr_pxcorHere(0);
-        IntegerVector ChosenCellsYesCorr_pycorHere(0);
-        IntegerVector ChosenCellsYesCorr_lastDispX(0);
-        IntegerVector ChosenCellsYesCorr_lastDispY(0);
+        IntegerVector ChosenCellsYesCorr_ind(0);
+        IntegerVector ChosenCellsYesCorr_x(0);
+        IntegerVector ChosenCellsYesCorr_y(0);
+        IntegerVector ChosenCellsYesCorr_hab(0);
+        IntegerVector ChosenCellsYesCorr_xCur(0);
+        IntegerVector ChosenCellsYesCorr_yCur(0);
         IntegerVector ChosenCellsYesCorr_steps(0);
         IntegerVector ChosenCellsYesCorr_nMat(0);
         IntegerVector ChosenCellsYesCorr_heading(0);
@@ -460,23 +430,19 @@ List dispersalGB(// DataFrame, NumericVector
         // sort by ind and add current position next to potential ones in nextCellsType vectors
         IntegerVector nextCellsType_indSortIndex = IntOrderIndex(nextCellsType_ind);
         IntegerVector nextCellsType_indSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_xSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_ySorted = nextCellsType_ind.size();
         IntegerVector nextCellsType_habSorted = nextCellsType_ind.size();
-        IntegerVector nextCellsType_pxcorSorted = nextCellsType_ind.size();
-        IntegerVector nextCellsType_pycorSorted = nextCellsType_ind.size();
-        IntegerVector nextCellsType_pxcorHereSorted = nextCellsType_ind.size();
-        IntegerVector nextCellsType_pycorHereSorted = nextCellsType_ind.size();
-        IntegerVector nextCellsType_lastDispXSorted = nextCellsType_ind.size();
-        IntegerVector nextCellsType_lastDispYSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_xCurSorted = nextCellsType_ind.size();
+        IntegerVector nextCellsType_yCurSorted = nextCellsType_ind.size();
         IntegerVector nextCellsType_whoSorted = nextCellsType_who.size();
         IntegerVector nextCellsType_stepsSorted = nextCellsType_steps.size();
         IntegerVector nextCellsType_nMatSorted = nextCellsType_nMat.size();
         IntegerVector nextCellsType_headingSorted = nextCellsType_heading.size();
         for(int l = 0; l< nextCellsType_ind.size(); l++){
           nextCellsType_indSorted(l) = nextCellsType_ind(nextCellsType_indSortIndex(l));
-          nextCellsType_pxcorSorted(l) = nextCellsType_pxcor(nextCellsType_indSortIndex(l));
-          nextCellsType_pycorSorted(l) = nextCellsType_pycor(nextCellsType_indSortIndex(l));
-          nextCellsType_lastDispXSorted(l) = nextCellsType_lastDispX(nextCellsType_indSortIndex(l));
-          nextCellsType_lastDispYSorted(l) = nextCellsType_lastDispY(nextCellsType_indSortIndex(l));
+          nextCellsType_xSorted(l) = nextCellsType_x(nextCellsType_indSortIndex(l));
+          nextCellsType_ySorted(l) = nextCellsType_y(nextCellsType_indSortIndex(l));
           nextCellsType_habSorted(l) = nextCellsType_hab(nextCellsType_indSortIndex(l));
           nextCellsType_whoSorted(l) = nextCellsType_who(nextCellsType_indSortIndex(l));
           nextCellsType_stepsSorted(l) = nextCellsType_steps(nextCellsType_indSortIndex(l));
@@ -484,21 +450,19 @@ List dispersalGB(// DataFrame, NumericVector
           nextCellsType_headingSorted(l) = nextCellsType_heading(nextCellsType_indSortIndex(l));
           for(int j = 0; j<dispersers_who.size(); j++){
             if(dispersers_who(j) == nextCellsType_whoSorted(l)){
-              nextCellsType_pxcorHereSorted(l) = dispersers_lastDispX(j);
-              nextCellsType_pycorHereSorted(l) = dispersers_lastDispY(j);
+              nextCellsType_xCurSorted(l) = dispersers_lastDispX(j);
+              nextCellsType_yCurSorted(l) = dispersers_lastDispY(j);
             }
           }
         }
         // dispersers with some steps left, ie final matrix
         IntegerVector WStepsLeft = WhichAbove(nextCellsType_stepsSorted, step - 1);//- 1 because I want >= behavior from > function 
         IntegerVector nextCellsType_indF = IntVecSubIndex(nextCellsType_indSorted, WStepsLeft);
+        IntegerVector nextCellsType_xF = IntVecSubIndex( nextCellsType_xSorted, WStepsLeft);
+        IntegerVector nextCellsType_yF = IntVecSubIndex(nextCellsType_ySorted, WStepsLeft);
         IntegerVector nextCellsType_habF = IntVecSubIndex(nextCellsType_habSorted, WStepsLeft);
-        IntegerVector nextCellsType_pxcorF = IntVecSubIndex( nextCellsType_pxcorSorted, WStepsLeft);
-        IntegerVector nextCellsType_pycorF = IntVecSubIndex(nextCellsType_pycorSorted, WStepsLeft);
-        IntegerVector nextCellsType_pxcorHereF = IntVecSubIndex(nextCellsType_pxcorHereSorted, WStepsLeft);
-        IntegerVector nextCellsType_pycorHereF = IntVecSubIndex(nextCellsType_pycorHereSorted, WStepsLeft);
-        IntegerVector nextCellsType_lastDispXF = IntVecSubIndex(nextCellsType_lastDispXSorted, WStepsLeft);
-        IntegerVector nextCellsType_lastDispYF = IntVecSubIndex(nextCellsType_lastDispYSorted, WStepsLeft);
+        IntegerVector nextCellsType_xCurF = IntVecSubIndex(nextCellsType_xCurSorted, WStepsLeft);
+        IntegerVector nextCellsType_yCurF = IntVecSubIndex(nextCellsType_yCurSorted, WStepsLeft);
         IntegerVector nextCellsType_whoF = IntVecSubIndex(nextCellsType_whoSorted, WStepsLeft);
         IntegerVector nextCellsType_stepsF = IntVecSubIndex(nextCellsType_stepsSorted, WStepsLeft);
         IntegerVector nextCellsType_nMatF = IntVecSubIndex(nextCellsType_nMatSorted, WStepsLeft);
@@ -531,13 +495,11 @@ List dispersalGB(// DataFrame, NumericVector
           int nCorr0 = noCorr_Lind.size();
           // define vector to fill
           IntegerVector nextCellsTypeNoCorr_indF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_xF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_yF(nCorr0);
           IntegerVector nextCellsTypeNoCorr_habF(nCorr0);
-          IntegerVector nextCellsTypeNoCorr_lastDispXF(nCorr0);
-          IntegerVector nextCellsTypeNoCorr_lastDispYF(nCorr0);
-          IntegerVector nextCellsTypeNoCorr_pxcorF(nCorr0);
-          IntegerVector nextCellsTypeNoCorr_pycorF(nCorr0);
-          IntegerVector nextCellsTypeNoCorr_pxcorHereF(nCorr0);
-          IntegerVector nextCellsTypeNoCorr_pycorHereF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_xCurF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_yCurF(nCorr0);
           IntegerVector nextCellsTypeNoCorr_whoF(nCorr0);
           IntegerVector nextCellsTypeNoCorr_stepsF(nCorr0);
           IntegerVector nextCellsTypeNoCorr_nMatF(nCorr0);
@@ -545,13 +507,11 @@ List dispersalGB(// DataFrame, NumericVector
           IntegerVector nextCellsTypeNoCorr_IsMoveCorrF(nCorr0);
           for(int l = 0; l<nCorr0;l++){
             nextCellsTypeNoCorr_indF(l) = nextCellsType_indF(noCorr_Lind(l));
-            nextCellsTypeNoCorr_pxcorF(l) = nextCellsType_pxcorF(noCorr_Lind(l));
-            nextCellsTypeNoCorr_pycorF(l) = nextCellsType_pycorF(noCorr_Lind(l));
-            nextCellsTypeNoCorr_pxcorHereF(l) = nextCellsType_pxcorHereF(noCorr_Lind(l));
-            nextCellsTypeNoCorr_pycorHereF(l) = nextCellsType_pycorHereF(noCorr_Lind(l));
-            nextCellsTypeNoCorr_lastDispXF(l) = nextCellsType_lastDispXF(noCorr_Lind(l));
-            nextCellsTypeNoCorr_lastDispYF(l) = nextCellsType_lastDispYF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_xF(l) = nextCellsType_xF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_yF(l) = nextCellsType_yF(noCorr_Lind(l));
             nextCellsTypeNoCorr_habF(l) = nextCellsType_habF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_xCurF(l) = nextCellsType_xCurF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_yCurF(l) = nextCellsType_yCurF(noCorr_Lind(l));
             nextCellsTypeNoCorr_whoF(l) = nextCellsType_whoF(noCorr_Lind(l));
             nextCellsTypeNoCorr_stepsF(l) = nextCellsType_stepsF(noCorr_Lind(l));
             nextCellsTypeNoCorr_nMatF(l) = nextCellsType_nMatF(noCorr_Lind(l));
@@ -561,13 +521,11 @@ List dispersalGB(// DataFrame, NumericVector
           // now pick just one cell to move to for each ind
           IntegerVector UniqueLinesIndNoCorr = IntPosOneOfEach(nextCellsTypeNoCorr_indF);
           //IntegerVector ChosenCellsNoCorr_ind(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_pxcor(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_pycor(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_pxcorHere(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_pycorHere(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_lastDispX(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_lastDispY(UniqueLinesIndNoCorr.size());
+          // IntegerVector ChosenCellsNoCorr_x(UniqueLinesIndNoCorr.size());
+          // IntegerVector ChosenCellsNoCorr_y(UniqueLinesIndNoCorr.size());
           // IntegerVector ChosenCellsNoCorr_hab(UniqueLinesIndNoCorr.size());
+          // IntegerVector ChosenCellsNoCorr_xCur(UniqueLinesIndNoCorr.size());
+          // IntegerVector ChosenCellsNoCorr_yCur(UniqueLinesIndNoCorr.size());
           // IntegerVector ChosenCellsNoCorr_who(UniqueLinesIndNoCorr.size());
           // IntegerVector ChosenCellsNoCorr_steps(UniqueLinesIndNoCorr.size());
           // IntegerVector ChosenCellsNoCorr_nMat(UniqueLinesIndNoCorr.size());
@@ -575,13 +533,11 @@ List dispersalGB(// DataFrame, NumericVector
           // IntegerVector ChosenCellsNoCorr_IsMoveCorr(UniqueLinesIndNoCorr.size());
           for(int i = 0; i<UniqueLinesIndNoCorr.size(); i++){
             ChosenCellsNoCorr_ind.push_back(nextCellsTypeNoCorr_indF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_pxcor.push_back(nextCellsTypeNoCorr_pxcorF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_pycor.push_back(nextCellsTypeNoCorr_pycorF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_pxcorHere.push_back(nextCellsTypeNoCorr_pxcorHereF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_pycorHere.push_back(nextCellsTypeNoCorr_pycorHereF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_lastDispX.push_back(nextCellsTypeNoCorr_lastDispXF(UniqueLinesIndNoCorr(i)));
-            ChosenCellsNoCorr_lastDispY.push_back(nextCellsTypeNoCorr_lastDispYF(UniqueLinesIndNoCorr(i)));
+            ChosenCellsNoCorr_x.push_back(nextCellsTypeNoCorr_xF(UniqueLinesIndNoCorr(i)));
+            ChosenCellsNoCorr_y.push_back(nextCellsTypeNoCorr_yF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_hab.push_back(nextCellsTypeNoCorr_habF(UniqueLinesIndNoCorr(i)));
+            ChosenCellsNoCorr_xCur.push_back(nextCellsTypeNoCorr_xCurF(UniqueLinesIndNoCorr(i)));
+            ChosenCellsNoCorr_yCur.push_back(nextCellsTypeNoCorr_yCurF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_who.push_back(nextCellsTypeNoCorr_whoF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_steps.push_back(nextCellsTypeNoCorr_stepsF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_nMat.push_back(nextCellsTypeNoCorr_nMatF(UniqueLinesIndNoCorr(i)));
@@ -590,7 +546,7 @@ List dispersalGB(// DataFrame, NumericVector
           }
           // List L_return = List::create(Named("ChosenCellsNoCorr_who") = ChosenCellsNoCorr_who,
           //                              _["ChosenCellsNoCorr_ind"] = ChosenCellsNoCorr_ind,
-          //                              _["ChosenCellsNoCorr_pycorHere"] = ChosenCellsNoCorr_pycorHere);
+          //                              _["ChosenCellsNoCorr_yCur"] = ChosenCellsNoCorr_yCur);
           //return  L_return;
         }// end noCorr move indiv, works up to here
         
@@ -600,13 +556,11 @@ List dispersalGB(// DataFrame, NumericVector
           IntegerVector YesCorr_Lind = WhichEqual(nextCellsType_IsMoveCorrF, int_1);
           //define vector to fill
           IntegerVector nextCellsTypeYesCorr_indF(YesCorr_Lind.size());
-          IntegerVector nextCellsTypeYesCorr_pxcorHereF(YesCorr_Lind.size());
-          IntegerVector nextCellsTypeYesCorr_pycorHereF(YesCorr_Lind.size());
-          IntegerVector nextCellsTypeYesCorr_pxcorF(YesCorr_Lind.size());
-          IntegerVector nextCellsTypeYesCorr_pycorF(YesCorr_Lind.size());
-          IntegerVector nextCellsTypeYesCorr_lastDispXF(YesCorr_Lind.size());
-          IntegerVector nextCellsTypeYesCorr_lastDispYF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_xF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_yF(YesCorr_Lind.size());
           IntegerVector nextCellsTypeYesCorr_habF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_xCurF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_yCurF(YesCorr_Lind.size());
           IntegerVector nextCellsTypeYesCorr_whoF(YesCorr_Lind.size());
           IntegerVector nextCellsTypeYesCorr_stepsF(YesCorr_Lind.size());
           IntegerVector nextCellsTypeYesCorr_nMatF(YesCorr_Lind.size());
@@ -614,13 +568,11 @@ List dispersalGB(// DataFrame, NumericVector
           IntegerVector nextCellsTypeYesCorr_IsMoveCorrF(YesCorr_Lind.size());
           for(int l = 0; l<YesCorr_Lind.size(); l++){
             nextCellsTypeYesCorr_indF(l) = nextCellsType_indF(YesCorr_Lind(l));
+            nextCellsTypeYesCorr_xF(l) = nextCellsType_xF(YesCorr_Lind(l));
+            nextCellsTypeYesCorr_yF(l) = nextCellsType_yF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_habF(l) = nextCellsType_habF(YesCorr_Lind(l));
-            nextCellsTypeYesCorr_pxcorHereF(l) = nextCellsType_pxcorHereF(YesCorr_Lind(l));
-            nextCellsTypeYesCorr_pycorHereF(l) = nextCellsType_pycorHereF(YesCorr_Lind(l));
-            nextCellsTypeYesCorr_pxcorF(l) = nextCellsType_pxcorF(YesCorr_Lind(l));
-            nextCellsTypeYesCorr_pycorF(l) = nextCellsType_pycorF(YesCorr_Lind(l));
-            nextCellsTypeYesCorr_lastDispXF(l) = nextCellsType_lastDispXF(YesCorr_Lind(l));
-            nextCellsTypeYesCorr_lastDispYF(l) = nextCellsType_lastDispYF(YesCorr_Lind(l));
+            nextCellsTypeYesCorr_xCurF(l) = nextCellsType_xCurF(YesCorr_Lind(l));
+            nextCellsTypeYesCorr_yCurF(l) = nextCellsType_yCurF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_whoF(l) = nextCellsType_whoF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_stepsF(l) = nextCellsType_stepsF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_nMatF(l) = nextCellsType_nMatF(YesCorr_Lind(l));
@@ -631,8 +583,8 @@ List dispersalGB(// DataFrame, NumericVector
           IntegerVector nextCellsTypeYesCorr_DirF(nextCellsTypeYesCorr_IsMoveCorrF.size());
           IntegerVector nextCellsTypeYesCorr_prefDirF(nextCellsTypeYesCorr_IsMoveCorrF.size());
           for(int l = 0; l<nextCellsTypeYesCorr_IsMoveCorrF.size(); l++){
-            nextCellsTypeYesCorr_DirF(l) = towards_simple_unique(nextCellsTypeYesCorr_pxcorHereF(l), nextCellsTypeYesCorr_pycorHereF(l), 
-                                      nextCellsTypeYesCorr_pxcorF(l), nextCellsTypeYesCorr_pycorF(l));
+            nextCellsTypeYesCorr_DirF(l) = towards_simple_unique(nextCellsTypeYesCorr_xCurF(l), nextCellsTypeYesCorr_yCurF(l), 
+                                      nextCellsTypeYesCorr_xF(l), nextCellsTypeYesCorr_yF(l));
             nextCellsTypeYesCorr_prefDirF(l) = int_1; // set to one then modify
             if((nextCellsTypeYesCorr_DirF(l) >= 45) & (nextCellsTypeYesCorr_DirF(l) <= 315)){
               nextCellsTypeYesCorr_prefDirF(l) = int_2;
@@ -646,7 +598,7 @@ List dispersalGB(// DataFrame, NumericVector
             if(nextCellsTypeYesCorr_DirF(l) == 180){
               nextCellsTypeYesCorr_prefDirF(l) = int_5;
             }
-            if((nextCellsTypeYesCorr_pxcorHereF(l) == nextCellsTypeYesCorr_pxcorF(l)) & (nextCellsTypeYesCorr_pycorHereF(l) == nextCellsTypeYesCorr_pycorF(l))){
+            if((nextCellsTypeYesCorr_xCurF(l) == nextCellsTypeYesCorr_xF(l)) & (nextCellsTypeYesCorr_yCurF(l) == nextCellsTypeYesCorr_yF(l))){
               nextCellsTypeYesCorr_prefDirF(l) = int_3;
             }
           }
@@ -656,13 +608,11 @@ List dispersalGB(// DataFrame, NumericVector
           // IntegerVector ChosenCellsYesCorr_who(unique_nextCellsTypeYesCorr_whoF.size());
           // IntegerVector ChosenCellsYesCorr_prefDir(unique_nextCellsTypeYesCorr_whoF.size());
           // IntegerVector ChosenCellsYesCorr_ind(unique_nextCellsTypeYesCorr_whoF.size());
+          // IntegerVector ChosenCellsYesCorr_x(unique_nextCellsTypeYesCorr_whoF.size());
+          // IntegerVector ChosenCellsYesCorr_y(unique_nextCellsTypeYesCorr_whoF.size());
           // IntegerVector ChosenCellsYesCorr_hab(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_pxcorHere(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_pycorHere(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_pxcor(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_pycor(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_lastDispX(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_lastDispY(unique_nextCellsTypeYesCorr_whoF.size());
+          // IntegerVector ChosenCellsYesCorr_xCur(unique_nextCellsTypeYesCorr_whoF.size());
+          // IntegerVector ChosenCellsYesCorr_yCur(unique_nextCellsTypeYesCorr_whoF.size());
           // IntegerVector ChosenCellsYesCorr_steps(unique_nextCellsTypeYesCorr_whoF.size());
           // IntegerVector ChosenCellsYesCorr_nMat(unique_nextCellsTypeYesCorr_nMatF.size());
           // IntegerVector ChosenCellsYesCorr_heading(unique_nextCellsTypeYesCorr_headingF.size());
@@ -672,13 +622,11 @@ List dispersalGB(// DataFrame, NumericVector
             ChosenCellsYesCorr_prefDir.push_back(int_100);// set to 100 to be able to replace by values within table
             ChosenCellsYesCorr_who.push_back(int_100);
             ChosenCellsYesCorr_ind.push_back(int_100);
+            ChosenCellsYesCorr_x.push_back(int_100);
+            ChosenCellsYesCorr_y.push_back(int_100);
             ChosenCellsYesCorr_hab.push_back(int_100);
-            ChosenCellsYesCorr_pxcorHere.push_back(int_100);
-            ChosenCellsYesCorr_pycorHere.push_back(int_100);
-            ChosenCellsYesCorr_pxcor.push_back(int_100);
-            ChosenCellsYesCorr_pycor.push_back(int_100);
-            ChosenCellsYesCorr_lastDispX.push_back(int_100);
-            ChosenCellsYesCorr_lastDispY.push_back(int_100);
+            ChosenCellsYesCorr_xCur.push_back(int_100);
+            ChosenCellsYesCorr_yCur.push_back(int_100);
             ChosenCellsYesCorr_steps.push_back(int_100);
             ChosenCellsYesCorr_nMat.push_back(int_100);
             ChosenCellsYesCorr_heading.push_back(int_100);
@@ -689,13 +637,11 @@ List dispersalGB(// DataFrame, NumericVector
                 ChosenCellsYesCorr_prefDir(i) = nextCellsTypeYesCorr_prefDirF(l);
                 ChosenCellsYesCorr_who(i) = nextCellsTypeYesCorr_whoF(l);
                 ChosenCellsYesCorr_ind(i) = nextCellsTypeYesCorr_indF(l);
+                ChosenCellsYesCorr_x(i) = nextCellsTypeYesCorr_xF(l);
+                ChosenCellsYesCorr_y(i) = nextCellsTypeYesCorr_yF(l);
                 ChosenCellsYesCorr_hab(i) = nextCellsTypeYesCorr_habF(l);
-                ChosenCellsYesCorr_pxcorHere(i) = nextCellsTypeYesCorr_pxcorHereF(l);
-                ChosenCellsYesCorr_pycorHere(i) = nextCellsTypeYesCorr_pycorHereF(l);
-                ChosenCellsYesCorr_lastDispX(i) = nextCellsTypeYesCorr_lastDispXF(l);
-                ChosenCellsYesCorr_lastDispY(i) = nextCellsTypeYesCorr_lastDispYF(l);
-                ChosenCellsYesCorr_pxcor(i) = nextCellsTypeYesCorr_pxcorF(l);
-                ChosenCellsYesCorr_pycor(i) = nextCellsTypeYesCorr_pycorF(l);
+                ChosenCellsYesCorr_xCur(i) = nextCellsTypeYesCorr_xCurF(l);
+                ChosenCellsYesCorr_yCur(i) = nextCellsTypeYesCorr_yCurF(l);
                 ChosenCellsYesCorr_steps(i) = nextCellsTypeYesCorr_stepsF(l);
                 ChosenCellsYesCorr_nMat(i) = nextCellsTypeYesCorr_nMatF(l);
                 ChosenCellsYesCorr_heading(i) = nextCellsTypeYesCorr_headingF(l);
@@ -725,12 +671,8 @@ List dispersalGB(// DataFrame, NumericVector
           // IntegerVector ChosenCells_hab(nChosenCells);
           // IntegerVector ChosenCells_x(nChosenCells);
           // IntegerVector ChosenCells_y(nChosenCells);
-          // IntegerVector ChosenCells_pxcorHere(nChosenCells);
-          // IntegerVector ChosenCells_pycorHere(nChosenCells);
-          // IntegerVector ChosenCells_pxcor(nChosenCells);
-          // IntegerVector ChosenCells_pycor(nChosenCells);
-          // IntegerVector ChosenCells_lastDispX(nChosenCells);
-          // IntegerVector ChosenCells_lastDispy(nChosenCells);
+          // IntegerVector ChosenCells_xCur(nChosenCells);
+          // IntegerVector ChosenCells_yCur(nChosenCells);
           // IntegerVector ChosenCells_nMat(nChosenCells);
           // IntegerVector ChosenCells_heading(nChosenCells);
           for(int l = 0; l<nChosenCells; l++){
@@ -738,12 +680,10 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenCells_who.push_back(ChosenCellsYesCorr_who(l));
               ChosenCells_ind.push_back(ChosenCellsYesCorr_ind(l));
               ChosenCells_hab.push_back(ChosenCellsYesCorr_hab(l));
-              ChosenCells_pxcorHere.push_back(ChosenCellsYesCorr_pxcorHere(l));
-              ChosenCells_pycorHere.push_back(ChosenCellsYesCorr_pycorHere(l));
-              ChosenCells_pxcor.push_back(ChosenCellsYesCorr_pxcor(l));
-              ChosenCells_pycor.push_back(ChosenCellsYesCorr_pycor(l));
-              ChosenCells_lastDispX.push_back(ChosenCellsYesCorr_lastDispX(l));
-              ChosenCells_lastDispY.push_back(ChosenCellsYesCorr_lastDispY(l));
+              ChosenCells_x.push_back(ChosenCellsYesCorr_x(l));
+              ChosenCells_y.push_back(ChosenCellsYesCorr_y(l));
+              ChosenCells_xCur.push_back(ChosenCellsYesCorr_xCur(l));
+              ChosenCells_yCur.push_back(ChosenCellsYesCorr_yCur(l));
               ChosenCells_nMat.push_back(ChosenCellsYesCorr_nMat(l));
               ChosenCells_heading.push_back(ChosenCellsYesCorr_heading(l));
               ChosenCells_IsMoveCorr.push_back(ChosenCellsYesCorr_IsMoveCorr(l));
@@ -751,12 +691,10 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenCells_who.push_back(ChosenCellsNoCorr_who(l - nLChosenCellsYesCorr));
               ChosenCells_ind.push_back(ChosenCellsNoCorr_ind(l - nLChosenCellsYesCorr));
               ChosenCells_hab.push_back(ChosenCellsNoCorr_hab(l - nLChosenCellsYesCorr));
-              ChosenCells_pxcorHere.push_back(ChosenCellsNoCorr_pxcorHere(l - nLChosenCellsYesCorr));
-              ChosenCells_pycorHere.push_back(ChosenCellsNoCorr_pycorHere(l - nLChosenCellsYesCorr));
-              ChosenCells_pxcor.push_back(ChosenCellsNoCorr_pxcor(l - nLChosenCellsYesCorr));
-              ChosenCells_pycor.push_back(ChosenCellsNoCorr_pycor(l - nLChosenCellsYesCorr));
-              ChosenCells_lastDispX.push_back(ChosenCellsNoCorr_lastDispX(l - nLChosenCellsYesCorr));
-              ChosenCells_lastDispY.push_back(ChosenCellsNoCorr_lastDispY(l - nLChosenCellsYesCorr));
+              ChosenCells_x.push_back(ChosenCellsNoCorr_x(l - nLChosenCellsYesCorr));
+              ChosenCells_y.push_back(ChosenCellsNoCorr_y(l - nLChosenCellsYesCorr));
+              ChosenCells_xCur.push_back(ChosenCellsNoCorr_xCur(l - nLChosenCellsYesCorr));
+              ChosenCells_yCur.push_back(ChosenCellsNoCorr_yCur(l - nLChosenCellsYesCorr));
               ChosenCells_nMat.push_back(ChosenCellsNoCorr_nMat(l - nLChosenCellsYesCorr));
               ChosenCells_heading.push_back(ChosenCellsNoCorr_heading(l - nLChosenCellsYesCorr));
               ChosenCells_IsMoveCorr.push_back(ChosenCellsNoCorr_IsMoveCorr(l - nLChosenCellsYesCorr));
@@ -771,24 +709,20 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector ChosenMat_who(nMatInd);
         IntegerVector ChosenMat_ind(nMatInd);
         IntegerVector ChosenMat_hab(nMatInd);
-        IntegerVector ChosenMat_pxcorHere(nMatInd);
-        IntegerVector ChosenMat_pycorHere(nMatInd);
-        IntegerVector ChosenMat_pxcor(nMatInd);
-        IntegerVector ChosenMat_pycor(nMatInd);
-        IntegerVector ChosenMat_lastDispX(nMatInd);
-        IntegerVector ChosenMat_lastDispY(nMatInd);
+        IntegerVector ChosenMat_x(nMatInd);
+        IntegerVector ChosenMat_y(nMatInd);
+        IntegerVector ChosenMat_xCur(nMatInd);
+        IntegerVector ChosenMat_yCur(nMatInd);
         IntegerVector ChosenMat_nMat(nMatInd);
         IntegerVector ChosenMat_heading(nMatInd);
         // disp
         IntegerVector ChosenDisp_who(nDispInd);
         IntegerVector ChosenDisp_ind(nDispInd);
         IntegerVector ChosenDisp_hab(nDispInd);
-        IntegerVector ChosenDisp_pxcorHere(nDispInd);
-        IntegerVector ChosenDisp_pycorHere(nDispInd);
-        IntegerVector ChosenDisp_pxcor(nDispInd);
-        IntegerVector ChosenDisp_pycor(nDispInd);
-        IntegerVector ChosenDisp_lastDispX(nDispInd);
-        IntegerVector ChosenDisp_lastDispY(nDispInd);
+        IntegerVector ChosenDisp_x(nDispInd);
+        IntegerVector ChosenDisp_y(nDispInd);
+        IntegerVector ChosenDisp_xCur(nDispInd);
+        IntegerVector ChosenDisp_yCur(nDispInd);
         IntegerVector ChosenDisp_nMat(nDispInd);
         IntegerVector ChosenDisp_heading(nDispInd);
         for(int l = 0, p = 0, q = 0; l<ChosenCells_nMat.size(); l++){
@@ -797,17 +731,15 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenMat_who(p) = ChosenCells_who(l);
               ChosenMat_ind(p) = ChosenCells_ind(l);
               ChosenMat_hab(p) = ChosenCells_hab(l);
-              ChosenMat_pxcorHere(p) = ChosenCells_pxcorHere(l);
-              ChosenMat_pycorHere(p) = ChosenCells_pycorHere(l);
-              ChosenMat_pxcor(p) = ChosenCells_pxcor(l);
-              ChosenMat_pycor(p) = ChosenCells_pycor(l);
-              ChosenMat_lastDispX(p) = ChosenCells_lastDispX(l);
-              ChosenMat_lastDispY(p) = ChosenCells_lastDispY(l);
+              ChosenMat_x(p) = ChosenCells_x(l);
+              ChosenMat_y(p) = ChosenCells_y(l);
+              ChosenMat_xCur(p) = ChosenCells_xCur(l);
+              ChosenMat_yCur(p) = ChosenCells_yCur(l);
               ChosenMat_nMat(p) = ChosenCells_nMat(l) + 1;
               // code memory in movement bit here
               if((ChosenMat_nMat(p) + 1) == nMatMax){
-                ChosenMat_pxcor(p) = ChosenMat_pxcor(p); // there is really that
-                ChosenMat_pycor(p) = ChosenMat_pycor(p);
+                ChosenMat_x(p) = ChosenMat_xCur(p); // there is really that
+                ChosenMat_y(p) = ChosenMat_yCur(p);
               }if(ChosenMat_nMat(p) == nMatMax){ // reset nMat
                 ChosenMat_nMat(p) = 0;
                 ChosenMat_heading(p) = ChosenMat_heading(p) + 180;
@@ -820,12 +752,10 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenDisp_who(q) = ChosenCells_who(l);
               ChosenDisp_ind(q) = ChosenCells_ind(l);
               ChosenDisp_hab(q) = ChosenCells_hab(l);
-              ChosenDisp_pxcor(q) = ChosenCells_pxcor(l);
-              ChosenDisp_pycor(q) = ChosenCells_pycor(l);
-              ChosenDisp_pxcorHere(q) = ChosenCells_pxcorHere(l);
-              ChosenDisp_pycorHere(q) = ChosenCells_pycorHere(l);
-              ChosenDisp_lastDispX(q) = ChosenCells_lastDispX(l);
-              ChosenDisp_lastDispY(q) = ChosenCells_lastDispY(l);
+              ChosenDisp_x(q) = ChosenCells_x(l);
+              ChosenDisp_y(q) = ChosenCells_y(l);
+              ChosenDisp_xCur(q) = ChosenCells_xCur(l);
+              ChosenDisp_yCur(q) = ChosenCells_yCur(l);
               ChosenDisp_nMat(q) = 0;
               q++;
             }
@@ -841,45 +771,41 @@ List dispersalGB(// DataFrame, NumericVector
             ChosenCells_who(l) = ChosenDisp_who(l);
             ChosenCells_ind(l) = ChosenDisp_ind(l);
             ChosenCells_hab(l) =ChosenDisp_hab(l);
-            ChosenCells_pxcorHere(l) = ChosenDisp_pxcorHere(l);
-            ChosenCells_pycorHere(l) = ChosenDisp_pycorHere(l);
-            ChosenCells_pxcor(l) = ChosenDisp_pxcor(l);
-            ChosenCells_pycor(l) = ChosenDisp_pycor(l);
-            ChosenCells_lastDispX(l) = ChosenDisp_lastDispX(l);
-            ChosenCells_lastDispY(l) = ChosenDisp_lastDispY(l);
+            ChosenCells_x(l) = ChosenDisp_x(l);
+            ChosenCells_y(l) = ChosenDisp_y(l);
+            ChosenCells_xCur(l) = ChosenDisp_xCur(l);
+            ChosenCells_yCur(l) = ChosenDisp_yCur(l);
             ChosenCells_nMat(l) = ChosenDisp_nMat(l);
           }
           else{
             ChosenCells_who(l) = ChosenMat_who(l - nDispInd);
             ChosenCells_ind(l) = ChosenMat_ind(l - nDispInd);
             ChosenCells_hab(l) =ChosenMat_hab(l - nDispInd);
-            ChosenCells_pxcorHere(l) = ChosenDisp_pxcorHere(l - nDispInd);
-            ChosenCells_pycorHere(l) = ChosenDisp_pycorHere(l - nDispInd);
-            ChosenCells_pxcor(l) = ChosenDisp_pxcor(l - nDispInd);
-            ChosenCells_pycor(l) = ChosenDisp_pycor(l - nDispInd);
-            ChosenCells_lastDispX(l) = ChosenDisp_lastDispX(l - nDispInd);
-            ChosenCells_lastDispY(l) = ChosenDisp_lastDispY(l - nDispInd);
+            ChosenCells_x(l) = ChosenMat_x(l - nDispInd);
+            ChosenCells_y(l) = ChosenMat_y(l - nDispInd);
+            ChosenCells_xCur(l) = ChosenMat_xCur(l - nDispInd);
+            ChosenCells_yCur(l) = ChosenMat_yCur(l - nDispInd);
             ChosenCells_nMat(l) = ChosenMat_nMat(l - nDispInd);
           }
         }
         // update connectivity map with +1 when dipserser stp on cell
-        for(int l = 0; l<ChosenCells_pxcor.size(); l++){
-          connectivityMap(ChosenCells_pycor(l) , ChosenCells_pxcor(l)) +=1; 
+        for(int l = 0; l<ChosenCells_x.size(); l++){
+          connectivityMap(ChosenCells_y(l) , ChosenCells_x(l)) +=1; 
         }
         
         //////////////////////////////////////////////////////////////////////////////////////////////
         // bit on mortality
-        IntegerVector deathRoad(ChosenCells_pxcor.size());
-        for(int l = 0; l<ChosenCells_pxcor.size(); l++){
-          deathRoad(l) = R::rbinom(int_1, (roadMortMap(ChosenCells_pycor(l), ChosenCells_pxcor(l)) / corrFactorDisp));
+        IntegerVector deathRoad(ChosenCells_x.size());
+        for(int l = 0; l<ChosenCells_x.size(); l++){
+          deathRoad(l) = R::rbinom(int_1, (roadMortMap(ChosenCells_y(l), ChosenCells_x(l)) / corrFactorDisp));
           if(floorTimeSim == startSimYear){ // cannot die first year
             deathRoad(l) = int_0;
           } 
         }
         ncoll_ncoll.push_back(sum(deathRoad));
         ncoll_time.push_back(floorTimeSim);
-        for(int l = 0; l<ChosenCells_pxcor.size(); l++){
-          if(roadMortMap(ChosenCells_pycor(l), ChosenCells_pxcor(l)) == 1){ // force death on border to simulate emigration but does not count as death in line above
+        for(int l = 0; l<ChosenCells_x.size(); l++){
+          if(roadMortMap(ChosenCells_y(l), ChosenCells_x(l)) == 1){ // force death on border to simulate emigration but does not count as death in line above
             deathRoad(l) = int_1;
           }
         }
@@ -894,12 +820,12 @@ List dispersalGB(// DataFrame, NumericVector
         
         List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
                                      _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
-                                     _["nextCellsType_yF"] = nextCellsType_pycorF,
+                                     _["nextCellsType_yF"] = nextCellsType_yF,
                                      _["IsMoveCorr"] = IsMoveCorr,
                                      _["nCorr1"] = nCorr1,
                                      _["ChosenCellsYesCorr_prefDir"] = ChosenCellsYesCorr_prefDir,
                                      _["ChosenCellsYesCorr_ind"] = ChosenCellsYesCorr_ind,
-                                     _["ChosenCells_y"] = ChosenCells_pycor,
+                                     _["ChosenCells_y"] = ChosenCells_y,
                                      _["ChosenCells_who"] = ChosenCells_who,
                                      _["ChosenCells_ind"] = ChosenCells_ind,
                                      _["ChosenCells_hab"] = ChosenCells_hab,
