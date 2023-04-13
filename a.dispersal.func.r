@@ -291,8 +291,6 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
                                        nMat = 0))
   }
   
-  stop()
-  
   # Movement
   chosenCellsCoords <- cbind(pxcor = chosenCells[, "pxcor"], pycor = chosenCells[, "pycor"])
   dispersingInd <- face(turtles = dispersingInd, agents2 = chosenCellsCoords)
@@ -328,6 +326,8 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
                       of(agents = dispersingInd, var = c("lastDispX", "lastDispY"))
                       [chosenCells[, "cellType"] %in% c(3, 4), ])
   }
+  
+  stop()
   
   # Spatial mortality influenced by roads
   roadMort <- of(world = sim$roadMortMap, agents = chosenCellsCoords)

@@ -155,6 +155,7 @@ int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
   return degrees;
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -165,7 +166,15 @@ List dispersalGB(// DataFrame, NumericVector
     IntegerMatrix HabitatMap,
     double pMat,
     double pCorr,
-    int nMatMax
+    int nMatMax,
+    IntegerMatrix connectivityMap,
+    NumericMatrix roadMortMap,
+    int corrFactorDisp,
+    int floorTimeSim,
+    int startSimYear,
+    IntegerVector ncoll_ncoll,
+    IntegerVector ncoll_time,
+    DataFrame deadLynxColl
 ){
   
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -237,6 +246,7 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector CellsDisp_who(nDispLeft * 9);
       IntegerVector CellsDisp_steps(nDispLeft * 9);
       IntegerVector CellsDisp_nMat(nDispLeft * 9);
+      IntegerVector CellsDisp_heading(nDispLeft * 9);
       // hab freq indiv
       IntegerVector HabFreqDisp_barrier(nDispLeft);
       IntegerVector HabFreqDisp_matrix(nDispLeft);
@@ -244,6 +254,7 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector HabFreqDisp_who(nDispLeft);
       IntegerVector HabFreqDisp_steps(nDispLeft);
       IntegerVector HabFreqDisp_nMat(nDispLeft);
+      IntegerVector HabFreqDisp_heading(nDispLeft);
       // vector recording whether next step is in matrix
       IntegerVector Mat_Chosen(nDispLeft);
       for(int i = 0; i<nDispLeft; i++){
@@ -252,6 +263,7 @@ List dispersalGB(// DataFrame, NumericVector
             CellsDisp_who(i * 9 + l1 + l2 * 3) = dispersers_who(dispersing(i));
             CellsDisp_steps(i * 9 + l1 + l2 * 3) = dispersers_steps(dispersing(i));
             CellsDisp_nMat(i * 9 + l1 + l2 * 3) = dispersers_nMat(dispersing(i));
+            CellsDisp_heading(i * 9 + l1 + l2 * 3) = dispersers_heading(dispersing(i));
             CellsDisp_x(i * 9 + l1 + l2 * 3) = dispersers_lastDispX(dispersing(i)) - 1 + l1;// because want square around indiv
             CellsDisp_y(i * 9 + l1 + l2 * 3) = dispersers_lastDispY(dispersing(i)) - 1 + l1;
             CellsDisp_ind(i * 9 + l1 + l2 * 3) = i;
@@ -261,24 +273,28 @@ List dispersalGB(// DataFrame, NumericVector
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
               HabFreqDisp_steps(i) = CellsDisp_steps(i * 9 + l1 + l2 * 3);
               HabFreqDisp_nMat(i) = CellsDisp_nMat(i * 9 + l1 + l2 * 3);
+              HabFreqDisp_heading(i) = CellsDisp_nMat(i * 9 + l1 + l2 * 3);
               HabFreqDisp_barrier(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 2){ // matrix
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
               HabFreqDisp_steps(i) = CellsDisp_steps(i * 9 + l1 + l2 * 3);
               HabFreqDisp_nMat(i) = CellsDisp_nMat(i * 9 + l1 + l2 * 3);
+              HabFreqDisp_heading(i) = CellsDisp_heading(i * 9 + l1 + l2 * 3);
               HabFreqDisp_matrix(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 3){ // dispersing
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
               HabFreqDisp_steps(i) = CellsDisp_steps(i * 9 + l1 + l2 * 3);
               HabFreqDisp_nMat(i) = CellsDisp_nMat(i * 9 + l1 + l2 * 3);
+              HabFreqDisp_heading(i) = CellsDisp_nMat(i * 9 + l1 + l2 * 3);
               HabFreqDisp_disprep(i)++;
             }
             if(CellsDisp_hab(i * 9 + l1 + l2 * 3) == 4){ // breeding
               HabFreqDisp_who(i) = CellsDisp_who(i * 9 + l1 + l2 * 3);
               HabFreqDisp_steps(i) = CellsDisp_steps(i * 9 + l1 + l2 * 3);
               HabFreqDisp_nMat(i) = CellsDisp_nMat(i * 9 + l1 + l2 * 3);
+              HabFreqDisp_heading(i) = CellsDisp_nMat(i * 9 + l1 + l2 * 3);
               HabFreqDisp_disprep(i)++;
             }
           }
@@ -310,6 +326,7 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector nextCellsType_who(nCellsDispLeft);
       IntegerVector nextCellsType_steps(nCellsDispLeft);
       IntegerVector nextCellsType_nMat(nCellsDispLeft);
+      IntegerVector nextCellsType_heading(nCellsDispLeft);
       for(int i = 0, p = 0; i<CellsDisp_ind.size(); i++){
         if((Mat_Chosen(CellsDisp_ind(i)) == 1) & (CellsDisp_hab(i) == 2)){
           //stop("Went into loop");
@@ -320,6 +337,7 @@ List dispersalGB(// DataFrame, NumericVector
           nextCellsType_who(p) = CellsDisp_who(i);
           nextCellsType_steps(p) = CellsDisp_steps(i);
           nextCellsType_nMat(p) = CellsDisp_nMat(i);
+          nextCellsType_heading(p) = CellsDisp_heading(i);
           p++;
         }
         if((Mat_Chosen(CellsDisp_ind(i)) == 0) & ((CellsDisp_hab(i) == 3) | (CellsDisp_hab(i) == 4))){
@@ -330,6 +348,7 @@ List dispersalGB(// DataFrame, NumericVector
           nextCellsType_who(p) = CellsDisp_who(i);
           nextCellsType_steps(p) = CellsDisp_steps(i);
           nextCellsType_nMat(p) = CellsDisp_nMat(i);
+          nextCellsType_heading(p) = CellsDisp_heading(i);
           p++;
         }
       }// end second ind loop
@@ -345,7 +364,7 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector ChosenCells_steps(0);
       IntegerVector ChosenCells_IsMoveCorr(0);
       IntegerVector ChosenCells_nMat(0);
-      
+      IntegerVector ChosenCells_heading(0);
       
       // part on potential correlation in movements, none on first move but then some/////////////////////////////////////////
       
@@ -364,6 +383,7 @@ List dispersalGB(// DataFrame, NumericVector
                 ChosenCells_who.push_back(nextCellsType_who(randLines_move(l)));
                 ChosenCells_steps.push_back(nextCellsType_steps(randLines_move(l)));
                 ChosenCells_nMat.push_back(nextCellsType_nMat(randLines_move(l)));
+                ChosenCells_heading.push_back(nextCellsType_heading(randLines_move(l)));
                 ChosenCells_IsMoveCorr.push_back(0);
                 p = p + 1;
               }
@@ -391,6 +411,7 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector ChosenCellsNoCorr_who(0);
         IntegerVector ChosenCellsNoCorr_steps(0);
         IntegerVector ChosenCellsNoCorr_nMat(0);
+        IntegerVector ChosenCellsNoCorr_heading(0);
         IntegerVector ChosenCellsNoCorr_IsMoveCorr(0);
         // final moce infiv with correlatedmovement
         IntegerVector ChosenCellsYesCorr_who(0);
@@ -403,6 +424,7 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector ChosenCellsYesCorr_yCur(0);
         IntegerVector ChosenCellsYesCorr_steps(0);
         IntegerVector ChosenCellsYesCorr_nMat(0);
+        IntegerVector ChosenCellsYesCorr_heading(0);
         IntegerVector ChosenCellsYesCorr_IsMoveCorr(0);
         
         // sort by ind and add current position next to potential ones in nextCellsType vectors
@@ -416,6 +438,7 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector nextCellsType_whoSorted = nextCellsType_who.size();
         IntegerVector nextCellsType_stepsSorted = nextCellsType_steps.size();
         IntegerVector nextCellsType_nMatSorted = nextCellsType_nMat.size();
+        IntegerVector nextCellsType_headingSorted = nextCellsType_heading.size();
         for(int l = 0; l< nextCellsType_ind.size(); l++){
           nextCellsType_indSorted(l) = nextCellsType_ind(nextCellsType_indSortIndex(l));
           nextCellsType_xSorted(l) = nextCellsType_x(nextCellsType_indSortIndex(l));
@@ -424,6 +447,7 @@ List dispersalGB(// DataFrame, NumericVector
           nextCellsType_whoSorted(l) = nextCellsType_who(nextCellsType_indSortIndex(l));
           nextCellsType_stepsSorted(l) = nextCellsType_steps(nextCellsType_indSortIndex(l));
           nextCellsType_nMatSorted(l) = nextCellsType_nMat(nextCellsType_indSortIndex(l));
+          nextCellsType_headingSorted(l) = nextCellsType_heading(nextCellsType_indSortIndex(l));
           for(int j = 0; j<dispersers_who.size(); j++){
             if(dispersers_who(j) == nextCellsType_whoSorted(l)){
               nextCellsType_xCurSorted(l) = dispersers_lastDispX(j);
@@ -442,6 +466,7 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector nextCellsType_whoF = IntVecSubIndex(nextCellsType_whoSorted, WStepsLeft);
         IntegerVector nextCellsType_stepsF = IntVecSubIndex(nextCellsType_stepsSorted, WStepsLeft);
         IntegerVector nextCellsType_nMatF = IntVecSubIndex(nextCellsType_nMatSorted, WStepsLeft);
+        IntegerVector nextCellsType_headingF = IntVecSubIndex(nextCellsType_headingSorted, WStepsLeft);
         
         //individual with correlated movement ?
         IntegerVector IsMoveCorr_who = unique(nextCellsType_whoF);
@@ -478,6 +503,7 @@ List dispersalGB(// DataFrame, NumericVector
           IntegerVector nextCellsTypeNoCorr_whoF(nCorr0);
           IntegerVector nextCellsTypeNoCorr_stepsF(nCorr0);
           IntegerVector nextCellsTypeNoCorr_nMatF(nCorr0);
+          IntegerVector nextCellsTypeNoCorr_headingF(nCorr0);
           IntegerVector nextCellsTypeNoCorr_IsMoveCorrF(nCorr0);
           for(int l = 0; l<nCorr0;l++){
             nextCellsTypeNoCorr_indF(l) = nextCellsType_indF(noCorr_Lind(l));
@@ -489,6 +515,7 @@ List dispersalGB(// DataFrame, NumericVector
             nextCellsTypeNoCorr_whoF(l) = nextCellsType_whoF(noCorr_Lind(l));
             nextCellsTypeNoCorr_stepsF(l) = nextCellsType_stepsF(noCorr_Lind(l));
             nextCellsTypeNoCorr_nMatF(l) = nextCellsType_nMatF(noCorr_Lind(l));
+            nextCellsTypeNoCorr_headingF(l) = nextCellsType_headingF(noCorr_Lind(l));
             nextCellsTypeNoCorr_IsMoveCorrF(l) = nextCellsType_IsMoveCorrF(noCorr_Lind(l));
           }
           // now pick just one cell to move to for each ind
@@ -502,6 +529,7 @@ List dispersalGB(// DataFrame, NumericVector
           // IntegerVector ChosenCellsNoCorr_who(UniqueLinesIndNoCorr.size());
           // IntegerVector ChosenCellsNoCorr_steps(UniqueLinesIndNoCorr.size());
           // IntegerVector ChosenCellsNoCorr_nMat(UniqueLinesIndNoCorr.size());
+          // IntegerVector ChosenCellsNoCorr_heading(UniqueLinesIndNoCorr.size());
           // IntegerVector ChosenCellsNoCorr_IsMoveCorr(UniqueLinesIndNoCorr.size());
           for(int i = 0; i<UniqueLinesIndNoCorr.size(); i++){
             ChosenCellsNoCorr_ind.push_back(nextCellsTypeNoCorr_indF(UniqueLinesIndNoCorr(i)));
@@ -513,6 +541,7 @@ List dispersalGB(// DataFrame, NumericVector
             ChosenCellsNoCorr_who.push_back(nextCellsTypeNoCorr_whoF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_steps.push_back(nextCellsTypeNoCorr_stepsF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_nMat.push_back(nextCellsTypeNoCorr_nMatF(UniqueLinesIndNoCorr(i)));
+            ChosenCellsNoCorr_heading.push_back(nextCellsTypeNoCorr_headingF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_IsMoveCorr.push_back(nextCellsTypeNoCorr_IsMoveCorrF(UniqueLinesIndNoCorr(i)));
           }
           // List L_return = List::create(Named("ChosenCellsNoCorr_who") = ChosenCellsNoCorr_who,
@@ -535,6 +564,7 @@ List dispersalGB(// DataFrame, NumericVector
           IntegerVector nextCellsTypeYesCorr_whoF(YesCorr_Lind.size());
           IntegerVector nextCellsTypeYesCorr_stepsF(YesCorr_Lind.size());
           IntegerVector nextCellsTypeYesCorr_nMatF(YesCorr_Lind.size());
+          IntegerVector nextCellsTypeYesCorr_headingF(YesCorr_Lind.size());
           IntegerVector nextCellsTypeYesCorr_IsMoveCorrF(YesCorr_Lind.size());
           for(int l = 0; l<YesCorr_Lind.size(); l++){
             nextCellsTypeYesCorr_indF(l) = nextCellsType_indF(YesCorr_Lind(l));
@@ -546,6 +576,7 @@ List dispersalGB(// DataFrame, NumericVector
             nextCellsTypeYesCorr_whoF(l) = nextCellsType_whoF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_stepsF(l) = nextCellsType_stepsF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_nMatF(l) = nextCellsType_nMatF(YesCorr_Lind(l));
+            nextCellsTypeYesCorr_headingF(l) = nextCellsType_headingF(YesCorr_Lind(l));
             nextCellsTypeYesCorr_IsMoveCorrF(l) = nextCellsType_IsMoveCorrF(YesCorr_Lind(l));
           }
           // add dir to nextCellsTypeYesCorr
@@ -584,6 +615,7 @@ List dispersalGB(// DataFrame, NumericVector
           // IntegerVector ChosenCellsYesCorr_yCur(unique_nextCellsTypeYesCorr_whoF.size());
           // IntegerVector ChosenCellsYesCorr_steps(unique_nextCellsTypeYesCorr_whoF.size());
           // IntegerVector ChosenCellsYesCorr_nMat(unique_nextCellsTypeYesCorr_nMatF.size());
+          // IntegerVector ChosenCellsYesCorr_heading(unique_nextCellsTypeYesCorr_headingF.size());
           // IntegerVector ChosenCellsYesCorr_IsMoveCorr(unique_nextCellsTypeYesCorr_whoF.size());
           // subset for one of the lower prefdir values
           for(int i = 0; i<unique_nextCellsTypeYesCorr_whoF.size(); i++){
@@ -597,6 +629,7 @@ List dispersalGB(// DataFrame, NumericVector
             ChosenCellsYesCorr_yCur.push_back(int_100);
             ChosenCellsYesCorr_steps.push_back(int_100);
             ChosenCellsYesCorr_nMat.push_back(int_100);
+            ChosenCellsYesCorr_heading.push_back(int_100);
             ChosenCellsYesCorr_IsMoveCorr.push_back(int_100);
             for(int l = 0; l<nextCellsTypeYesCorr_whoF.size() ; l++){
               if((nextCellsTypeYesCorr_prefDirF(l) < ChosenCellsYesCorr_prefDir(i)) &
@@ -611,6 +644,7 @@ List dispersalGB(// DataFrame, NumericVector
                 ChosenCellsYesCorr_yCur(i) = nextCellsTypeYesCorr_yCurF(l);
                 ChosenCellsYesCorr_steps(i) = nextCellsTypeYesCorr_stepsF(l);
                 ChosenCellsYesCorr_nMat(i) = nextCellsTypeYesCorr_nMatF(l);
+                ChosenCellsYesCorr_heading(i) = nextCellsTypeYesCorr_headingF(l);
                 ChosenCellsYesCorr_IsMoveCorr(i) = nextCellsTypeYesCorr_IsMoveCorrF(l);
               }
             }
@@ -640,6 +674,7 @@ List dispersalGB(// DataFrame, NumericVector
           // IntegerVector ChosenCells_xCur(nChosenCells);
           // IntegerVector ChosenCells_yCur(nChosenCells);
           // IntegerVector ChosenCells_nMat(nChosenCells);
+          // IntegerVector ChosenCells_heading(nChosenCells);
           for(int l = 0; l<nChosenCells; l++){
             if(l < nLChosenCellsYesCorr){
               ChosenCells_who.push_back(ChosenCellsYesCorr_who(l));
@@ -650,6 +685,7 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenCells_xCur.push_back(ChosenCellsYesCorr_xCur(l));
               ChosenCells_yCur.push_back(ChosenCellsYesCorr_yCur(l));
               ChosenCells_nMat.push_back(ChosenCellsYesCorr_nMat(l));
+              ChosenCells_heading.push_back(ChosenCellsYesCorr_heading(l));
               ChosenCells_IsMoveCorr.push_back(ChosenCellsYesCorr_IsMoveCorr(l));
             }else{
               ChosenCells_who.push_back(ChosenCellsNoCorr_who(l - nLChosenCellsYesCorr));
@@ -660,6 +696,7 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenCells_xCur.push_back(ChosenCellsNoCorr_xCur(l - nLChosenCellsYesCorr));
               ChosenCells_yCur.push_back(ChosenCellsNoCorr_yCur(l - nLChosenCellsYesCorr));
               ChosenCells_nMat.push_back(ChosenCellsNoCorr_nMat(l - nLChosenCellsYesCorr));
+              ChosenCells_heading.push_back(ChosenCellsNoCorr_heading(l - nLChosenCellsYesCorr));
               ChosenCells_IsMoveCorr.push_back(ChosenCellsNoCorr_IsMoveCorr(l - nLChosenCellsYesCorr));
             }
           }
@@ -677,6 +714,8 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector ChosenMat_xCur(nMatInd);
         IntegerVector ChosenMat_yCur(nMatInd);
         IntegerVector ChosenMat_nMat(nMatInd);
+        IntegerVector ChosenMat_heading(nMatInd);
+        // disp
         IntegerVector ChosenDisp_who(nDispInd);
         IntegerVector ChosenDisp_ind(nDispInd);
         IntegerVector ChosenDisp_hab(nDispInd);
@@ -685,6 +724,7 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector ChosenDisp_xCur(nDispInd);
         IntegerVector ChosenDisp_yCur(nDispInd);
         IntegerVector ChosenDisp_nMat(nDispInd);
+        IntegerVector ChosenDisp_heading(nDispInd);
         for(int l = 0, p = 0, q = 0; l<ChosenCells_nMat.size(); l++){
           if(ChosenCells_hab(l) == 2){
             if(nMatInd>0){
@@ -696,12 +736,13 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenMat_xCur(p) = ChosenCells_xCur(l);
               ChosenMat_yCur(p) = ChosenCells_yCur(l);
               ChosenMat_nMat(p) = ChosenCells_nMat(l) + 1;
-              // code memory bit here
+              // code memory in movement bit here
               if((ChosenMat_nMat(p) + 1) == nMatMax){
-                ChosenMat_x(p) = ChosenMat_xCur(p);
+                ChosenMat_x(p) = ChosenMat_xCur(p); // there is really that
                 ChosenMat_y(p) = ChosenMat_yCur(p);
               }if(ChosenMat_nMat(p) == nMatMax){ // reset nMat
                 ChosenMat_nMat(p) = 0;
+                ChosenMat_heading(p) = ChosenMat_heading(p) + 180;
               }
               p++;
             }
@@ -747,6 +788,34 @@ List dispersalGB(// DataFrame, NumericVector
             ChosenCells_nMat(l) = ChosenMat_nMat(l - nDispInd);
           }
         }
+        // update connectivity map with +1 when dipserser stp on cell
+        for(int l = 0; l<ChosenCells_x.size(); l++){
+          connectivityMap(ChosenCells_y(l) , ChosenCells_x(l)) +=1; 
+        }
+        
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // bit on mortality
+        IntegerVector deathRoad(ChosenCells_x.size());
+        for(int l = 0; l<ChosenCells_x.size(); l++){
+          deathRoad(l) = R::rbinom(int_1, (roadMortMap(ChosenCells_y(l), ChosenCells_x(l)) / corrFactorDisp));
+          if(floorTimeSim == startSimYear){ // cannot die first year
+            deathRoad(l) = int_0;
+          } 
+        }
+        ncoll_ncoll.push_back(sum(deathRoad));
+        ncoll_time.push_back(floorTimeSim);
+        for(int l = 0; l<ChosenCells_x.size(); l++){
+          if(roadMortMap(ChosenCells_y(l), ChosenCells_x(l)) == 1){ // force death on border to simulate emigration but does not count as death in line above
+            deathRoad(l) = int_1;
+          }
+        }
+        // save some data on dead individual
+        for(int l = 0; l < deathRoad.size(); l++){
+          if(deathRoad(l) == int_1){
+            deadLynxColl.push_back(ChosenCells_who(l), "who");
+          }
+        }
+        
         
         
         List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
@@ -761,7 +830,8 @@ List dispersalGB(// DataFrame, NumericVector
                                      _["ChosenCells_ind"] = ChosenCells_ind,
                                      _["ChosenCells_hab"] = ChosenCells_hab,
                                      _["ChosenCells_IsMoveCorr"] = ChosenCells_IsMoveCorr,
-                                     _["MatInd"] = MatInd);
+                                     _["MatInd"] = MatInd,
+                                     _["deathRoad"] = deathRoad);
         return  L_return;
         
       }

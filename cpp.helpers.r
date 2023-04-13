@@ -40,5 +40,7 @@ x_cur = 297
 y_cur = 425
 towards_simple(x_to = x_to, y_to = y_to, x_cur = x_cur, y_cur = y_cur)
 
-
+# change heading value
+sourceCpp("cpp.helpers.cpp") 
+changeHeading(90)
 

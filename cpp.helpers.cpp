@@ -2,6 +2,10 @@
 using namespace Rcpp;
 #include <math.h>       /* atan2 */
 #define PI 3.14159265
+#include <algorithm>
+#include <iostream>
+#include <vector>
+using namespace std;
 
 // This is a simple example of exporting a C++ function to R. You can
 // source this function into an R session using the Rcpp::sourceCpp 
@@ -71,7 +75,7 @@ IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) { // give index cells 
 }
 
 // [[Rcpp::export]]
-IntegerVector WhichEqual(IntegerVector ToCheck, int Crit) { // // give index cells valua above crit for IntegerVector  
+IntegerVector WhichEqual(IntegerVector ToCheck, int Crit) { // // give index cells equal for IntegerVector  
   int n_equal = 0;
   for(int i = 0; i<ToCheck.size();i++){
     if(ToCheck(i)==Crit){
@@ -166,6 +170,21 @@ int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
   }
   return degrees;
 }
+
+// [[Rcpp::export]]
+// change heading for some individual whom steps have been reset
+int changeHeading(int to_change){
+  IntegerVector headings = {0, 45, 90, 135, 180, 225, 270, 315};
+  IntegerVector deltas(headings.size());
+  for(int i = 0; i<deltas.size(); i++){
+    deltas(i) = abs(headings(i) - to_change);
+  }
+  int delta_min = *min_element(deltas.begin(), deltas.end());
+  IntegerVector new_val = WhichEqual(deltas, delta_min);
+  return headings(new_val(0));
+}
+
+
 
 
 // You can include R code blocks in C++ files processed with sourceCpp

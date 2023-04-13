@@ -19,7 +19,15 @@ outputs.cpp <- dispersalGB(
   HabitatMap = habitatMap.gb,
   pMat = pMat, #round(1/9, 2)  #pMat
   pCorr = pCorr,
-  nMatMax = nMatMax
+  nMatMax = nMatMax,
+  connectivityMap = sim$connectivityMap@.Data[,],
+  roadMortMap = sim$roadMortMap@.Data[,],
+  corrFactorDisp = corrFactorDisp,
+  floorTimeSim = floor(time(sim))[1],
+  startSimYear = start(sim, "year")[1],
+  ncoll_ncoll = sim$nColl$ncoll,
+  ncoll_time = sim$nColl$time,
+  deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]]
 )
 outputs.cpp
 
@@ -31,9 +39,20 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
       HabitatMap = habitatMap.gb,
       pMat = pMat, #round(1/9, 2)
       pCorr = pCorr,
-      nMatMax = nMatMax
+      nMatMax = nMatMax,
+      connectivityMap = sim$connectivityMap@.Data[,],
+      roadMortMap = sim$roadMortMap@.Data[,],
+      corrFactorDisp = corrFactorDisp,
+      floorTimeSim = floor(time(sim))[1],
+      startSimYear = start(sim, "year")[1],
+      ncoll_ncoll = sim$nColl$ncoll,
+      ncoll_time = sim$nColl$time,
     ) 
   )
   print(outputs.loop)
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }
+
+sim$roadMortMap@.Data[,] %>% c %>% hist
+
+
