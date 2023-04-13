@@ -852,19 +852,19 @@ List dispersalGB(// DataFrame, NumericVector
           else{
             ChosenCells_who(l) = ChosenMat_who(l - nDispInd);
             ChosenCells_ind(l) = ChosenMat_ind(l - nDispInd);
-            ChosenCells_hab(l) =ChosenMat_hab(l - nDispInd);
-            ChosenCells_pxcorHere(l) = ChosenDisp_pxcorHere(l - nDispInd);
-            ChosenCells_pycorHere(l) = ChosenDisp_pycorHere(l - nDispInd);
-            ChosenCells_pxcor(l) = ChosenDisp_pxcor(l - nDispInd);
-            ChosenCells_pycor(l) = ChosenDisp_pycor(l - nDispInd);
-            ChosenCells_lastDispX(l) = ChosenDisp_lastDispX(l - nDispInd);
-            ChosenCells_lastDispY(l) = ChosenDisp_lastDispY(l - nDispInd);
+            ChosenCells_hab(l) = ChosenMat_hab(l - nDispInd);
+            ChosenCells_pxcorHere(l) = ChosenMat_pxcorHere(l - nDispInd);
+            ChosenCells_pycorHere(l) = ChosenMat_pycorHere(l - nDispInd);
+            ChosenCells_pxcor(l) = ChosenMat_pxcor(l - nDispInd);
+            ChosenCells_pycor(l) = ChosenMat_pycor(l - nDispInd);
+            ChosenCells_lastDispX(l) = ChosenMat_lastDispX(l - nDispInd);
+            ChosenCells_lastDispY(l) = ChosenMat_lastDispY(l - nDispInd);
             ChosenCells_nMat(l) = ChosenMat_nMat(l - nDispInd);
           }
         }
-        // update connectivity map with +1 when dipserser stp on cell
+        //update connectivity map with +1 when dipserser stp on cell
         for(int l = 0; l<ChosenCells_pxcor.size(); l++){
-          connectivityMap(ChosenCells_pycor(l) , ChosenCells_pxcor(l)) +=1; 
+          connectivityMap(ChosenCells_pycor(l) , ChosenCells_pxcor(l)) +=1;
         }
         
         //////////////////////////////////////////////////////////////////////////////////////////////
@@ -874,7 +874,7 @@ List dispersalGB(// DataFrame, NumericVector
           deathRoad(l) = R::rbinom(int_1, (roadMortMap(ChosenCells_pycor(l), ChosenCells_pxcor(l)) / corrFactorDisp));
           if(floorTimeSim == startSimYear){ // cannot die first year
             deathRoad(l) = int_0;
-          } 
+          }
         }
         ncoll_ncoll.push_back(sum(deathRoad));
         ncoll_time.push_back(floorTimeSim);
@@ -883,7 +883,7 @@ List dispersalGB(// DataFrame, NumericVector
             deathRoad(l) = int_1;
           }
         }
-        // save some data on dead individual
+        //save some data on dead individual
         for(int l = 0; l < deathRoad.size(); l++){
           if(deathRoad(l) == int_1){
             deadLynxColl.push_back(ChosenCells_who(l), "who");
@@ -905,7 +905,8 @@ List dispersalGB(// DataFrame, NumericVector
                                      _["ChosenCells_hab"] = ChosenCells_hab,
                                      _["ChosenCells_IsMoveCorr"] = ChosenCells_IsMoveCorr,
                                      _["MatInd"] = MatInd,
-                                     _["deathRoad"] = deathRoad);
+                                     _["deathRoad"] = deathRoad
+        );
         return  L_return;
         
       }

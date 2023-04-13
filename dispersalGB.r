@@ -54,6 +54,5 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }
 
-sim$roadMortMap@.Data[,] %>% c %>% hist
 
 
