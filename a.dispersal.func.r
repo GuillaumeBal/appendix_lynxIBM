@@ -297,7 +297,7 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
   chosenCellsCoords <- cbind(pxcor = chosenCells[, "pxcor"], pycor = chosenCells[, "pycor"])
   dispersingInd <- face(turtles = dispersingInd, agents2 = chosenCellsCoords)
   # Individuals that went back to their last known dispersal cell
-  stop()
+  #stop()
   if(NLcount(dispersingIndNMatMax) != 0){
     dispersingIndNMatMaxHead <- of(agents = dispersingIndNMatMax, var = "heading")
     headChoice <- sapply(dispersingIndNMatMaxHead,
@@ -346,8 +346,6 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
   deathRoad[roadMort == 1] <- 1 # mortality of 1 on the borders (roadMort == 1) needs to be forced
   deadWhoRoad <- dispersingID[deathRoad == 1]
   
-  #stop()
-  
   if(length(deadWhoRoad) != 0){
     sim$deadLynxColl[[time(sim, "year")[1]]] <- 
       turtleSet(sim$deadLynxColl[[time(sim, "year")[1]]], 
@@ -356,7 +354,10 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
   dispersingInd <- die(turtles = dispersingInd, who = deadWhoRoad)
   sim$aliveDispersingIndID <- dispersingInd@.Data[, "who"]
   sim$deadDisp[sim$deadDisp$time == floor(time(sim))[1], "nDispDeadColl"] <- 
-    sim$deadDisp[sim$deadDisp$time == floor(time(sim))[1], "nDispDeadColl"] + length(deadWhoRoad)
+    sim$deadDisp[sim$deadDisp$time == floor(time(sim))[1], "nDispDeadColl"] +
+    length(deadWhoRoad)
+  
+  stop()
   
   # Territory search
   disperser <- turtleSet(dispersingInd, nonDispersingInd)

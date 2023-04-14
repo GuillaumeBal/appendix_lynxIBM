@@ -162,6 +162,7 @@ int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
 // [[Rcpp::export]]
 List dispersalGB(// DataFrame, NumericVector
     DataFrame lynx,
+    List lynx_list,
     int sMaxPs, // dispersal
     IntegerMatrix HabitatMap,
     double pMat,
@@ -174,7 +175,8 @@ List dispersalGB(// DataFrame, NumericVector
     int startSimYear,
     IntegerVector ncoll_ncoll,
     IntegerVector ncoll_time,
-    DataFrame deadLynxColl
+    DataFrame deadLynxColl,
+    DataFrame deadDisp
 ){
   
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -887,25 +889,62 @@ List dispersalGB(// DataFrame, NumericVector
         for(int l = 0; l < deathRoad.size(); l++){
           if(deathRoad(l) == int_1){
             deadLynxColl.push_back(ChosenCells_who(l), "who");
+            deadLynxColl.push_back(ChosenCells_nMat(l), "heading");
+            deadLynxColl.push_back(ChosenCells_who(l), "who");
+            deadLynxColl.push_back(ChosenCells_steps(l), "steps");
+            deadLynxColl.push_back(ChosenCells_lastDispX(l), "lastDispX");
+            deadLynxColl.push_back(ChosenCells_lastDispX(l), "lastDispY");
           }
         }
+        // complete deadDisp
+        int deadDispLine = WhichEqual(deadDisp["time"], floorTimeSim)(0);
+        IntegerVector deadDisp_nDispDeadColl = deadDisp["nDispDeadColl"];
+        deadDisp_nDispDeadColl(deadDispLine) = sum(deathRoad);
+        deadDisp["nDispDeadColl"] = deadDisp_nDispDeadColl;
         
-        
+        // create disperser new table, first two lines were some test
+        //deathRoad(0) = 1, deathRoad(1) = 1, deathRoad(2) = 1, deathRoad(3) = 1 , deathRoad(4) = 1;
+        //IntegerVector rand_values = sample(5, 10, true) - 1; // number of samples is argument 2; -1 to make it start at 0
+        IntegerVector who_ord = IntOrderIndex(ChosenCells_who);
+        IntegerVector alive_who_ord = WhichEqual(deathRoad[who_ord], 0);
+        IntegerVector pos_alive_who_ord = who_ord[alive_who_ord];
+        // values to pick from ChosenCells
+        IntegerVector dispersers_who_new = ChosenCells_who[pos_alive_who_ord], dispersers_ind_new = ChosenCells_ind[pos_alive_who_ord], dispersers_hab_new = ChosenCells_hab[pos_alive_who_ord], dispersers_pxcorHere_new = ChosenCells_pxcorHere[pos_alive_who_ord], dispersers_pycorHere_new = ChosenCells_pycorHere[pos_alive_who_ord], dispersers_pxcor_new = ChosenCells_pxcor[pos_alive_who_ord], dispersers_pycor_new = ChosenCells_pycor[pos_alive_who_ord], dispersers_lastDispX_new = ChosenCells_lastDispX[pos_alive_who_ord], dispersers_lastDispY_new = ChosenCells_lastDispY[pos_alive_who_ord], dispersers_nMat_new = ChosenCells_nMat[pos_alive_who_ord];
+        // Values to get back from origial dispersers data
+        IntegerVector index_dispersers_dispersers_new(dispersers_who_new.size());
+        for(int i = 0; i<dispersers_who_new.size(); i++){
+          double p = 0.5;
+          while(p<1){
+            for(int j = 0; j<dispersers_who.size(); j++){
+              if(dispersers_who(j) == dispersers_who_new(i) )
+              index_dispersers_dispersers_new(i) = j;
+              p += 1;
+            }
+          }
+        }
+        IntegerVector dispersers_xcor_new = dispersers_xcor[index_dispersers_dispersers_new], dispersers_ycor_new = dispersers_ycor[index_dispersers_dispersers_new], dispersers_heading_new = dispersers_heading[index_dispersers_dispersers_new], dispersers_prevX_new = dispersers_prevX[index_dispersers_dispersers_new], dispersers_prevY_new = dispersers_prevY[index_dispersers_dispersers_new], dispersers_age_new = dispersers_age[index_dispersers_dispersers_new], dispersers_maleID_new = dispersers_maleID[index_dispersers_dispersers_new], dispersers_nFem_new = dispersers_nFem[index_dispersers_dispersers_new], dispersers_rdMortTerr_new = dispersers_rdMortTerr[index_dispersers_dispersers_new]; 
+        CharacterVector dispersers_breed_new = dispersers_breed[index_dispersers_dispersers_new], dispersers_color_new = dispersers_color[index_dispersers_dispersers_new], dispersers_pop_new = dispersers_pop[index_dispersers_dispersers_new], dispersers_sex_new = dispersers_sex[index_dispersers_dispersers_new], dispersers_status_new = dispersers_status[index_dispersers_dispersers_new];
         
         List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
-                                     _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
-                                     _["nextCellsType_yF"] = nextCellsType_pycorF,
-                                     _["IsMoveCorr"] = IsMoveCorr,
-                                     _["nCorr1"] = nCorr1,
-                                     _["ChosenCellsYesCorr_prefDir"] = ChosenCellsYesCorr_prefDir,
-                                     _["ChosenCellsYesCorr_ind"] = ChosenCellsYesCorr_ind,
-                                     _["ChosenCells_y"] = ChosenCells_pycor,
-                                     _["ChosenCells_who"] = ChosenCells_who,
-                                     _["ChosenCells_ind"] = ChosenCells_ind,
-                                     _["ChosenCells_hab"] = ChosenCells_hab,
-                                     _["ChosenCells_IsMoveCorr"] = ChosenCells_IsMoveCorr,
-                                     _["MatInd"] = MatInd,
-                                     _["deathRoad"] = deathRoad
+                                     //_["deadDispLine"] = deadDispLine,
+                                     //_["lynx_age_rand"] = lynx_age[rand_values],
+                                     // _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
+                                     // _["nextCellsType_yF"] = nextCellsType_pycorF,
+                                     // _["IsMoveCorr"] = IsMoveCorr,
+                                     // _["nCorr1"] = nCorr1,
+                                     // _["ChosenCellsYesCorr_prefDir"] = ChosenCellsYesCorr_prefDir,
+                                     // _["ChosenCellsYesCorr_ind"] = ChosenCellsYesCorr_ind,
+                                     // _["ChosenCells_pycor"] = ChosenCells_pycor,
+                                     // _["ChosenCells_who"] = ChosenCells_who,
+                                     // _["ChosenCells_ind"] = ChosenCells_ind,
+                                     // _["ChosenCells_hab"] = ChosenCells_hab,
+                                     // _["ChosenCells_IsMoveCorr"] = ChosenCells_IsMoveCorr,
+                                     // _["MatInd"] = MatInd,
+                                     _["deathRoad"] = deathRoad,
+                                     _["who_ord"] = who_ord,
+                                     _["alive_who_ord"] = alive_who_ord,
+                                     _["pos_alive_who_ord"] = pos_alive_who_ord 
+                                       //_["dispersersNew_who"] = dispersersNew_who
         );
         return  L_return;
         

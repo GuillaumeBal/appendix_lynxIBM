@@ -39,7 +39,6 @@ paste('disperserFem_', colnames(disperser.gb)[num.col.disperser], ' = disperser_
           paste(., collapse = ', ') %>% paste('CharacterVector ', ., ';', sep = '')) %>% cat() 
 
 # create dataframe from vectors
-
 paste(
   paste(
     'DataFrame disperserFem = DataFrame::create(Named("', colnames(disperser.gb)[1], '") = disperserFem_', colnames(disperser.gb)[1], ', ', sep = ''),
@@ -47,4 +46,32 @@ paste(
     '_["',colnames(disperser.gb)[2:length(colnames(disperser.gb))], '"] = disperserFem_', colnames(disperser.gb)[2:length(colnames(disperser.gb))], sep = '') %>% 
     paste(., collapse = ', '),
   ');', sep = '') %>% cat
+
+
+# create dispersers new table ===========================================================
+
+ChosenCells_variables <- c(
+  'who',
+  'ind',
+  'hab',
+  'pxcorHere',
+  'pycorHere',
+  'pxcor',
+  'pycor',
+  'lastDispX',
+  'lastDispY',
+  'nMat')
+
+colnames.not.in.chosenCells <-
+  colnames(lynx.gb) %>% '%in%'(ChosenCells_variables) %>% `!`
+
+paste('dispersers_', ChosenCells_variables, '_new = ChosenCells_',
+      ChosenCells_variables, '[pos_alive_who_ord]', sep = '') %>% 
+  paste(., collapse = ', ') %>% paste0(., ';') %>% cat
+
+paste('dispersers_', colnames(lynx.gb)[num.col.lynx & colnames.not.in.chosenCells], '_new = dispersers_', colnames(lynx.gb)[num.col.lynx & colnames.not.in.chosenCells], '[index_dispersers_dispersers_new]', sep = "") %>% 
+  paste(., collapse = ', ') %>% paste('NumericVector ', ., ';', sep = '') %>% 
+  paste(., '\n',
+        paste('dispersers_', colnames(lynx.gb)[!num.col.lynx  & colnames.not.in.chosenCells], '_new = dispersers_', colnames(lynx.gb)[!num.col.lynx & colnames.not.in.chosenCells], '[index_dispersers_dispersers_new]', sep = "") %>% 
+          paste(., collapse = ', ') %>% paste('CharacterVector ', ., ';', sep = '')) %>% cat() 
 

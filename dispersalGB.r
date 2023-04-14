@@ -13,8 +13,10 @@ popDist.gb <- sim$popDist@.Data
 trick <- c(1, 1)
 
 sourceCpp("dispersalGBcpp.cpp")
+
 outputs.cpp <- dispersalGB(
   lynx = lynx.gb,
+  lynx_list = lynx.gb %>% as.data.frame %>% as.list,
   sMaxPs = sMaxPs,
   HabitatMap = habitatMap.gb,
   pMat = pMat, #round(1/9, 2)  #pMat
@@ -27,7 +29,8 @@ outputs.cpp <- dispersalGB(
   startSimYear = start(sim, "year")[1],
   ncoll_ncoll = sim$nColl$ncoll,
   ncoll_time = sim$nColl$time,
-  deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,]
+  deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,],
+  deadDisp = sim$deadDisp[,]
 )
 outputs.cpp
 
@@ -35,6 +38,7 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
   outputs.loop <- try(
     dispersalGB(
       lynx = lynx.gb,
+      lynx_list = lynx.gb %>% as.data.frame %>% as.list,
       sMaxPs = sMaxPs,
       HabitatMap = habitatMap.gb,
       pMat = pMat, #round(1/9, 2)
@@ -47,8 +51,9 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
       startSimYear = start(sim, "year")[1],
       ncoll_ncoll = sim$nColl$ncoll,
       ncoll_time = sim$nColl$time,
-      deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,]
-    ) 
+      deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,],
+      deadDisp = sim$deadDisp[,]
+      ) 
   )
   print(outputs.loop)
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
