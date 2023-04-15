@@ -18,7 +18,7 @@ paste('dispersers_', colnames(lynx.gb)[num.col.lynx], '(nDisp)', sep = "") %>% p
           paste(., collapse = ', ') %>% paste('CharacterVector ', ., ';', sep = '')) %>% cat() 
 
 # fill some residents and disperser vector through loops
-paste('residents_', colnames(lynx.gb), '(i_disp) = lynx_', colnames(lynx.gb), '(i)', sep = "") %>% 
+paste('residents_', colnames(lynx.gb), '(i_ndisp) = lynx_', colnames(lynx.gb), '(i)', sep = "") %>% 
   paste(., collapse = ', ') %>% paste(., ";", sep = '') %>% cat
 
 
@@ -74,4 +74,29 @@ paste('dispersers_', colnames(lynx.gb)[num.col.lynx & colnames.not.in.chosenCell
   paste(., '\n',
         paste('dispersers_', colnames(lynx.gb)[!num.col.lynx  & colnames.not.in.chosenCells], '_new = dispersers_', colnames(lynx.gb)[!num.col.lynx & colnames.not.in.chosenCells], '[index_dispersers_dispersers_new]', sep = "") %>% 
           paste(., collapse = ', ') %>% paste('CharacterVector ', ., ';', sep = '')) %>% cat() 
+
+# update lynx variables =========================================================
+paste('lynx_', colnames(lynx.gb), '[disp_new_index] = dispersers_', colnames(lynx.gb), '_new', sep = "") %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
+
+paste('lynx_', colnames(lynx.gb), '[res_index] = residents_', colnames(lynx.gb), sep = "") %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
+
+# remove lynx "dead" from end of table, in fact reduce the table that's been reorganized
+paste('lynx_', colnames(lynx.gb), '.erase(nLynx_new, nLynxv- 1)') %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
+
+
+# export all var to table ======================================================
+paste('_["dispersers_', colnames(lynx.gb), '_new"] = dispersers_', colnames(lynx.gb), '_new', sep = "") %>% 
+  paste(., collapse = ', ') %>% cat
+paste('_["residents_', colnames(lynx.gb), '"] = residents_', colnames(lynx.gb), sep = "") %>% 
+  paste(., collapse = ', ') %>% cat
+
+
+
+
+
+
+
 

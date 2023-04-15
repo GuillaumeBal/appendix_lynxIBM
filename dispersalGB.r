@@ -34,8 +34,10 @@ outputs.cpp <- dispersalGB(
 )
 outputs.cpp
 
+outputs.loop <- list()
 for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
-  outputs.loop <- try(
+  outputs.loop[[i]] <- 
+    try(
     dispersalGB(
       lynx = lynx.gb,
       lynx_list = lynx.gb %>% as.data.frame %>% as.list,
@@ -55,9 +57,12 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
       deadDisp = sim$deadDisp[,]
       ) 
   )
-  print(outputs.loop)
+  print(outputs.loop[[i]])
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }
+
+outputs.loop %>% sapply(., function(x){ x['disp_new_index'] %>% unlist %>% length}) %>% hist
+lynx.gb$maleID
 
 
 
