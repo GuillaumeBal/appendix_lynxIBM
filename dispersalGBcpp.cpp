@@ -203,6 +203,7 @@ List dispersalGB(// DataFrame, NumericVector
   //define some dim
   int nLynx = lynx_xcor.size();
   int nDisp = N_Eq_Str(lynx_status, "disp");
+  int nRes = N_Eq_Str(lynx_status, "res");
   // define dispersers vectors
   IntegerVector dispersers_xcor(nDisp), dispersers_ycor(nDisp), dispersers_who(nDisp), dispersers_heading(nDisp), dispersers_prevX(nDisp), dispersers_prevY(nDisp), dispersers_age(nDisp), dispersers_lastDispX(nDisp), dispersers_lastDispY(nDisp), dispersers_nMat(nDisp), dispersers_maleID(nDisp), dispersers_nFem(nDisp), dispersers_rdMortTerr(nDisp); 
   StringVector dispersers_breed(nDisp), dispersers_color(nDisp), dispersers_pop(nDisp), dispersers_sex(nDisp), dispersers_status(nDisp);
@@ -903,22 +904,25 @@ List dispersalGB(// DataFrame, NumericVector
         deadDisp["nDispDeadColl"] = deadDisp_nDispDeadColl;
         
         // create disperser new table, first two lines were some test
-        //deathRoad(0) = 1, deathRoad(1) = 1, deathRoad(2) = 1, deathRoad(3) = 1 , deathRoad(4) = 1;
+        deathRoad(0) = 1, deathRoad(1) = 1, deathRoad(2) = 1, deathRoad(3) = 1 , deathRoad(4) = 1;
         //IntegerVector rand_values = sample(5, 10, true) - 1; // number of samples is argument 2; -1 to make it start at 0
         IntegerVector who_ord = IntOrderIndex(ChosenCells_who);
-        IntegerVector alive_who_ord = WhichEqual(deathRoad[who_ord], 0);
+        IntegerVector alive_who_ord = WhichEqual(deathRoad[who_ord], int_0);
         IntegerVector pos_alive_who_ord = who_ord[alive_who_ord];
         // values to pick from ChosenCells
         IntegerVector dispersers_who_new = ChosenCells_who[pos_alive_who_ord], dispersers_ind_new = ChosenCells_ind[pos_alive_who_ord], dispersers_hab_new = ChosenCells_hab[pos_alive_who_ord], dispersers_pxcorHere_new = ChosenCells_pxcorHere[pos_alive_who_ord], dispersers_pycorHere_new = ChosenCells_pycorHere[pos_alive_who_ord], dispersers_pxcor_new = ChosenCells_pxcor[pos_alive_who_ord], dispersers_pycor_new = ChosenCells_pycor[pos_alive_who_ord], dispersers_lastDispX_new = ChosenCells_lastDispX[pos_alive_who_ord], dispersers_lastDispY_new = ChosenCells_lastDispY[pos_alive_who_ord], dispersers_nMat_new = ChosenCells_nMat[pos_alive_who_ord];
+        int nDisp_new = dispersers_who_new.size();
         // Values to get back from origial dispersers data
         IntegerVector index_dispersers_dispersers_new(dispersers_who_new.size());
-        for(int i = 0; i<dispersers_who_new.size(); i++){
-          double p = 0.5;
-          while(p<1){
-            for(int j = 0; j<dispersers_who.size(); j++){
-              if(dispersers_who(j) == dispersers_who_new(i) )
-                index_dispersers_dispersers_new(i) = j;
-              p += 1;
+        if(nDisp_new >= int_1){
+          for(int i = 0; i<nDisp_new; i++){
+            double p = 0.5;
+            while(p<1){
+              for(int j = 0; j<dispersers_who.size(); j++){
+                if(dispersers_who(j) == dispersers_who_new(i) )
+                  index_dispersers_dispersers_new(i) = j;
+                p += 1;
+              }
             }
           }
         }
@@ -927,22 +931,22 @@ List dispersalGB(// DataFrame, NumericVector
         
         // update lynx values //////////////////////////////////////////////////////
         
-        int nLynx_new = dispersers_who_new.size() + residents_who.size();
-        IntegerVector disp_new_index(dispersers_who_new.size()) ;
-        for(int i = 0; i<dispersers_who_new.size(); i++){
-          disp_new_index(i) = i;
+        int nLynx_new = nDisp_new + nRes;
+        IntegerVector res_index(nRes);
+        for(int i = 0; i<nRes; i++){
+          res_index(i) = i;
         }
-        IntegerVector res_index(residents_who.size()) ;
-        for(int i = 0; i<residents_who.size(); i++){
-          res_index(i) = i + dispersers_who_new.size();
+        IntegerVector disp_new_index(nDisp_new) ;
+        for(int i = 0; i<nDisp_new; i++){
+          disp_new_index(i) = i + nRes;
         }
-        lynx_xcor[disp_new_index] = dispersers_xcor_new, lynx_ycor[disp_new_index] = dispersers_ycor_new, lynx_who[disp_new_index] = dispersers_who_new, lynx_heading[disp_new_index] = dispersers_heading_new, lynx_prevX[disp_new_index] = dispersers_prevX_new, lynx_prevY[disp_new_index] = dispersers_prevY_new, lynx_breed[disp_new_index] = dispersers_breed_new, lynx_color[disp_new_index] = dispersers_color_new, lynx_pop[disp_new_index] = dispersers_pop_new, lynx_sex[disp_new_index] = dispersers_sex_new, lynx_age[disp_new_index] = dispersers_age_new, lynx_status[disp_new_index] = dispersers_status_new, lynx_lastDispX[disp_new_index] = dispersers_lastDispX_new, lynx_lastDispY[disp_new_index] = dispersers_lastDispY_new, lynx_nMat[disp_new_index] = dispersers_nMat_new, lynx_maleID[disp_new_index] = dispersers_maleID_new, lynx_nFem[disp_new_index] = dispersers_nFem_new, lynx_rdMortTerr[disp_new_index] = dispersers_rdMortTerr_new;
-        lynx_xcor[res_index] = residents_xcor, lynx_ycor[res_index] = residents_ycor, lynx_who[res_index] = residents_who, lynx_heading[res_index] = residents_heading, lynx_prevX[res_index] = residents_prevX, lynx_prevY[res_index] = residents_prevY, lynx_breed[res_index] = residents_breed, lynx_color[res_index] = residents_color, lynx_pop[res_index] = residents_pop, lynx_sex[res_index] = residents_sex, lynx_age[res_index] = residents_age, lynx_status[res_index] = residents_status, lynx_lastDispX[res_index] = residents_lastDispX, lynx_lastDispY[res_index] = residents_lastDispY, lynx_nMat[res_index] = residents_nMat, lynx_maleID[res_index] = residents_maleID, lynx_nFem[res_index] = residents_nFem, lynx_rdMortTerr[res_index] = residents_rdMortTerr;
-        // if lynx_new_size > to nLynx, the last elements must be removed
-        if(nLynx_new < nLynx){
-          lynx_xcor.erase(nLynx_new, nLynx - 1), lynx_ycor.erase(nLynx_new, nLynx - 1), lynx_who.erase(nLynx_new, nLynx - 1), lynx_heading.erase(nLynx_new, nLynx - 1), lynx_prevX.erase(nLynx_new, nLynx - 1), lynx_prevY.erase(nLynx_new, nLynx - 1), lynx_breed.erase(nLynx_new, nLynx - 1), lynx_color.erase(nLynx_new, nLynx - 1), lynx_pop.erase(nLynx_new, nLynx - 1), lynx_sex.erase(nLynx_new, nLynx - 1), lynx_age.erase(nLynx_new, nLynx - 1), lynx_status.erase(nLynx_new, nLynx - 1), lynx_lastDispX.erase(nLynx_new, nLynx - 1), lynx_lastDispY.erase(nLynx_new, nLynx - 1), lynx_nMat.erase(nLynx_new, nLynx - 1), lynx_maleID.erase(nLynx_new, nLynx - 1), lynx_nFem.erase(nLynx_new, nLynx - 1), lynx_rdMortTerr.erase(nLynx_new, nLynx - 1);
-          nLynx = nLynx_new;
-        }
+        // build new linx data
+        IntegerVector lynx_xcor_new(nLynx_new), lynx_ycor_new(nLynx_new), lynx_who_new(nLynx_new), lynx_heading_new(nLynx_new), lynx_prevX_new(nLynx_new), lynx_prevY_new(nLynx_new), lynx_age_new(nLynx_new), lynx_lastDispX_new(nLynx_new), lynx_lastDispY_new(nLynx_new), lynx_nMat_new(nLynx_new), lynx_maleID_new(nLynx_new), lynx_nFem_new(nLynx_new), lynx_rdMortTerr_new(nLynx_new); 
+        CharacterVector lynx_breed_new(nLynx_new), lynx_color_new(nLynx_new), lynx_pop_new(nLynx_new), lynx_sex_new(nLynx_new), lynx_status_new(nLynx_new);
+        lynx_xcor_new[res_index] = residents_xcor, lynx_ycor_new[res_index] = residents_ycor, lynx_who_new[res_index] = residents_who, lynx_heading_new[res_index] = residents_heading, lynx_prevX_new[res_index] = residents_prevX, lynx_prevY_new[res_index] = residents_prevY, lynx_breed_new[res_index] = residents_breed, lynx_color_new[res_index] = residents_color, lynx_pop_new[res_index] = residents_pop, lynx_sex_new[res_index] = residents_sex, lynx_age_new[res_index] = residents_age, lynx_status_new[res_index] = residents_status, lynx_lastDispX_new[res_index] = residents_lastDispX, lynx_lastDispY_new[res_index] = residents_lastDispY, lynx_nMat_new[res_index] = residents_nMat, lynx_maleID_new[res_index] = residents_maleID, lynx_nFem_new[res_index] = residents_nFem, lynx_rdMortTerr_new[res_index] = residents_rdMortTerr;
+        lynx_xcor_new[disp_new_index] = dispersers_xcor_new;
+        // make the old a clone of the new
+        lynx_xcor= clone(lynx_xcor_new), lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new), lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
         
         List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
                                      //_["deadDispLine"] = deadDispLine,
@@ -959,14 +963,17 @@ List dispersalGB(// DataFrame, NumericVector
                                      // _["ChosenCells_hab"] = ChosenCells_hab,
                                      // _["ChosenCells_IsMoveCorr"] = ChosenCells_IsMoveCorr,
                                      // _["MatInd"] = MatInd,
-                                     //_["deathRoad"] = deathRoad,
+                                     _["deathRoad"] = deathRoad,
                                      //_["who_ord"] = who_ord,
                                      //["alive_who_ord"] = alive_who_ord,
                                      // _["pos_alive_who_ord"] = pos_alive_who_ord,
-                                     // _["res_index"] = res_index,
-                                     // _["disp_new_index"]= disp_new_index
+                                     _["res_index"] = res_index,
+                                     _["disp_new_index"]= disp_new_index,
                                      //_["dispersers_xcor_new"] = dispersers_xcor_new, _["dispersers_ycor_new"] = dispersers_ycor_new, _["dispersers_who_new"] = dispersers_who_new, _["dispersers_heading_new"] = dispersers_heading_new, _["dispersers_prevX_new"] = dispersers_prevX_new, _["dispersers_prevY_new"] = dispersers_prevY_new, _["dispersers_breed_new"] = dispersers_breed_new, _["dispersers_color_new"] = dispersers_color_new, _["dispersers_pop_new"] = dispersers_pop_new, _["dispersers_sex_new"] = dispersers_sex_new, _["dispersers_age_new"] = dispersers_age_new, _["dispersers_status_new"] = dispersers_status_new, _["dispersers_lastDispX_new"] = dispersers_lastDispX_new, _["dispersers_lastDispY_new"] = dispersers_lastDispY_new, _["dispersers_nMat_new"] = dispersers_nMat_new, _["dispersers_maleID_new"] = dispersers_maleID_new, _["dispersers_nFem_new"] = dispersers_nFem_new, _["dispersers_rdMortTerr_new"] = dispersers_rdMortTerr_new
-                                     _["residents_xcor"] = residents_xcor, _["residents_ycor"] = residents_ycor, _["residents_who"] = residents_who, _["residents_heading"] = residents_heading, _["residents_prevX"] = residents_prevX, _["residents_prevY"] = residents_prevY, _["residents_breed"] = residents_breed, _["residents_color"] = residents_color, _["residents_pop"] = residents_pop, _["residents_sex"] = residents_sex, _["residents_age"] = residents_age, _["residents_status"] = residents_status, _["residents_lastDispX"] = residents_lastDispX, _["residents_lastDispY"] = residents_lastDispY, _["residents_nMat"] = residents_nMat, _["residents_maleID"] = residents_maleID, _["residents_nFem"] = residents_nFem, _["residents_rdMortTerr"] = residents_rdMortTerr 
+                                     _["dispersers_xcor_new"] = dispersers_xcor_new,
+                                     _["residents_xcor"] = residents_xcor, 
+                                     _["lynx_xcor"] = lynx_xcor,
+                                     _["lynx_xcor_new"] = lynx_xcor_new
                                        //_["dispersersNew_who"] = dispersersNew_who
         );
         return  L_return;

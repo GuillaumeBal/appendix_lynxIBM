@@ -38,30 +38,45 @@ outputs.loop <- list()
 for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
   outputs.loop[[i]] <- 
     try(
-    dispersalGB(
-      lynx = lynx.gb,
-      lynx_list = lynx.gb %>% as.data.frame %>% as.list,
-      sMaxPs = sMaxPs,
-      HabitatMap = habitatMap.gb,
-      pMat = pMat, #round(1/9, 2)
-      pCorr = pCorr,
-      nMatMax = nMatMax,
-      connectivityMap = sim$connectivityMap@.Data[,],
-      roadMortMap = sim$roadMortMap@.Data[,],
-      corrFactorDisp = corrFactorDisp,
-      floorTimeSim = floor(time(sim))[1],
-      startSimYear = start(sim, "year")[1],
-      ncoll_ncoll = sim$nColl$ncoll,
-      ncoll_time = sim$nColl$time,
-      deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,],
-      deadDisp = sim$deadDisp[,]
+      dispersalGB(
+        lynx = lynx.gb,
+        lynx_list = lynx.gb %>% as.data.frame %>% as.list,
+        sMaxPs = sMaxPs,
+        HabitatMap = habitatMap.gb,
+        pMat = pMat, #round(1/9, 2)
+        pCorr = pCorr,
+        nMatMax = nMatMax,
+        connectivityMap = sim$connectivityMap@.Data[,],
+        roadMortMap = sim$roadMortMap@.Data[,],
+        corrFactorDisp = corrFactorDisp,
+        floorTimeSim = floor(time(sim))[1],
+        startSimYear = start(sim, "year")[1],
+        ncoll_ncoll = sim$nColl$ncoll,
+        ncoll_time = sim$nColl$time,
+        deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,],
+        deadDisp = sim$deadDisp[,]
       ) 
-  )
-  print(outputs.loop[[i]])
+    )
+  #print(i)
+  #print(outputs.loop[[i]])
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }
 
-outputs.loop %>% sapply(., function(x){ x['disp_new_index'] %>% unlist %>% length}) %>% hist
+outputs.loop[[1]]
+
+outputs.loop %>% 
+  sapply(., 
+         function(x){
+           sum(x$deathRoad)
+         }) %>%  table
+
+outputs.loop %>% 
+  sapply(., 
+         function(x){
+           lynx_new.length <- x['lynx_xcor_new'] %>% length
+           lynx.length <-  x['lynx_xcor']  %>% length
+           return(lynx_new.length < lynx.length)
+         }) %>% table
 lynx.gb$maleID
 
 
