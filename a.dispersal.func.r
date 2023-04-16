@@ -357,7 +357,7 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
     sim$deadDisp[sim$deadDisp$time == floor(time(sim))[1], "nDispDeadColl"] +
     length(deadWhoRoad)
   
-  stop()
+  #stop()
   
   # Territory search
   disperser <- turtleSet(dispersingInd, nonDispersingInd)
@@ -366,10 +366,10 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
   sim$lynx <- turtleSet(disperser, nonDisperser)
   sim$lynx <- sortOn(agents = sim$lynx, var = "who")
   #stop()
-  #source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r")
-  source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c1.searchterritory.func.r")
-  start.searchTerr <- Sys.time()
-  sim <- searchTerritory(sim)
+  source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r")
+  ##source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c1.searchterritory.func.r")
+  ##start.searchTerr <- Sys.time()
+  ##sim <- searchTerritory(sim)
   print(paste('searchTerr', start.searchTerr - Sys.time()))
   disperser <- turtle(turtles = sim$lynx, who = disperserID)
   nonDisperser <- turtle(turtles = sim$lynx, who = nonDisperserID)

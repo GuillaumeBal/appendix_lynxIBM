@@ -30,7 +30,14 @@ outputs.cpp <- dispersalGB(
   ncoll_ncoll = sim$nColl$ncoll,
   ncoll_time = sim$nColl$time,
   deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,],
-  deadDisp = sim$deadDisp[,]
+  deadDisp = sim$deadDisp[,],
+  TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
+  availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
+  popDist = sim$popDist@.Data[,],
+  coreTerrSizeFAlps = coreTerrSizeFAlps,
+  coreTerrSizeFJura = coreTerrSizeFJura,
+  coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
+  coreTerrSizeFBlackForest = coreTerrSizeFBlackForest
 )
 outputs.cpp
 
@@ -54,7 +61,14 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
         ncoll_ncoll = sim$nColl$ncoll,
         ncoll_time = sim$nColl$time,
         deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,],
-        deadDisp = sim$deadDisp[,]
+        deadDisp = sim$deadDisp[,],
+        TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
+        availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
+        popDist = sim$popDist@.Data[,],
+        coreTerrSizeFAlps = coreTerrSizeFAlps,
+        coreTerrSizeFJura = coreTerrSizeFJura,
+        coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
+        coreTerrSizeFBlackForest = coreTerrSizeFBlackForest
       ) 
     )
   #print(i)
@@ -78,6 +92,3 @@ outputs.loop %>%
            return(lynx_new.length < lynx.length)
          }) %>% table
 lynx.gb$maleID
-
-
-

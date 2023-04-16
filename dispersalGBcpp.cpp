@@ -176,7 +176,14 @@ List dispersalGB(// DataFrame, NumericVector
     IntegerVector ncoll_ncoll,
     IntegerVector ncoll_time,
     DataFrame deadLynxColl,
-    DataFrame deadDisp
+    DataFrame deadDisp,
+    IntegerMatrix TerrMap,
+    IntegerMatrix availCellsUpdatedRas,
+    IntegerMatrix popDist,
+    int coreTerrSizeFAlps,
+    int coreTerrSizeFJura,
+    int coreTerrSizeFVosgesPalatinate,
+    int coreTerrSizeFBlackForest
 ){
   
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -750,6 +757,7 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenCells_nMat.push_back(ChosenCellsYesCorr_nMat(l));
               ChosenCells_heading.push_back(ChosenCellsYesCorr_heading(l));
               ChosenCells_IsMoveCorr.push_back(ChosenCellsYesCorr_IsMoveCorr(l));
+              ChosenCells_steps.push_back(ChosenCellsYesCorr_steps(l));
             }else{
               ChosenCells_who.push_back(ChosenCellsNoCorr_who(l - nLChosenCellsYesCorr));
               ChosenCells_ind.push_back(ChosenCellsNoCorr_ind(l - nLChosenCellsYesCorr));
@@ -763,6 +771,7 @@ List dispersalGB(// DataFrame, NumericVector
               ChosenCells_nMat.push_back(ChosenCellsNoCorr_nMat(l - nLChosenCellsYesCorr));
               ChosenCells_heading.push_back(ChosenCellsNoCorr_heading(l - nLChosenCellsYesCorr));
               ChosenCells_IsMoveCorr.push_back(ChosenCellsNoCorr_IsMoveCorr(l - nLChosenCellsYesCorr));
+              ChosenCells_steps.push_back(ChosenCellsNoCorr_steps(l - nLChosenCellsYesCorr));
             }
           }
         }
@@ -911,8 +920,9 @@ List dispersalGB(// DataFrame, NumericVector
         IntegerVector pos_alive_who_ord = who_ord[alive_who_ord];
         // values to pick from ChosenCells
         IntegerVector dispersers_who_new = ChosenCells_who[pos_alive_who_ord], dispersers_ind_new = ChosenCells_ind[pos_alive_who_ord], dispersers_hab_new = ChosenCells_hab[pos_alive_who_ord], dispersers_pxcorHere_new = ChosenCells_pxcorHere[pos_alive_who_ord], dispersers_pycorHere_new = ChosenCells_pycorHere[pos_alive_who_ord], dispersers_pxcor_new = ChosenCells_pxcor[pos_alive_who_ord], dispersers_pycor_new = ChosenCells_pycor[pos_alive_who_ord], dispersers_lastDispX_new = ChosenCells_lastDispX[pos_alive_who_ord], dispersers_lastDispY_new = ChosenCells_lastDispY[pos_alive_who_ord], dispersers_nMat_new = ChosenCells_nMat[pos_alive_who_ord];
+        IntegerVector dispersers_steps_new = ChosenCells_steps[pos_alive_who_ord]; // added here because was missing for searchterritory
         int nDisp_new = dispersers_who_new.size();
-        // Values to get back from origial dispersers data
+        // Values to get back from original dispersers data
         IntegerVector index_dispersers_dispersers_new(dispersers_who_new.size());
         if(nDisp_new >= int_1){
           for(int i = 0; i<nDisp_new; i++){
@@ -946,27 +956,64 @@ List dispersalGB(// DataFrame, NumericVector
         lynx_xcor_new[res_index] = residents_xcor, lynx_ycor_new[res_index] = residents_ycor, lynx_who_new[res_index] = residents_who, lynx_heading_new[res_index] = residents_heading, lynx_prevX_new[res_index] = residents_prevX, lynx_prevY_new[res_index] = residents_prevY, lynx_breed_new[res_index] = residents_breed, lynx_color_new[res_index] = residents_color, lynx_pop_new[res_index] = residents_pop, lynx_sex_new[res_index] = residents_sex, lynx_age_new[res_index] = residents_age, lynx_status_new[res_index] = residents_status, lynx_lastDispX_new[res_index] = residents_lastDispX, lynx_lastDispY_new[res_index] = residents_lastDispY, lynx_nMat_new[res_index] = residents_nMat, lynx_maleID_new[res_index] = residents_maleID, lynx_nFem_new[res_index] = residents_nFem, lynx_rdMortTerr_new[res_index] = residents_rdMortTerr;
         lynx_xcor_new[disp_new_index] = dispersers_xcor_new;
         // make the old a clone of the new
-        lynx_xcor= clone(lynx_xcor_new), lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new), lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
+        lynx_xcor = clone(lynx_xcor_new), lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new), lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
+        
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // SEARCHTERRITORY BIT
+        
+        //compute number females in disp
+        int nfemDisp = 0;
+        for(int l = 0; l<nDisp_new; l++) {      /* loop over all rows  */
+          if(dispersers_sex_new(l) == "F"){
+            nfemDisp++;
+          }
+        }
+        // if some females do find lines and create subset matrix
+        if(nfemDisp > 1){
+          IntegerVector index_femDisp = nfemDisp;
+          for(int l = 0, j = 0; l<nDisp_new; l++){
+            if(dispersers_sex_new(l) == "F"){
+              index_femDisp[j] = l;
+              j++;
+            }
+          }
+          IntegerVector index_femDispRand = sample(index_femDisp, nfemDisp);
+          IntegerVector DispFem_xcor = dispersers_xcor_new[index_femDispRand], DispFem_ycor = dispersers_ycor_new[index_femDispRand], DispFem_who = dispersers_who_new[index_femDispRand], DispFem_heading = dispersers_heading_new[index_femDispRand], DispFem_prevX = dispersers_prevX_new[index_femDispRand], DispFem_prevY = dispersers_prevY_new[index_femDispRand], DispFem_age = dispersers_age_new[index_femDispRand], DispFem_steps = dispersers_steps_new[index_femDispRand], DispFem_lastDispX = dispersers_lastDispX_new[index_femDispRand], DispFem_lastDispY = dispersers_lastDispY_new[index_femDispRand], DispFem_nMat = dispersers_nMat_new[index_femDispRand], DispFem_maleID = dispersers_maleID_new[index_femDispRand], DispFem_nFem = dispersers_nFem_new[index_femDispRand], DispFem_rdMortTerr = dispersers_rdMortTerr_new[index_femDispRand];
+          CharacterVector DispFem_breed = dispersers_breed_new[index_femDispRand], DispFem_color = dispersers_color_new[index_femDispRand], DispFem_pop = dispersers_pop_new[index_femDispRand], DispFem_sex = dispersers_sex_new[index_femDispRand], DispFem_status = dispersers_status_new[index_femDispRand];
+          
+          // loop for female territory search
+          IntegerVector vec_out(nfemDisp);
+          for(int f = 0; f<nfemDisp; f++){ //for(searchingFemID in dispFemID) {
+            if((HabitatMap(DispFem_lastDispX(f), DispFem_lastDispY(f)) == 4) &
+               (R_IsNA(TerrMap(DispFem_lastDispX(f), DispFem_lastDispX(f))))){
+              //if(HabitatMap(1, 1) == 4 & R_IsNA(TerrMap(1, 1))){
+              for(int l = 0; l<TerrMap.nrow(); l++){
+                for(int c = 0; c<TerrMap.ncol(); c++){
+                  if(R_IsNA(TerrMap(l,c)) == false){
+                    availCellsUpdatedRas(l,c) = int_0;
+                  }
+                }
+              }
+              int terrSize; // init terrSize
+              if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_1){
+                terrSize = ::Rf_fround(coreTerrSizeFAlps, 1);
+              }
+              if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_2){
+                terrSize = ::Rf_fround(coreTerrSizeFJura, 1);
+              }
+              if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_3){
+                terrSize = ::Rf_fround(coreTerrSizeFVosgesPalatinate, 1);
+              }
+              if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_4){
+                terrSize = ::Rf_fround(coreTerrSizeFBlackForest, 1);
+              }
+            }
+          } //for(int f = 0; f<n_fem_Disp; f++){
+        }//if(n_fem_Disp > 1){
         
         List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
-                                     //_["deadDispLine"] = deadDispLine,
-                                     //_["lynx_age_rand"] = lynx_age[rand_values],
-                                     // _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
-                                     // _["nextCellsType_yF"] = nextCellsType_pycorF,
-                                     // _["IsMoveCorr"] = IsMoveCorr,
-                                     // _["nCorr1"] = nCorr1,
-                                     // _["ChosenCellsYesCorr_prefDir"] = ChosenCellsYesCorr_prefDir,
-                                     // _["ChosenCellsYesCorr_ind"] = ChosenCellsYesCorr_ind,
-                                     // _["ChosenCells_pycor"] = ChosenCells_pycor,
-                                     // _["ChosenCells_who"] = ChosenCells_who,
-                                     // _["ChosenCells_ind"] = ChosenCells_ind,
-                                     // _["ChosenCells_hab"] = ChosenCells_hab,
-                                     // _["ChosenCells_IsMoveCorr"] = ChosenCells_IsMoveCorr,
-                                     // _["MatInd"] = MatInd,
                                      _["deathRoad"] = deathRoad,
-                                     //_["who_ord"] = who_ord,
-                                     //["alive_who_ord"] = alive_who_ord,
-                                     // _["pos_alive_who_ord"] = pos_alive_who_ord,
                                      _["res_index"] = res_index,
                                      _["disp_new_index"]= disp_new_index,
                                      //_["dispersers_xcor_new"] = dispersers_xcor_new, _["dispersers_ycor_new"] = dispersers_ycor_new, _["dispersers_who_new"] = dispersers_who_new, _["dispersers_heading_new"] = dispersers_heading_new, _["dispersers_prevX_new"] = dispersers_prevX_new, _["dispersers_prevY_new"] = dispersers_prevY_new, _["dispersers_breed_new"] = dispersers_breed_new, _["dispersers_color_new"] = dispersers_color_new, _["dispersers_pop_new"] = dispersers_pop_new, _["dispersers_sex_new"] = dispersers_sex_new, _["dispersers_age_new"] = dispersers_age_new, _["dispersers_status_new"] = dispersers_status_new, _["dispersers_lastDispX_new"] = dispersers_lastDispX_new, _["dispersers_lastDispY_new"] = dispersers_lastDispY_new, _["dispersers_nMat_new"] = dispersers_nMat_new, _["dispersers_maleID_new"] = dispersers_maleID_new, _["dispersers_nFem_new"] = dispersers_nFem_new, _["dispersers_rdMortTerr_new"] = dispersers_rdMortTerr_new
@@ -983,11 +1030,3 @@ List dispersalGB(// DataFrame, NumericVector
   }// end step loop
 } // end of function
 
-// You can include R code blocks in C++ files processed with sourceCpp
-// (useful for testing and development). The R code will be automatically 
-// run after the compilation.
-//
-
-//*** R
-//timesTwo(42)
-//*/

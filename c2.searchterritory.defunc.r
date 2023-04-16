@@ -1,4 +1,5 @@
 disp <- turtle(turtles = sim$lynx, who = sim$aliveDispersingIndID)
+disp
 
 if(NLcount(disp) != 0) {
   
@@ -18,7 +19,8 @@ if(NLcount(disp) != 0) {
       #searchingFemCellAvail <- of(world = sim$terrMap, agents = searchingFemCell)
       searchingFemCellAvail <- sim$terrMap[searchingFemCell[, 1], searchingFemCell[, 2]] # faster
       
-      if(searchingFemCellType == 4 & is.na(searchingFemCellAvail)){ # current position
+      searchingFemCellType <- 4 #
+      #if(searchingFemCellType == 4 & is.na(searchingFemCellAvail)){ # current position
         #terrValues <- of(world = sim$terrMap, agents = patches(sim$terrMap))
         terrValues <- as.numeric(t(sim$terrMap@.Data)) # faster
         availCellsUpdatedRas <- sim$availCellsRas
@@ -41,6 +43,7 @@ if(NLcount(disp) != 0) {
         if(terrSizeName == 4){
           terrSize <- round(coreTerrSizeFBlackForest)
         }
+        stop()
         terrDT <- spread(landscape = availCellsUpdatedRas,
                          loci = cellFromPxcorPycor(world = sim$habitatMap,
                                                    pxcor = searchingFemCell[, 1],
