@@ -19,8 +19,8 @@ neighProbs = NULL; exactSizes = FALSE; relativeSpreadProb = FALSE
 
 landscape = availCellsUpdatedRas
 loci = cellFromPxcorPycor(world = sim$habitatMap,
-                          pxcor = searchingFemCell[, 1],
-                          pycor = searchingFemCell[, 2])
+                          pxcor = 520,#searchingFemCell[, 1],
+                          pycor = 10)#searchingFemCell[, 2])
 spreadProb = availCellsUpdatedRas 
 maxSize = terrSize
 returnIndices = TRUE

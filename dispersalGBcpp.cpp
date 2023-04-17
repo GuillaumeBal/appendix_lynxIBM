@@ -1008,9 +1008,18 @@ List dispersalGB(// DataFrame, NumericVector
               if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_4){
                 terrSize = ::Rf_fround(coreTerrSizeFBlackForest, 1);
               }
+              //beginning of spread function //////////
+              IntegerMatrix Spredprob = clone(availCellsUpdatedRas);
+              IntegerMatrix landscape = clone(availCellsUpdatedRas);
+              int loci
             }
           } //for(int f = 0; f<n_fem_Disp; f++){
         }//if(n_fem_Disp > 1){
+        ///////////////////////////////////////////////////////////
+        
+        
+        
+        
         
         List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
                                      _["deathRoad"] = deathRoad,

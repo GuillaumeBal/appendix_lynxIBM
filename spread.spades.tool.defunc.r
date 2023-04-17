@@ -19,8 +19,9 @@ neighProbs = NULL; exactSizes = FALSE; relativeSpreadProb = FALSE
 
 landscape = availCellsUpdatedRas
 loci = as.integer(cellFromPxcorPycor(world = sim$habitatMap,
-                                     pxcor = searchingFemCell[, 1],
-                                     pycor = searchingFemCell[, 2]))
+                                     pxcor = x.picked,
+                                     pycor = y.picked)
+                  )
 spreadProb = availCellsUpdatedRas 
 maxSize = terrSize
 returnIndices = TRUE
@@ -29,7 +30,7 @@ quick = TRUE
 
 samInt <- dqrng::dqsample.int
 # set dqrng seed from base state
-dqrng::dqset.seed(sample.int(1e9, 2))
+#dqrng::dqset.seed(sample.int(1e9, 2))
 
 spreadStateExists <- is(spreadState, "data.table")
 spreadProbLaterExists <- TRUE
@@ -84,10 +85,7 @@ if (needEmptySpreads) {
 
 n <- 1L
 
-
 set(spreadsDT, loci, "spreads", 1L:length(loci))
-##DT spreads[loci] <- 1L:length(loci)
-# give values to spreads vector at initialLoci
 spreadsIndices <- unname(loci)
 #browser(expr = exists("aaaaa"))
 length(spreadsIndices) <- length(loci) * 100
@@ -167,7 +165,7 @@ while (length(loci) & (n <= iterations)) {
 } # end of while loop
 
 # Reset the base R seed so it is deterministic
-set.seed(dqrng::dqsample.int(1e9, 1) + sample.int(1e9, 1))
+#set.seed(dqrng::dqsample.int(1e9, 1) + sample.int(1e9, 1))
 
 spreadsIndices <- spreadsIndices[1:prevSpreadIndicesActiveLen]
 
