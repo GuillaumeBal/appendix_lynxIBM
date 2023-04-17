@@ -365,8 +365,8 @@ sim$deadDisp <- rbind(sim$deadDisp, data.frame(nDisp = nDisp, nDispDeadColl = 0,
   disperserID <- disperser@.Data[, "who"]
   sim$lynx <- turtleSet(disperser, nonDisperser)
   sim$lynx <- sortOn(agents = sim$lynx, var = "who")
-  #stop()
-  source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r")
+  stop()
+  source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c2.searchterritory.defunc.r", print.eval = TRUE)
   ##source("C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/c1.searchterritory.func.r")
   ##start.searchTerr <- Sys.time()
   ##sim <- searchTerritory(sim)
