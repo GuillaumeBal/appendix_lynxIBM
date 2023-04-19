@@ -47,25 +47,31 @@ if(NLcount(disp) != 0) {
     #which(availCellsUpdatedRas[,] == 0, arr.ind = TRUE)
     #terrDT <- spread(landscape = availCellsUpdatedRas,
     #availCellsUpdatedRas[520, 10] <- NA
-    dim.1.spredf <- 2
-    while(dim.1.spredf > 1){
-      x.picked <- sample.int(sim$habitatMap@maxPxcor, 1)
-      y.picked <- sample.int(sim$habitatMap@maxPycor, 1)
-      spread.res <- spread(landscape = availCellsUpdatedRas,
-                           loci = cellFromPxcorPycor(world = sim$habitatMap,
-                                                     pxcor = x.picked,#10,#searchingFemCell[, 1],
-                                                     pycor = y.picked),#520),#searchingFemCell[, 2]),
-                           spreadProb = availCellsUpdatedRas, maxSize = terrSize, returnIndices = TRUE,
-                           quick = TRUE)
-      dim.1.spredf <- spread.res %>% dim %>% `[`(1)
+    dim.1.spredf <- 1
+    if(pick.new.values.spred){
+      while(dim.1.spredf <= 96){
+        x.picked <- sample.int(sim$habitatMap@maxPxcor, 1)
+        y.picked <- sample.int(sim$habitatMap@maxPycor, 1)
+        spread.res <- spread(landscape = availCellsUpdatedRas,
+                             loci = cellFromPxcorPycor(world = sim$habitatMap,
+                                                       pxcor = x.picked,#10,#searchingFemCell[, 1],
+                                                       pycor = y.picked),#520),#searchingFemCell[, 2]),
+                             spreadProb = availCellsUpdatedRas,
+                             maxSize = terrSize, 
+                             returnIndices = TRUE,
+                             quick = TRUE)
+        dim.1.spredf <- spread.res %>% dim %>% `[`(1)
+      }
     }
+    stop()
+    spread.res
     spread(landscape = availCellsUpdatedRas,
            loci = cellFromPxcorPycor(world = sim$habitatMap,
                                      pxcor = x.picked,#searchingFemCell[, 1],
                                      pycor = y.picked),#searchingFemCell[, 2]),
            spreadProb = availCellsUpdatedRas, maxSize = terrSize, returnIndices = TRUE,
            quick = TRUE)
-    stop()
+
     terrCells <- unique(terrDT$indices) # cells of the built territory
     if(length(terrCells) == terrSize) {
       newTerrCells <- PxcorPycorFromCell(world = sim$habitatMap, cellNum = terrCells)
