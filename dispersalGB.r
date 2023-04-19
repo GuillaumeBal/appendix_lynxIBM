@@ -68,7 +68,9 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
         coreTerrSizeFAlps = coreTerrSizeFAlps,
         coreTerrSizeFJura = coreTerrSizeFJura,
         coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
-        coreTerrSizeFBlackForest = coreTerrSizeFBlackForest
+        coreTerrSizeFBlackForest = coreTerrSizeFBlackForest,
+        returnDistances = FALSE,
+        allowOverlap = FALSE
       ) 
     )
   #print(i)

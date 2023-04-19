@@ -183,7 +183,9 @@ List dispersalGB(// DataFrame, NumericVector
     int coreTerrSizeFAlps,
     int coreTerrSizeFJura,
     int coreTerrSizeFVosgesPalatinate,
-    int coreTerrSizeFBlackForest
+    int coreTerrSizeFBlackForest,
+    bool returnDistances,
+    bool allowOverlap
 ){
   
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -913,7 +915,7 @@ List dispersalGB(// DataFrame, NumericVector
         deadDisp["nDispDeadColl"] = deadDisp_nDispDeadColl;
         
         // create disperser new table, first two lines were some test
-        deathRoad(0) = 1, deathRoad(1) = 1, deathRoad(2) = 1, deathRoad(3) = 1 , deathRoad(4) = 1;
+        //deathRoad(0) = 1, deathRoad(1) = 1, deathRoad(2) = 1, deathRoad(3) = 1 , deathRoad(4) = 1;
         //IntegerVector rand_values = sample(5, 10, true) - 1; // number of samples is argument 2; -1 to make it start at 0
         IntegerVector who_ord = IntOrderIndex(ChosenCells_who);
         IntegerVector alive_who_ord = WhichEqual(deathRoad[who_ord], int_0);
@@ -982,57 +984,99 @@ List dispersalGB(// DataFrame, NumericVector
           IntegerVector DispFem_xcor = dispersers_xcor_new[index_femDispRand], DispFem_ycor = dispersers_ycor_new[index_femDispRand], DispFem_who = dispersers_who_new[index_femDispRand], DispFem_heading = dispersers_heading_new[index_femDispRand], DispFem_prevX = dispersers_prevX_new[index_femDispRand], DispFem_prevY = dispersers_prevY_new[index_femDispRand], DispFem_age = dispersers_age_new[index_femDispRand], DispFem_steps = dispersers_steps_new[index_femDispRand], DispFem_lastDispX = dispersers_lastDispX_new[index_femDispRand], DispFem_lastDispY = dispersers_lastDispY_new[index_femDispRand], DispFem_nMat = dispersers_nMat_new[index_femDispRand], DispFem_maleID = dispersers_maleID_new[index_femDispRand], DispFem_nFem = dispersers_nFem_new[index_femDispRand], DispFem_rdMortTerr = dispersers_rdMortTerr_new[index_femDispRand];
           CharacterVector DispFem_breed = dispersers_breed_new[index_femDispRand], DispFem_color = dispersers_color_new[index_femDispRand], DispFem_pop = dispersers_pop_new[index_femDispRand], DispFem_sex = dispersers_sex_new[index_femDispRand], DispFem_status = dispersers_status_new[index_femDispRand];
           
+          // List L_return = List::create(Named("DispFem_breed") = DispFem_breed,
+          //                              _["nfemDisp"] = nfemDisp
+          //                                //_["terrSize"] = terrSize
+          // );
+          // return L_return;
+          
           // loop for female territory search
           IntegerVector vec_out(nfemDisp);
           for(int f = 0; f<nfemDisp; f++){ //for(searchingFemID in dispFemID) {
-            if((HabitatMap(DispFem_lastDispX(f), DispFem_lastDispY(f)) == 4) &
-               (R_IsNA(TerrMap(DispFem_lastDispX(f), DispFem_lastDispX(f))))){
-              //if(HabitatMap(1, 1) == 4 & R_IsNA(TerrMap(1, 1))){
-              for(int l = 0; l<TerrMap.nrow(); l++){
-                for(int c = 0; c<TerrMap.ncol(); c++){
-                  if(R_IsNA(TerrMap(l,c)) == false){
-                    availCellsUpdatedRas(l,c) = int_0;
-                  }
-                }
-              }
-              int terrSize; // init terrSize
+            if(((HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_4) |
+               (HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_3) |
+               (HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_2)) &
+               !(R_IsNA(TerrMap(DispFem_lastDispY(f), DispFem_lastDispX(f))))){
+               //if(HabitatMap(1, 1) == 4 & R_IsNA(TerrMap(1, 1))){
+               for(int l = 0; l<TerrMap.nrow(); l++){
+                 for(int c = 0; c<TerrMap.ncol(); c++){
+                   if(R_IsNA(TerrMap(l,c)) == false){
+                     availCellsUpdatedRas(l,c) = int_0;
+                     //stop("got in loop");
+                   }
+                 }
+               }
+               int terrSize; // init terrSize
               if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_1){
-                terrSize = ::Rf_fround(coreTerrSizeFAlps, 1);
+                terrSize = int(coreTerrSizeFAlps);
               }
               if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_2){
-                terrSize = ::Rf_fround(coreTerrSizeFJura, 1);
+                terrSize = int(coreTerrSizeFJura);
               }
               if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_3){
-                terrSize = ::Rf_fround(coreTerrSizeFVosgesPalatinate, 1);
+                terrSize = int(coreTerrSizeFVosgesPalatinate);
               }
               if(popDist(DispFem_lastDispX(f), DispFem_lastDispY(f)) == int_4){
-                terrSize = ::Rf_fround(coreTerrSizeFBlackForest, 1);
+                terrSize = int(coreTerrSizeFBlackForest);
               }
-              //beginning of spread function //////////
-              IntegerMatrix Spredprob = clone(availCellsUpdatedRas);
-              IntegerMatrix landscape = clone(availCellsUpdatedRas);
-              int loci
-            }
+              //beginning of spread function /////////////////////////////////////////////////////////////////////////
+              
+              // some inits
+              //IntegerMatrix Spredprob = clone(availCellsUpdatedRas);
+              //IntegerMatrix landscape = clone(availCellsUpdatedRas);
+              int loci = HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY(f)) + DispFem_lastDispX(f);
+              int MaxSize = int(terrSize);
+              bool ReturnIndices = true;
+              bool spreadStateExists = false;
+              bool spreadProbLaterExists = true;
+              int initialLoci = int(loci);
+              int sequenceInitialLoci = int_1;
+              int ncells = HabitatMap.ncol() * HabitatMap.nrow();
+              bool allowOverlapOrReturnDistances = allowOverlap | returnDistances;
+              bool useMatrixVersionSpreads = allowOverlapOrReturnDistances | spreadStateExists;
+              IntegerVector spreadsDT_spreads(ncells);
+              int n = int_1;
+              spreadsDT_spreads(loci) = n;
+              IntegerVector spreadIndices(100); spreadIndices(0) = 1;
+              IntegerVector prevSpreadIndicesActiveLen(1); prevSpreadIndicesActiveLen(0) = 1;
+              int prevSpreadIndicesFullLen = spreadIndices.size();
+              int size = int_1;
+              bool noMaxSize = false;
+              //////// now get within while loop
+              int iterations = int_5;
+              while(n <iterations){
+                n++;
+              }
+              // code
+              
+              List L_return = List::create(Named("availCellsUpdatedRas") = availCellsUpdatedRas,
+                                           _["terrSize"] = terrSize
+              );
+              return L_return;
+              
+              ////////////////////////////////////////////////////////////////////////////////////////////////////////
+            }// end of habitat 4 spread
           } //for(int f = 0; f<n_fem_Disp; f++){
+          // List L_return = List::create(Named("DispFem_breed") = DispFem_breed,
+          //                              _["nfemDisp"] = nfemDisp
+          //                                //_["terrSize"] = terrSize
+          // );
+          // return L_return;
         }//if(n_fem_Disp > 1){
         ///////////////////////////////////////////////////////////
         
-        
-        
-        
-        
-        List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
-                                     _["deathRoad"] = deathRoad,
-                                     _["res_index"] = res_index,
-                                     _["disp_new_index"]= disp_new_index,
-                                     //_["dispersers_xcor_new"] = dispersers_xcor_new, _["dispersers_ycor_new"] = dispersers_ycor_new, _["dispersers_who_new"] = dispersers_who_new, _["dispersers_heading_new"] = dispersers_heading_new, _["dispersers_prevX_new"] = dispersers_prevX_new, _["dispersers_prevY_new"] = dispersers_prevY_new, _["dispersers_breed_new"] = dispersers_breed_new, _["dispersers_color_new"] = dispersers_color_new, _["dispersers_pop_new"] = dispersers_pop_new, _["dispersers_sex_new"] = dispersers_sex_new, _["dispersers_age_new"] = dispersers_age_new, _["dispersers_status_new"] = dispersers_status_new, _["dispersers_lastDispX_new"] = dispersers_lastDispX_new, _["dispersers_lastDispY_new"] = dispersers_lastDispY_new, _["dispersers_nMat_new"] = dispersers_nMat_new, _["dispersers_maleID_new"] = dispersers_maleID_new, _["dispersers_nFem_new"] = dispersers_nFem_new, _["dispersers_rdMortTerr_new"] = dispersers_rdMortTerr_new
-                                     _["dispersers_xcor_new"] = dispersers_xcor_new,
-                                     _["residents_xcor"] = residents_xcor, 
-                                     _["lynx_xcor"] = lynx_xcor,
-                                     _["lynx_xcor_new"] = lynx_xcor_new
-                                       //_["dispersersNew_who"] = dispersersNew_who
-        );
-        return  L_return;
+        // List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
+        //                              _["deathRoad"] = deathRoad,
+        //                              _["res_index"] = res_index,
+        //                              _["disp_new_index"]= disp_new_index,
+        //                              //_["dispersers_xcor_new"] = dispersers_xcor_new, _["dispersers_ycor_new"] = dispersers_ycor_new, _["dispersers_who_new"] = dispersers_who_new, _["dispersers_heading_new"] = dispersers_heading_new, _["dispersers_prevX_new"] = dispersers_prevX_new, _["dispersers_prevY_new"] = dispersers_prevY_new, _["dispersers_breed_new"] = dispersers_breed_new, _["dispersers_color_new"] = dispersers_color_new, _["dispersers_pop_new"] = dispersers_pop_new, _["dispersers_sex_new"] = dispersers_sex_new, _["dispersers_age_new"] = dispersers_age_new, _["dispersers_status_new"] = dispersers_status_new, _["dispersers_lastDispX_new"] = dispersers_lastDispX_new, _["dispersers_lastDispY_new"] = dispersers_lastDispY_new, _["dispersers_nMat_new"] = dispersers_nMat_new, _["dispersers_maleID_new"] = dispersers_maleID_new, _["dispersers_nFem_new"] = dispersers_nFem_new, _["dispersers_rdMortTerr_new"] = dispersers_rdMortTerr_new
+        //                              _["dispersers_xcor_new"] = dispersers_xcor_new,
+        //                              _["residents_xcor"] = residents_xcor,
+        //                              _["lynx_xcor"] = lynx_xcor,
+        //                              _["lynx_xcor_new"] = lynx_xcor_new,
+        //                                //_["dispersersNew_who"] = dispersersNew_who
+        // );
+        // return  L_return;
         
       }
     }// of if dispersers left
