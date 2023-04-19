@@ -160,9 +160,8 @@ spread.base.gb <-
       # intact after it has exited spread, so that it is available again
       # immediately for reuse.
       needEmptySpreads <- TRUE
-      stNamespace <- asNamespace("SpaDES.tools")
-      if (exists("spreadsDTInNamespace", envir = stNamespace)) {
-        spreadsDT <- getFromNamespace("spreadsDTInNamespace", "SpaDES.tools")
+      if (exists("spreadsDTInNamespace")) {
+        spreadsDT <- get("spreadsDTInNamespace")
         # set(spreadsDT, NULL, "spreads", 0L)
         # spreads <- spreadsDT$spreads
         if (identical(NROW(spreadsDT), ncells)) {
@@ -173,8 +172,8 @@ spread.base.gb <-
         spreadsDT <- data.table(spreads = vector("integer", ncells))
         set(spreadsDT, NULL, "spreads", 0L)
         # put the empty data.table into the SpaDES.tools namespace
-        assignInMyNamespace("spreadsDTInNamespace", spreadsDT)
-        on.exit({assignInMyNamespace("spreadsDTInNamespace", integer())})
+        assign("spreadsDTInNamespace", spreadsDT)
+        on.exit({assign("spreadsDTInNamespace", integer())})
       }
     }
     
@@ -982,7 +981,7 @@ while(dim.allcells.1 <= 96){
     returnIndices = TRUE,
     quick = TRUE)
   dim.allcells.1 <- dim(allCells)[1]
-  print(paste(count.dim, dim.allCells.1, sep = ' / '))
+  print(paste(count.dim, dim.allcells.1, sep = ' / '))
   count.dim <- count.dim + 1
 }
 
