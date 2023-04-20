@@ -184,7 +184,55 @@ int changeHeading(int to_change){
   return headings(new_val(0));
 }
 
-
+// [[Rcpp::export]]
+// adjacent cells coordinates
+List UniqAdjCells(IntegerVector x_coords, IntegerVector y_coords, NumericMatrix Matrix){
+  IntegerVector deltaX = {-1, 0, 1};
+  IntegerVector deltaY = {-1, 0, 1};
+  int nColMat = Matrix.ncol();
+  int nRowMat = Matrix.nrow();
+  IntegerVector AdjX(0);
+  IntegerVector AdjY(0);
+  IntegerVector CellInd(0);
+  int new_y;
+  int new_x;
+  int new_index;
+  for(int z = 0; z<x_coords.size(); z++){
+    for(int l = 0; l<deltaY.size(); l++){
+      for(int c = 0; c<deltaX.size(); c++){
+        new_y = y_coords(z) + deltaY(l);
+        new_x = x_coords(z) + deltaX(c);
+        new_index = (new_x + 1) * nRowMat + new_y;
+        if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat)){
+          AdjX.push_back(new_x);
+          AdjY.push_back(new_y);
+          CellInd.push_back(new_index);
+          //stop("Went into loop");
+        }
+      }
+    }
+  }
+  // find unique index and then pick just one of each
+  IntegerVector UniqCell = unique(CellInd);
+  int nUniqCell = UniqCell.size();
+  IntegerVector keptCells(nUniqCell);
+  for(int i = 0; i<nUniqCell; i++){
+    for(int j = 0; j<CellInd.size(); j++){
+      if(CellInd(j) == UniqCell(i)){
+        keptCells(i) = j;
+        //break;
+      }
+    }
+  }
+  IntegerVector AdjX_left = AdjX[keptCells];
+  IntegerVector AdjY_left = AdjY[keptCells];
+  IntegerVector CellInd_left = CellInd[keptCells];
+  List L_return = List::create(Named("AdjX") = AdjX_left,
+                          _["AdjY"] = AdjY_left,
+                          _["CellInd"] = CellInd_left);
+  // return L_return;
+  return L_return;
+}
 
 
 // You can include R code blocks in C++ files processed with sourceCpp

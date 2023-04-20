@@ -41,6 +41,22 @@ y_cur = 425
 towards_simple(x_to = x_to, y_to = y_to, x_cur = x_cur, y_cur = y_cur)
 
 # change heading value
-sourceCpp("cpp.helpers.cpp") 
 changeHeading(90)
+
+# ==============================================================================
+
+sourceCpp("cpp.helpers.cpp")
+#return unique adjacent cells 
+my.mat <- matrix(rep(0, 81), nrow = 9) %>% as.matrix()
+y_coords = c(4, 4) 
+x_coords = c(1, 2)
+my.mat[y_coords, x_coords] <- 1
+adj_cells <- UniqAdjCells(y_coords = y_coords- 1, x_coords = x_coords- 1, Matrix = my.mat)
+adj_cells$AdjX <- adj_cells$AdjX + 1
+adj_cells$AdjY <- adj_cells$AdjY + 1 
+my.mat[adj_cells$AdjY, adj_cells$AdjX] <- my.mat[adj_cells$AdjY, adj_cells$AdjX] + 1
+
+plot(raster(my.mat))
+
+
 

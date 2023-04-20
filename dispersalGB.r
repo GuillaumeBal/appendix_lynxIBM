@@ -37,7 +37,9 @@ outputs.cpp <- dispersalGB(
   coreTerrSizeFAlps = coreTerrSizeFAlps,
   coreTerrSizeFJura = coreTerrSizeFJura,
   coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
-  coreTerrSizeFBlackForest = coreTerrSizeFBlackForest
+  coreTerrSizeFBlackForest = coreTerrSizeFBlackForest,
+  returnDistances = FALSE,
+  allowOverlap = FALSE
 )
 outputs.cpp
 
