@@ -1,6 +1,9 @@
 require(inline)
 require(Rcpp)
 require(RcppArmadillo)
+require(tryCatchLog)
+#require(futile.logger)
+#options("tryCatchLog.write.error.dump.file" = TRUE)
 
 # work on search territory part ====================================================
 
@@ -29,7 +32,7 @@ outputs.cpp <- dispersalGB(
   startSimYear = start(sim, "year")[1],
   ncoll_ncoll = sim$nColl$ncoll,
   ncoll_time = sim$nColl$time,
-  deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,],
+  deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,] %>% `[`(,c('who', "steps", "heading", "lastDispX", "lastDispY")),
   deadDisp = sim$deadDisp[,],
   TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
   availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
@@ -44,11 +47,12 @@ outputs.cpp <- dispersalGB(
 outputs.cpp
 
 outputs.loop <- list()
-for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
+for(i in 1:10000){ # run several times to check for potential indexing issues that are sometimes fine a few times
   outputs.loop[[i]] <- 
+  #tryCatch(
     try(
       dispersalGB(
-        lynx = lynx.gb,
+        lynx = lynx.gb[lynx.gb$who != 1868, ],
         lynx_list = lynx.gb %>% as.data.frame %>% as.list,
         sMaxPs = sMaxPs,
         HabitatMap = habitatMap.gb,
@@ -62,7 +66,7 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
         startSimYear = start(sim, "year")[1],
         ncoll_ncoll = sim$nColl$ncoll,
         ncoll_time = sim$nColl$time,
-        deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,],
+        deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,] %>% `[`(,c('who', "steps", "heading", "lastDispX", "lastDispY")), # did not bother to do the others
         deadDisp = sim$deadDisp[,],
         TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
         availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
@@ -73,26 +77,53 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
         coreTerrSizeFBlackForest = coreTerrSizeFBlackForest,
         returnDistances = FALSE,
         allowOverlap = FALSE
-      ) 
+      )#,
+      #error = function(e) e
     )
   #print(i)
   #print(outputs.loop[[i]])
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }
 
-outputs.loop[[1]]
+outputs.loop[[1]] %>% sapply(., FUN = length)
+
+# check for run return before issue data
+outputs.loop[[1]] %>% names %>% `[`(1)
+outputs.loop %>% 
+  sapply(.,
+         function(x){
+           names(x)[1] == 'int_1'
+         }) %>% which
+
+outputs.loop[[2050]]
+outputs.loop[[1006]]$lynx_who%>% `==` (1006) %>% which
+
+lynx.gb[lynx.gb$who == 1868, ]
+
 
 outputs.loop %>% 
-  sapply(., 
+  sapply(.,
          function(x){
-           sum(x$deathRoad)
+           x$deadLynxColl %>% class
+         }) %>% `==`("list") %>% which
+
+outputs.loop[[1410]]
+
+outputs.loop %>% 
+  sapply(.,
+         function(x){
+          length(x$lynx_who) %>% table %>% table
          }) %>%  table
 
 outputs.loop %>% 
-  sapply(., 
+  sapply(.,
          function(x){
-           lynx_new.length <- x['lynx_xcor_new'] %>% length
-           lynx.length <-  x['lynx_xcor']  %>% length
-           return(lynx_new.length < lynx.length)
-         }) %>% table
-lynx.gb$maleID
+           length(x$dispersers_who_new) %>% table %>% table
+         }) %>%  table
+
+
+# outputs.loop %>% 
+#     sapply(.,
+#            function(x){
+#              substr(x$message, nchar(x$message)-20+1, nchar(x$message))
+#            }) %>%  table

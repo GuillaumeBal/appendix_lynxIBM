@@ -112,7 +112,7 @@ while (length(loci) & (n <= iterations)) {
   potentials <- potentials[keep, , drop = FALSE]
   
   spreadProbs <- spreadProb[potentials[, 2L]]
-  if (anyNA(spreadProbs)) spreadProbs[is.na(spreadProbs)] <- 0
+  if (anyNA(spreadProbs)) spreadProbs[is.na(spreadProbs)] <- 0 # GB already corrected
   
   randomSuccesses <- runifC(NROW(potentials)) <= spreadProbs
   potentials <- potentials[randomSuccesses, , drop = FALSE]

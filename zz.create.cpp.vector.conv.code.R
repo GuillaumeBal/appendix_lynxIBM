@@ -1,5 +1,8 @@
 colnames(lynx.gb)
 
+lynx.gb <- sim$lynx[,]
+disperser.gb <- lynx.gb[lynx.gb$status == 'disp', ]
+
 # search territory from lynx dataframe to vectors
 num.col.lynx <- lynx.gb %>%  `[`(1, ) %>% sapply(., is.numeric) 
 
@@ -31,12 +34,12 @@ paste('lynx_', colnames(lynx.gb)[num.col.lynx], ' = lynx["', colnames(lynx.gb)[n
 
 
 # to create disperser_fem subset vectors
-num.col.disperser <- disperser.gb %>%  `[`(1, ) %>% sapply(., is.numeric) 
-paste('disperserFem_', colnames(disperser.gb)[num.col.disperser], ' = disperser_', colnames(disperser.gb)[num.col.disperser], '[index_fem_disperser_rand]', sep = "") %>% 
-  paste(., collapse = ', ') %>% paste('NumericVector ', ., ';', sep = '') %>% 
+num.col.disperser <- disperser.gb %>%  `[`(1, ) %>% sapply(., is.numeric)
+paste('disperserFem_', colnames(disperser.gb)[num.col.disperser], ' = disperser_', colnames(disperser.gb)[num.col.disperser], '[index_fem_disperser_rand]', sep = "") %>%
+  paste(., collapse = ', ') %>% paste('NumericVector ', ., ';', sep = '') %>%
   paste(., '\n',
-        paste('disperserFem_', colnames(disperser.gb)[!num.col.disperser], ' = disperser_', colnames(disperser.gb)[!num.col.disperser], '[index_fem_disperser_rand]', sep = "") %>% 
-          paste(., collapse = ', ') %>% paste('CharacterVector ', ., ';', sep = '')) %>% cat() 
+        paste('disperserFem_', colnames(disperser.gb)[!num.col.disperser], ' = disperser_', colnames(disperser.gb)[!num.col.disperser], '[index_fem_disperser_rand]', sep = "") %>%
+          paste(., collapse = ', ') %>% paste('CharacterVector ', ., ';', sep = '')) %>% cat()
 
 # create dataframe from vectors
 paste(
@@ -103,10 +106,25 @@ paste('lynx_', colnames(lynx.gb)[num.col.lynx], '_new(nLynx_new)', sep = "") %>%
           paste(., collapse = ', ') %>% paste('CharacterVector ', ., ';', sep = '')) %>% cat() 
 
 
-
 paste('lynx_', colnames(lynx.gb), '_new[res_index] = residents_',  colnames(lynx.gb), sep = "") %>% 
   paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
 lynx_xcor_new[res_index] = residents_xcor;
+
+paste('lynx_', colnames(lynx.gb), '_new[res_index] = residents_',  colnames(lynx.gb), sep = "") %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
+
+paste('lynx_', ChosenCells_variables, '_new[disp_new_index] = dispersers_',  ChosenCells_variables, "_new", sep = "") %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
+
+varNotChosenCells <- 
+colnames(lynx.gb)[colnames(lynx.gb) %>% `%in%`(ChosenCells_variables) %>% `!`]
+paste('lynx_', varNotChosenCells, '_new(i + nRes) = lynx_',  varNotChosenCells, "(corresLynx)", sep = "") %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
+
+
+# for dispersers with chosen cells var
+lynx_xcor_new[disp_new_index] = dispersers_xcor_new;
+# for other var notin chosen 
 
 
 paste('lynx_', colnames(lynx.gb), '= clone(lynx_', colnames(lynx.gb), '_new)', sep = '') %>% 
