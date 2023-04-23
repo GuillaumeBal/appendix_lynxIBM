@@ -85,6 +85,8 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }
 
+outputs.loop
+
 outputs.loop[[1]] %>% sapply(., FUN = length)
 
 # check for run return before issue data =======================================
