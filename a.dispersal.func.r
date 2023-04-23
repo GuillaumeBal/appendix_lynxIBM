@@ -319,6 +319,7 @@ if(NLcount(dispersingIndNMatMax) != 0){
   # Reset dispersingIndNMatMax
   dispersingIndNMatMax <- noTurtles()
 }
+#stop()
 dispersingInd <- moveTo(turtles = dispersingInd, agents = chosenCellsCoords)
 # chosenCellsCoords are the dispersers new locations
 # Put + 1 on these cells because dispersers stepped on them
