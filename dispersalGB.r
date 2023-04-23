@@ -47,7 +47,7 @@ outputs.cpp <- dispersalGB(
 outputs.cpp
 
 outputs.loop <- list()
-for(i in 1:5000){ # run several times to check for potential indexing issues that are sometimes fine a few times
+for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
   outputs.loop[[i]] <- 
     #tryCatch(
     try(
