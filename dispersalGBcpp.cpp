@@ -476,7 +476,7 @@ List dispersalGB(// DataFrame, NumericVector
       IntegerVector randLines_move = sample((nextCellsType_hab.size()), (nextCellsType_hab.size()), false) - 1; // number of samples is argument 2;
       if(step == 0){
         // here randomly shuffling line before picking one per ind, done above
-       for(int ind = 0; ind < nDispLeft; ind++){
+        for(int ind = 0; ind < nDispLeft; ind++){
           double p = 0.5;
           while(p<1){
             for(int l = 0; l<randLines_move.size(); l++){
@@ -1046,117 +1046,63 @@ List dispersalGB(// DataFrame, NumericVector
       StringVector lynx_breed_new(nLynx_new), lynx_steps_new(nLynx_new), lynx_color_new(nLynx_new), lynx_pop_new(nLynx_new), lynx_sex_new(nLynx_new), lynx_status_new(nLynx_new);
       // add residents bit
       for(int i = 0; i<nRes; i++){
-        lynx_who_new(i) = residents_who(i);
+        lynx_xcor_new(i) = residents_xcor(i), lynx_ycor_new(i) = residents_ycor(i), lynx_who_new(i) = residents_who(i), lynx_heading_new(i) = residents_heading(i), lynx_prevX_new(i) = residents_prevX(i), lynx_prevY_new(i) = residents_prevY(i), lynx_breed_new(i) = residents_breed(i), lynx_color_new(i) = residents_color(i), lynx_pop_new(i) = residents_pop(i), lynx_sex_new(i) = residents_sex(i), lynx_age_new(i) = residents_age(i), lynx_status_new(i) = residents_status(i), lynx_lastDispX_new(i) = residents_lastDispX(i), lynx_lastDispY_new(i) = residents_lastDispY(i), lynx_nMat_new(i) = residents_nMat(i), lynx_maleID_new(i) = residents_maleID(i), lynx_nFem_new(i) = residents_nFem(i), lynx_rdMortTerr_new(i) = residents_rdMortTerr(i), lynx_steps_new(i) = residents_steps(i);
       }
       
+      // List L_return = List::create(Named("int_1") = int_1,
+      //                              _["res_index"] = res_index,
+      //                              _["nRes"] = nRes,
+      //                              _["nDisp_new"] = nDisp_new,
+      //                              _["nLynx_new"] = nLynx_new,
+      //                              _["dispersers_who_new"] = dispersers_who_new,
+      //                              _["dispersers_who"] = dispersers_who,
+      //                              _["residents_who"] = residents_who,
+      //                              _["ChosenCells_who"] = ChosenCells_who,
+      //                              _["lynx_who_new"] = lynx_who_new,
+      //                              _["nDispLeft"] = nDispLeft,
+      //                              _["step_count"] = step_count);
+      // return L_return;
       
-      List L_return = List::create(Named("int_1") = int_1,
-                                   _["res_index"] = res_index,
-                                   _["nRes"] = nRes,
-                                   _["nDisp_new"] = nDisp_new,
-                                   _["nLynx_new"] = nLynx_new,
-                                   _["dispersers_who_new"] = dispersers_who_new,
-                                   _["dispersers_who"] = dispersers_who,
-                                   _["residents_who"] = residents_who,
-                                   _["ChosenCells_who"] = ChosenCells_who,
-                                   _["lynx_who_new"] = lynx_who_new,
-                                   _["nDispLeft"] = nDispLeft,
-                                   _["step_count"] = step_count);
-      return L_return;
-      //       //   //                                  _["step"] = step_count,
-      //lynx_xcor_new[res_index] = residents_xcor, lynx_steps_new[res_index] = residents_steps, lynx_ycor_new[res_index] = residents_ycor, lynx_who_new[res_index] = residents_who, lynx_heading_new[res_index] = residents_heading, lynx_prevX_new[res_index] = residents_prevX, lynx_prevY_new[res_index] = residents_prevY, lynx_breed_new[res_index] = residents_breed, lynx_color_new[res_index] = residents_color, lynx_pop_new[res_index] = residents_pop, lynx_sex_new[res_index] = residents_sex, lynx_age_new[res_index] = residents_age, lynx_status_new[res_index] = residents_status, lynx_lastDispX_new[res_index] = residents_lastDispX, lynx_lastDispY_new[res_index] = residents_lastDispY, lynx_nMat_new[res_index] = residents_nMat, lynx_maleID_new[res_index] = residents_maleID, lynx_nFem_new[res_index] = residents_nFem, lynx_rdMortTerr_new[res_index] = residents_rdMortTerr;
-    } 
-    // add res new if any{
-    //       if(nDisp_new>0){
-    //         IntegerVector disp_new_index(nDisp_new);
-    //         for(int i = 0; i<nDisp_new; i++){
-    //           disp_new_index(i) = i + nRes;
-    //         }
-    //         if(nDisp_new < nDisp){
-    //           List L_return = List::create(Named("int_100") = int_100,//corresLynx_inter,
-    //                                        _["step"] = step_count,
-    //                                        _["nRes"] = nRes,
-    //                                        _["nDisp"] = nRes,
-    //                                        _["res_index"] = res_index,
-    //                                        _["nDisp_new"] = nDisp_new,
-    //                                        _["deadLynxColl_who"] = deadLynxColl["who"],
-    //                                                                            _["deathRoad"] = deathRoad,
-    //                                                                            _["disp_new_index"] = disp_new_index,
-    //                                                                            _["dispersers_who"] = dispersers_who,
-    //                                                                            _["dispersers_steps"] = dispersers_steps,
-    //                                                                            _["dispersers_who_new"] = dispersers_who_new,
-    //                                                                            _["lynx_who_new"] = lynx_who_new,
-    //                                                                            _["lynx_who"] = lynx_who//,
-    //           );
-    //           return L_return;
-    //         }
-    //         lynx_xcor_new[disp_new_index] = dispersers_xcor_new, lynx_steps_new[disp_new_index] = dispersers_steps_new, lynx_ycor_new[disp_new_index] = dispersers_ycor_new, lynx_heading_new[disp_new_index] = dispersers_heading_new, lynx_prevX_new[disp_new_index] = dispersers_prevX_new, lynx_prevY_new[disp_new_index] = dispersers_prevY_new, lynx_breed_new[disp_new_index] = dispersers_breed_new, lynx_color_new[disp_new_index] = dispersers_color_new, lynx_pop_new[disp_new_index] = dispersers_pop_new, lynx_sex_new[disp_new_index] = dispersers_sex_new, lynx_age_new[disp_new_index] = dispersers_age_new, lynx_status_new[disp_new_index] = dispersers_status_new, lynx_maleID_new[disp_new_index] = dispersers_maleID_new, lynx_nFem_new[disp_new_index] = dispersers_nFem_new, lynx_rdMortTerr_new[disp_new_index] = dispersers_rdMortTerr;
-    //       }
-    //       // // if some new disp; then get pos index 
-    //       // if(nDisp_new > int_0){
-    //       //   IntegerVector disp_new_index(nDisp_new) ;
-    //       //   for(int i = 0; i<nDisp_new; i++){
-    //       //     disp_new_index(i) = i + nRes;
-    //       //   }
-    //       //   // add those you can do directly
-    //       //   lynx_who_new[disp_new_index] = dispersers_who_new, lynx_lastDispX_new[disp_new_index] = dispersers_lastDispX_new, lynx_lastDispY_new[disp_new_index] = dispersers_lastDispY_new, lynx_nMat_new[disp_new_index] = dispersers_nMat_new;
-    //       //   // add dispersers bits for chosen_cell existing variables because have been updated through script
-    //       //   //loop for other variables, pick up values in lynx table
-    //       //   // for(int i = 0; i <nDisp_new; i++){
-    //       //   //   IntegerVector corresLynx_inter = WhichEqual(lynx_who, int(dispersers_who_new(i)));
-    //       //   //   if(corresLynx_inter.size() == int_0){
-    //       //   //     List L_return = List::create(Named("int_1") = int_1,//corresLynx_inter,
-    //       //   //                                  _["step"] = step_count,
-    //       //   //                                  _["corresLynx_inter"] = corresLynx_inter,
-    //       //   //                                  _["who_issue"] = dispersers_who_new(i),
-    //       //   //                                  _["dispersers_who"] = dispersers_who,
-    //       //   //                                  _["dispersers_who_new"] = dispersers_who_new,
-    //       //   //                                  _["deathRoad"] = deathRoad,
-    //       //   //                                  _["lynx_who"] = lynx_who,//,
-    //       //   //                                  _["deadLynxCol_who"] = deadLynxColl["who"]
-    //       //   //                                                                     
-    //       //   //     );
-    //       //   //     return L_return;
-    //       //   //     stop("no corres found");
-    //       //   //   }
-    //       //   //   if(corresLynx_inter.size()>1){
-    //       //   //     List L_return = List::create(Named("int_100") = int_100,//corresLynx_inter,
-    //       //   //                                  _["step"] = step_count,
-    //       //   //                                  _["corresLynx_inter"] = corresLynx_inter,
-    //       //   //                                  _["who_issue"] = dispersers_who_new(i),
-    //       //   //                                  _["deathRoad"] = deathRoad,
-    //       //   //                                  _["dispersers_who"] = dispersers_who,
-    //       //   //                                  _["dispersers_who_new"] = dispersers_who_new,
-    //       //   //                                  _["lynx_who"] = lynx_who//,
-    //       //   //                   
-    //       //   //     );
-    //       //   //     return L_return;
-    //       //   //     stop("too_many corres");
-    //       //   //   }
-    //       //   //   int corresLynx = corresLynx_inter(0);
-    //       //   //   lynx_xcor_new(i + nRes) = lynx_xcor(corresLynx), lynx_ycor_new(i + nRes) = lynx_ycor(corresLynx), lynx_heading_new(i + nRes) = lynx_heading(corresLynx), lynx_prevX_new(i + nRes) = lynx_prevX(corresLynx), lynx_prevY_new(i + nRes) = lynx_prevY(corresLynx), lynx_breed_new(i + nRes) = lynx_breed(corresLynx), lynx_color_new(i + nRes) = lynx_color(corresLynx), lynx_pop_new(i + nRes) = lynx_pop(corresLynx), lynx_sex_new(i + nRes) = lynx_sex(corresLynx), lynx_age_new(i + nRes) = lynx_age(corresLynx), lynx_status_new(i + nRes) = lynx_status(corresLynx), lynx_maleID_new(i + nRes) = lynx_maleID(corresLynx), lynx_nFem_new(i + nRes) = lynx_nFem(corresLynx), lynx_rdMortTerr_new(i + nRes) = lynx_rdMortTerr(corresLynx);
-    //       //   // }
-    //       //   List L_return = List::create(Named("int_1") = int_1,//corresLynx_inter,
-    //       //                                _["step"] = step_count,
-    //       //                                //_["corresLynx_inter"] = corresLynx_inter,
-    //       //                                //_["who_issue"] = dispersers_who_new(i),
-    //       //                                _["dispersers_who"] = dispersers_who,
-    //       //                                _["dispersers_who_new"] = dispersers_who_new,
-    //       //                                _["deathRoad"] = deathRoad,
-    //       //                                _["lynx_who"] = lynx_who
-    //       //   );
-    //       //   return L_return;
-    //       // }// ind disp new filling up nex lynx data bits
-    //       // // make the old a clone of the new
-    //       lynx_xcor = clone(lynx_xcor_new), lynx_steps = clone(lynx_steps_new), lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new), lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
-    //       // // List L_return = List::create(Named("lynx_who") = lynx_who,
-    //       // //                              _["lynx_xcor"] = lynx_xcor,
-    //       // //                              _["nDisp_new"] = nDisp_new,
-    //       // //                              _["dispersers_who_new"] = dispersers_who_new,
-    //       // //                              _["deadDisp"] = deadDisp,
-    //       // //                              _["deadLynxColl"] = deadLynxColl
-    //       // //                              );
-    //       // // return L_return;
+      // add res new if any{
+      if(nDisp_new>0){
+        IntegerVector disp_new_index(nDisp_new);
+        for(int i = 0; i<nDisp_new; i++){
+          // disp_new_index(i) = i + nRes;
+          //}
+          // if(nDisp_new < nDisp){
+          //   List L_return = List::create(Named("int_100") = int_100,//corresLynx_inter,
+          //                                _["step"] = step_count,
+          //                                _["nRes"] = nRes,
+          //                                _["nDisp"] = nRes,
+          //                                _["res_index"] = res_index,
+          //                                _["nDisp_new"] = nDisp_new,
+          //                                _["deadLynxColl_who"] = deadLynxColl["who"],
+          //                                                                    _["deathRoad"] = deathRoad,
+          //                                                                    _["disp_new_index"] = disp_new_index,
+          //                                                                    _["dispersers_who"] = dispersers_who,
+          //                                                                    _["dispersers_steps"] = dispersers_steps,
+          //                                                                    _["dispersers_who_new"] = dispersers_who_new,
+          //                                                                    _["lynx_who_new"] = lynx_who_new,
+          //                                                                    _["lynx_who"] = lynx_who//,
+          //   );
+          //   return L_return;
+          // }
+          //lynx_xcor_new[disp_new_index] = dispersers_xcor_new, lynx_steps_new[disp_new_index] = dispersers_steps_new, lynx_ycor_new[disp_new_index] = dispersers_ycor_new, lynx_heading_new[disp_new_index] = dispersers_heading_new, lynx_prevX_new[disp_new_index] = dispersers_prevX_new, lynx_prevY_new[disp_new_index] = dispersers_prevY_new, lynx_breed_new[disp_new_index] = dispersers_breed_new, lynx_color_new[disp_new_index] = dispersers_color_new, lynx_pop_new[disp_new_index] = dispersers_pop_new, lynx_sex_new[disp_new_index] = dispersers_sex_new, lynx_age_new[disp_new_index] = dispersers_age_new, lynx_status_new[disp_new_index] = dispersers_status_new, lynx_maleID_new[disp_new_index] = dispersers_maleID_new, lynx_nFem_new[disp_new_index] = dispersers_nFem_new, lynx_rdMortTerr_new[disp_new_index] = dispersers_rdMortTerr;
+          lynx_xcor_new(i + nRes) = dispersers_xcor_new(i), lynx_ycor_new(i + nRes) = dispersers_ycor_new(i), lynx_who_new(i + nRes) = dispersers_who_new(i), lynx_heading_new(i + nRes) = dispersers_heading_new(i), lynx_prevX_new(i + nRes) = dispersers_prevX_new(i), lynx_prevY_new(i + nRes) = dispersers_prevY_new(i), lynx_breed_new(i + nRes) = dispersers_breed_new(i), lynx_color_new(i + nRes) = dispersers_color_new(i), lynx_pop_new(i + nRes) = dispersers_pop_new(i), lynx_sex_new(i + nRes) = dispersers_sex_new(i), lynx_age_new(i + nRes) = dispersers_age_new(i), lynx_status_new(i + nRes) = dispersers_status_new(i), lynx_lastDispX_new(i + nRes) = dispersers_lastDispX_new(i), lynx_lastDispY_new(i + nRes) = dispersers_lastDispY_new(i), lynx_nMat_new(i + nRes) = dispersers_nMat_new(i), lynx_maleID_new(i + nRes) = dispersers_maleID_new(i), lynx_nFem_new(i + nRes) = dispersers_nFem_new(i), lynx_rdMortTerr_new(i + nRes) = dispersers_rdMortTerr_new(i), lynx_steps_new(i + nRes) = dispersers_steps_new(i);
+        }
+      }
+    }
+    //lynx_xcor = clone(lynx_xcor_new), lynx_steps = clone(lynx_steps_new), lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new), lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
+    // // List L_return = List::create(Named("lynx_who") = lynx_who,
+    // //                              _["lynx_xcor"] = lynx_xcor,
+    // //                              _["nDisp_new"] = nDisp_new,
+    // //                              _["dispersers_who_new"] = dispersers_who_new,
+    // //                              _["deadDisp"] = deadDisp,
+    // //                              _["deadLynxColl"] = deadLynxColl
+    // //                              );
+    // // return L_return;
+    
+    
     //       
     //       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -151,4 +151,7 @@ paste('residents_', c(colnames(lynx.gb), 'steps'), '.resize(nRes)', sep = "") %>
 paste('residents_', c(colnames(lynx.gb), 'steps'), '.push_back(lynx_', c(colnames(lynx.gb), 'steps'), '(i))', sep = '') %>% 
   paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
 
+paste('lynx_', c(colnames(lynx.gb), 'steps'), '_new(i) = residents_', c(colnames(lynx.gb), 'steps'), '(i)', sep = '') %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
+
 
