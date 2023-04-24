@@ -131,18 +131,24 @@ paste('lynx_', colnames(lynx.gb), '= clone(lynx_', colnames(lynx.gb), '_new)', s
   paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
 
 
-
-
 # export all var to table ======================================================
 paste('_["dispersers_', colnames(lynx.gb), '_new"] = dispersers_', colnames(lynx.gb), '_new', sep = "") %>% 
   paste(., collapse = ', ') %>% cat
 paste('_["residents_', colnames(lynx.gb), '"] = residents_', colnames(lynx.gb), sep = "") %>% 
   paste(., collapse = ', ') %>% cat
 
+# reshape all dispersre data to smaller size if needed=========================
+
+dispersers_name.erase(nDispOld, nDisp - 1);
+
+paste('dispersers_', c(colnames(lynx.gb), 'steps'), '.erase(nDispOld, nDisp - 1)', sep = "") %>% 
+  paste(., collapse = ', ') %>% paste(., ';', sep = '') %>% cat
+
+paste('residents_', c(colnames(lynx.gb), 'steps'), '.resize(nRes)', sep = "") %>% 
+  paste(., collapse = ', ') %>% paste(., ';', sep = '') %>% cat
 
 
-
-
-
+paste('residents_', c(colnames(lynx.gb), 'steps'), '.push_back(lynx_', c(colnames(lynx.gb), 'steps'), '(i))', sep = '') %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
 
 

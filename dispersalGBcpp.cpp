@@ -382,14 +382,19 @@ List dispersalGB(// DataFrame, NumericVector
           }
         }
         
-        // List L_return = List::create(Named("Lynx_who") = lynx_who,
-        //                              _["step_count++"] = step_count);
-        // return L_return;
-        
         Mat_Chosen(i) = R::rbinom(int_1, pMat * HabFreqDisp_matrix(i)); // number of samples is argument 2, ie matrix type
         if(HabFreqDisp_matrix(i) == 9){
           Mat_Chosen(i) = 1;
         }
+        // loop just to return at the end
+        // if(i == (nDispLeft - 1)){
+        //   List L_return = List::create(Named("Lynx_who") = lynx_who,
+        //                                _["step_count++"] = step_count,
+        //                                _["CellsDisp_lastDispX"] = CellsDisp_lastDispX,
+        //                                _["Mat_Chosen"] = Mat_Chosen);
+        //   return L_return;
+        // }
+        
       }
       
       // find final number cell for dispersing individuals, taking matrix or disprep only
@@ -467,14 +472,15 @@ List dispersalGB(// DataFrame, NumericVector
       
       // part on potential correlation in movements, none on first move but then some/////////////////////////////////////////
       
+      //step++;
+      IntegerVector randLines_move = sample((nextCellsType_hab.size()), (nextCellsType_hab.size()), false) - 1; // number of samples is argument 2;
       if(step == 0){
-        // here randomly shuffling line before picking one per ind
-        IntegerVector randLines_move = sample((nextCellsType_hab.size()), (nextCellsType_hab.size()), false) - 1; // number of samples is argument 2;
-        for(int ind = 0; ind < nDispLeft; ind++){
+        // here randomly shuffling line before picking one per ind, done above
+       for(int ind = 0; ind < nDispLeft; ind++){
           double p = 0.5;
           while(p<1){
-            for(int l = 0; l<nextCellsType_hab.size(); l++){
-              if(nextCellsType_ind(randLines_move(l)) == ind){ // here keeps last one, while was not working
+            for(int l = 0; l<randLines_move.size(); l++){
+              if((nextCellsType_ind(randLines_move(l)) == ind) & (p<1)){ // here keeps last one, while was not working
                 ChosenCells_lastDispX.push_back(nextCellsType_lastDispX(randLines_move(l)));
                 ChosenCells_lastDispY.push_back(nextCellsType_lastDispY(randLines_move(l)));
                 ChosenCells_pxcor.push_back(nextCellsType_pxcor(randLines_move(l)));
@@ -493,17 +499,25 @@ List dispersalGB(// DataFrame, NumericVector
             }
           }
         }
-      }
+        
+        // List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
+        //                               _["nDispLeft"] = nDispLeft,
+        //                               //_["randLines_move"] = randLines_move,
+        //                               _["ChosenCell_lastDispX"] = ChosenCells_lastDispX,
+        //                               _["ChosenCell_who"] = ChosenCells_who,
+        //                               _["ChosenCell_ind"] = ChosenCells_ind);
+        //  return  L_return;
+        
+      } //Works up to here
       
-      //       // List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
-      //       //                              _["nDispLeft"] = nDispLeft,
-      //       //                              //_["randLines_move"] = randLines_move,
-      //       //                              _["ChosenCell_x"] = ChosenCell_x,
-      //       //                              _["ChosenCell_ind"] = ChosenCell_ind);
-      //       // return  L_return;
-      //     } //Works up to here
-      //     
-      else{ // i.e if step more than first //////////////////////////////////////////////////
+      // List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
+      //                              _["nDispLeft"] = nDispLeft,
+      //                              _["randLines_move"] = randLines_move,
+      //                              _["ChosenCell_lastDispX"] = ChosenCells_lastDispX,
+      //                              _["ChosenCell_who"] = ChosenCells_who);
+      // return  L_return;
+      // 
+      if(step>0){ // i.e if step more than first //////////////////////////////////////////////////
         
         //Have to define here and push_back values to be able to use latter on outside loop where it is filled up
         // final move of indiv with no correlated movements
@@ -790,10 +804,10 @@ List dispersalGB(// DataFrame, NumericVector
         // List L_return = List::create(Named("nextCellsType_IsMoveCorrF") = nextCellsType_IsMoveCorrF,
         //                              //_["YesCorr_Lind"] = YesCorr_Lind,
         //                              _["nCorr1"] = nCorr1,
-        //                              _["nextCellsTypeYesCorr_indF"] = nextCellsTypeYesCorr_indF,
-        //                              _["nextCellsTypeYesCorr_whoF"] = nextCellsTypeYesCorr_whoF,
-        //                              _["nextCellsTypeYesCorr_DirF"] = nextCellsTypeYesCorr_DirF,
-        //                              _["nextCellsTypeYesCorr_prefDirF"] = nextCellsTypeYesCorr_prefDirF,
+        //                              // _["nextCellsTypeYesCorr_indF"] = nextCellsTypeYesCorr_indF,
+        //                              // _["nextCellsTypeYesCorr_whoF"] = nextCellsTypeYesCorr_whoF,
+        //                              // _["nextCellsTypeYesCorr_DirF"] = nextCellsTypeYesCorr_DirF,
+        //                              // _["nextCellsTypeYesCorr_prefDirF"] = nextCellsTypeYesCorr_prefDirF,
         //                              _["ChosenCellsYesCorr_prefDir"] = ChosenCellsYesCorr_prefDir,
         //                              _["ChosenCellsYesCorr_who"] = ChosenCellsYesCorr_who,
         //                              _["ChosenCellsYesCorr_hab"] = ChosenCellsYesCorr_hab);
@@ -848,6 +862,12 @@ List dispersalGB(// DataFrame, NumericVector
           }
         }
       }
+      
+      // List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
+      //                               _["nDispLeft"] = nDispLeft,
+      //                               _["ChosenCell_lastDispX"] = ChosenCells_lastDispX,
+      //                               _["ChosenCell_who"] = ChosenCells_who);
+      //  return  L_return;
       
       // work on chosenMat and chosenDisp matrices and their processing /////////////////////////////////////////
       IntegerVector MatInd = WhichEqual(ChosenCells_hab, int_2);
@@ -985,7 +1005,7 @@ List dispersalGB(// DataFrame, NumericVector
       deadDisp_nDispDeadColl(deadDispLine) = sum(deathRoad);
       deadDisp["nDispDeadColl"] = deadDisp_nDispDeadColl;
       
-      // create disperser new table, first two lines were some test
+      // create dispdispersers_who_newerser new table, first two lines were some test
       //deathRoad(0) = 1, deathRoad(1) = 1, deathRoad(2) = 1, deathRoad(3) = 1 , deathRoad(4) = 1;
       //IntegerVector rand_values = sample(5, 10, true) - 1; // number of samples is argument 2; -1 to make it start at 0
       IntegerVector who_ord = IntOrderIndex(ChosenCells_who);
@@ -1011,22 +1031,42 @@ List dispersalGB(// DataFrame, NumericVector
       }
       IntegerVector dispersers_xcor_new = dispersers_xcor[index_dispersers_dispersers_new], dispersers_ycor_new = dispersers_ycor[index_dispersers_dispersers_new], dispersers_heading_new = dispersers_heading[index_dispersers_dispersers_new], dispersers_prevX_new = dispersers_prevX[index_dispersers_dispersers_new], dispersers_prevY_new = dispersers_prevY[index_dispersers_dispersers_new], dispersers_age_new = dispersers_age[index_dispersers_dispersers_new], dispersers_maleID_new = dispersers_maleID[index_dispersers_dispersers_new], dispersers_nFem_new = dispersers_nFem[index_dispersers_dispersers_new], dispersers_rdMortTerr_new = dispersers_rdMortTerr[index_dispersers_dispersers_new];
       StringVector dispersers_breed_new = dispersers_breed[index_dispersers_dispersers_new], dispersers_color_new = dispersers_color[index_dispersers_dispersers_new], dispersers_pop_new = dispersers_pop[index_dispersers_dispersers_new], dispersers_sex_new = dispersers_sex[index_dispersers_dispersers_new], dispersers_status_new = dispersers_status[index_dispersers_dispersers_new];
-    }
-    //       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //       // update all lynx values //////////////////////////////////////////////////////
-    //       
-    //       // get size of new table, made of residents and dispersers still alive, codes as _new
-    //       int nLynx_new = nDisp_new + nRes;
-    //       IntegerVector res_index(nRes);
-    //       for(int i = 0; i<nRes; i++){
-    //         res_index(i) = i;
-    //       }
-    //       // Initiate the vector for nex lynx data
-    //       IntegerVector lynx_xcor_new(nLynx_new), lynx_ycor_new(nLynx_new), lynx_who_new(nLynx_new), lynx_heading_new(nLynx_new), lynx_prevX_new(nLynx_new), lynx_prevY_new(nLynx_new), lynx_age_new(nLynx_new), lynx_lastDispX_new(nLynx_new), lynx_lastDispY_new(nLynx_new), lynx_nMat_new(nLynx_new), lynx_maleID_new(nLynx_new), lynx_nFem_new(nLynx_new), lynx_rdMortTerr_new(nLynx_new); 
-    //       StringVector lynx_breed_new(nLynx_new), lynx_steps_new(nLynx_new), lynx_color_new(nLynx_new), lynx_pop_new(nLynx_new), lynx_sex_new(nLynx_new), lynx_status_new(nLynx_new);
-    //       // add residents bit
-    //       lynx_xcor_new[res_index] = residents_xcor, lynx_steps_new[res_index] = residents_steps, lynx_ycor_new[res_index] = residents_ycor, lynx_who_new[res_index] = residents_who, lynx_heading_new[res_index] = residents_heading, lynx_prevX_new[res_index] = residents_prevX, lynx_prevY_new[res_index] = residents_prevY, lynx_breed_new[res_index] = residents_breed, lynx_color_new[res_index] = residents_color, lynx_pop_new[res_index] = residents_pop, lynx_sex_new[res_index] = residents_sex, lynx_age_new[res_index] = residents_age, lynx_status_new[res_index] = residents_status, lynx_lastDispX_new[res_index] = residents_lastDispX, lynx_lastDispY_new[res_index] = residents_lastDispY, lynx_nMat_new[res_index] = residents_nMat, lynx_maleID_new[res_index] = residents_maleID, lynx_nFem_new[res_index] = residents_nFem, lynx_rdMortTerr_new[res_index] = residents_rdMortTerr;
-    //       // add res new if any{
+      
+      //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      // update all lynx values //////////////////////////////////////////////////////
+      
+      // get size of new table, made of residents and dispersers still alive, codes as _new
+      int nLynx_new = nDisp_new + nRes;
+      IntegerVector res_index(nRes);
+      for(int i = 0; i<nRes; i++){
+        res_index(i) = i;
+      }
+      // Initiate the vector for new lynx data
+      IntegerVector lynx_xcor_new(nLynx_new), lynx_ycor_new(nLynx_new), lynx_who_new(nLynx_new), lynx_heading_new(nLynx_new), lynx_prevX_new(nLynx_new), lynx_prevY_new(nLynx_new), lynx_age_new(nLynx_new), lynx_lastDispX_new(nLynx_new), lynx_lastDispY_new(nLynx_new), lynx_nMat_new(nLynx_new), lynx_maleID_new(nLynx_new), lynx_nFem_new(nLynx_new), lynx_rdMortTerr_new(nLynx_new);
+      StringVector lynx_breed_new(nLynx_new), lynx_steps_new(nLynx_new), lynx_color_new(nLynx_new), lynx_pop_new(nLynx_new), lynx_sex_new(nLynx_new), lynx_status_new(nLynx_new);
+      // add residents bit
+      for(int i = 0; i<nRes; i++){
+        lynx_who_new(i) = residents_who(i);
+      }
+      
+      
+      List L_return = List::create(Named("int_1") = int_1,
+                                   _["res_index"] = res_index,
+                                   _["nRes"] = nRes,
+                                   _["nDisp_new"] = nDisp_new,
+                                   _["nLynx_new"] = nLynx_new,
+                                   _["dispersers_who_new"] = dispersers_who_new,
+                                   _["dispersers_who"] = dispersers_who,
+                                   _["residents_who"] = residents_who,
+                                   _["ChosenCells_who"] = ChosenCells_who,
+                                   _["lynx_who_new"] = lynx_who_new,
+                                   _["nDispLeft"] = nDispLeft,
+                                   _["step_count"] = step_count);
+      return L_return;
+      //       //   //                                  _["step"] = step_count,
+      //lynx_xcor_new[res_index] = residents_xcor, lynx_steps_new[res_index] = residents_steps, lynx_ycor_new[res_index] = residents_ycor, lynx_who_new[res_index] = residents_who, lynx_heading_new[res_index] = residents_heading, lynx_prevX_new[res_index] = residents_prevX, lynx_prevY_new[res_index] = residents_prevY, lynx_breed_new[res_index] = residents_breed, lynx_color_new[res_index] = residents_color, lynx_pop_new[res_index] = residents_pop, lynx_sex_new[res_index] = residents_sex, lynx_age_new[res_index] = residents_age, lynx_status_new[res_index] = residents_status, lynx_lastDispX_new[res_index] = residents_lastDispX, lynx_lastDispY_new[res_index] = residents_lastDispY, lynx_nMat_new[res_index] = residents_nMat, lynx_maleID_new[res_index] = residents_maleID, lynx_nFem_new[res_index] = residents_nFem, lynx_rdMortTerr_new[res_index] = residents_rdMortTerr;
+    } 
+    // add res new if any{
     //       if(nDisp_new>0){
     //         IntegerVector disp_new_index(nDisp_new);
     //         for(int i = 0; i<nDisp_new; i++){
