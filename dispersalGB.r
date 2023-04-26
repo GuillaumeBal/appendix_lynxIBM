@@ -17,34 +17,40 @@ trick <- c(1, 1)
 
 sourceCpp("dispersalGBcpp.cpp")
 
-outputs.cpp <- dispersalGB(
-  lynx = lynx.gb,
-  lynx_list = lynx.gb %>% as.data.frame %>% as.list,
-  sMaxPs = sMaxPs,
-  HabitatMap = habitatMap.gb,
-  pMat = pMat, #round(1/9, 2)  #pMat
-  pCorr = pCorr,
-  nMatMax = nMatMax,
-  connectivityMap = sim$connectivityMap@.Data[,],
-  roadMortMap = sim$roadMortMap@.Data[,],
-  corrFactorDisp = corrFactorDisp,
-  floorTimeSim = floor(time(sim))[1],
-  startSimYear = start(sim, "year")[1],
-  ncoll_ncoll = sim$nColl$ncoll,
-  ncoll_time = sim$nColl$time,
-  deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,] %>% `[`(,c('who', "steps", "heading", "lastDispX", "lastDispY")),
-  deadDisp = sim$deadDisp[,],
-  TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
-  availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
-  popDist = sim$popDist@.Data[,],
-  coreTerrSizeFAlps = coreTerrSizeFAlps,
-  coreTerrSizeFJura = coreTerrSizeFJura,
-  coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
-  coreTerrSizeFBlackForest = coreTerrSizeFBlackForest,
-  returnDistances = FALSE,
-  allowOverlap = FALSE
+outputs.cpp <- try(
+  dispersalGB(
+    lynx_r = lynx.gb,
+    sMaxPs = sMaxPs,
+    HabitatMap = habitatMap.gb,
+    pMat = pMat, #round(1/9, 2)  #pMat
+    pCorr = pCorr,
+    nMatMax = nMatMax,
+    connectivityMap = sim$connectivityMap@.Data[,],
+    roadMortMap = sim$roadMortMap@.Data[,],
+    corrFactorDisp = corrFactorDisp,
+    floorTimeSim = floor(time(sim))[1],
+    startSimYear = start(sim, "year")[1],
+    ncoll_ncoll = sim$nColl$ncoll,
+    ncoll_time = sim$nColl$time,
+    deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,] %>% `[`(,c('who', "steps", "heading", "lastDispX", "lastDispY")),
+    deadDisp = sim$deadDisp[,],
+    TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
+    availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
+    popDist = sim$popDist@.Data[,],
+    coreTerrSizeFAlps = coreTerrSizeFAlps,
+    coreTerrSizeFJura = coreTerrSizeFJura,
+    coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
+    coreTerrSizeFBlackForest = coreTerrSizeFBlackForest,
+    returnDistances = FALSE,
+    allowOverlap = FALSE
+  )
 )
-outputs.cpp
+# outputs.cpp
+# outputs.cpp %>% sapply(., length)
+# outputs.cpp$lynx_dispNow %>% length
+# outputs.cpp$Lynx_status %>% length
+# outputs.cpp$Lynx_lastDispX %>% length
+
 
 outputs.loop <- list()
 for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
@@ -52,8 +58,7 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
     #tryCatch(
     try(
       dispersalGB(
-        lynx = lynx.gb,#[lynx.gb$who != 1868, ],
-        lynx_list = lynx.gb %>% as.data.frame %>% as.list,
+        lynx_r = lynx.gb,#[lynx.gb$who != 1868, ],
         sMaxPs = sMaxPs,
         HabitatMap = habitatMap.gb,
         pMat = pMat, #round(1/9, 2)
@@ -85,12 +90,11 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }
 
-outputs.loop
-
-outputs.loop[[1]] %>% sapply(., FUN = length)
+#outputs.loop
+#outputs.loop[[1]] %>% sapply(., FUN = length)
 
 # check for run return before issue data =======================================
-no.corres.cases <- 
+error.cases <- 
   outputs.loop %>% 
   sapply(.,
          function(x){
@@ -98,55 +102,30 @@ no.corres.cases <-
            x[1] %>% as.character(.) %>% substr(., 1, 5)
          }) %>% `==`('Error') %>% which 
 
-outputs.loop %>% sapply(., function(x){
-  sum(x$lynx_who_new == 0) == x$nDisp_new
-}) %>% table
+error.cases %>% length 
 
-outputs.loop %>% sapply(., function(x){
-  sum(x$deathRoad)
-}) %>% table
-
-
-no.corres.cases
-picked.to.look <- 4995
-output.looked <- outputs.loop[[picked.to.look]]
-output.looked
-output.looked$lynx_who %>% `==` (output.looked$who_issue) %>% which
-output.looked$dispersers_who %in% output.looked$lynx_who
-
-lynx.gb[lynx.gb$who == 1868, ]
-
-# number of steps 
-outputs.loop %>% 
+okay.cases <- 
+  outputs.loop %>% 
   sapply(.,
          function(x){
-           x$step
-         }) %>% `[`(no.corr.cases) %>%  table
+           #names(x)[1] == 'int_100'
+           x[1] %>% as.character(.) %>% substr(., 1, 5)
+         }) %>% `!=`('Error') %>% which 
 
-
-#==============================================================
-outputs.loop %>% 
+matching.size.issue <- outputs.loop %>% 
   sapply(.,
          function(x){
-           x$deadLynxColl %>% class
-         }) %>% `==`("list") %>% which
+           #if(x[1] %>% `==` ('mat_chosen')){ #substr(., 1, 5) %>%
+             if(x[1] %>% substr(., 1, 5) %>% `!=` ('Error')){ #substr(., 1, 5) %>%
+             #if(length(x$ChosenCell_who) != x$nDispLeft){
+             if(length(unique(c(x$ChosenCellsYesCorr_who, x$ChosenCellsNoCorr_who))) != x$nDispLeft){
+             #if(length(x$dispersers_who) != length(x$Mat_Chosen)){
+               return(TRUE)
+             }
+           }
+           return(FALSE)
+         }) %>% which 
+matching.size.issue
 
+outputs.loop[[matching.size.issue[1]]]
 
-outputs.loop %>% 
-  sapply(.,
-         function(x){
-           length(x$lynx_who) %>% table %>% table
-         }) %>%  table
-
-outputs.loop %>% 
-  sapply(.,
-         function(x){
-           length(x$dispersers_who_new) %>% table %>% table
-         }) %>%  table
-
-
-# outputs.loop %>% 
-#     sapply(.,
-#            function(x){
-#              substr(x$message, nchar(x$message)-20+1, nchar(x$message))
-#            }) %>%  table

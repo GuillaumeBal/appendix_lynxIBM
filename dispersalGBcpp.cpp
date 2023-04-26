@@ -219,8 +219,7 @@ List UniqFreeAdjCells(IntegerVector x_coords, IntegerVector y_coords, IntegerMat
 
 // [[Rcpp::export]]
 List dispersalGB(// DataFrame, NumericVector
-    DataFrame lynx,
-    List lynx_list,
+    DataFrame lynx_r,
     int sMaxPs, // dispersal
     IntegerMatrix HabitatMap,
     double pMat,
@@ -249,6 +248,8 @@ List dispersalGB(// DataFrame, NumericVector
   ///////////////////////////////////////////////////////////////////////////////////////
   // TRICKS AND FUNCTIONS FOR CODE
   
+  DataFrame lynx = clone(lynx_r); // if no cloning, rccp keeps a link with table within R and resizing is problematic sometimes
+  
   // some integer def because IntegerVector v(1) = 1 does not work
   int int_0 = 0;
   int int_1 = 1;
@@ -258,10 +259,15 @@ List dispersalGB(// DataFrame, NumericVector
   int int_5 = 5;
   int int_100 = 100;
   
+  // defined to survey matrix filling dimension issue
+  IntegerVector deathRoadOld(0);
+  int nDispLeftOld(0);
+  
   ///////////////////////////////////////////////////////////////////////////////////////
   // LYNX DATA PROCESSING
   
   int nLynx = lynx.nrow();
+  int nLynInit = nLynx;
   // attach all lynx data
   IntegerVector lynx_xcor = lynx["xcor"], lynx_ycor = lynx["ycor"], lynx_who = lynx["who"], lynx_heading = lynx["heading"], lynx_prevX = lynx["prevX"], lynx_prevY = lynx["prevY"], lynx_age = lynx["age"], lynx_lastDispX = lynx["lastDispX"], lynx_lastDispY = lynx["lastDispY"], lynx_nMat = lynx["nMat"], lynx_maleID = lynx["maleID"], lynx_nFem = lynx["nFem"], lynx_rdMortTerr = lynx["rdMortTerr"]; 
   CharacterVector lynx_breed = lynx["breed"], lynx_color = lynx["color"], lynx_pop = lynx["pop"], lynx_sex = lynx["sex"], lynx_status = lynx["status"];
@@ -307,7 +313,25 @@ List dispersalGB(// DataFrame, NumericVector
   int maxDisp = max(dispersers_steps);
   int step_count = int_0;
   for(int step = 0; step<maxDisp; step++){ //maxDisp
+    
     step_count++;
+    
+    // sanity loop
+    if(dispersers_who.size() != nDispLeft){
+      List L_return = List::create(Named("where") = "beginning_step_2",
+                                   _["Lynx_who"] = lynx_who,
+                                   _["residents_who"] = residents_who,
+                                   _["dispersers_who"] = dispersers_who,
+                                   _["dispersers_steps"] = dispersers_steps,
+                                   _["nLynx"] = nLynx,
+                                   _["nDispLeft"] = nDispLeft,
+                                   _["nRes"] = nRes,
+                                   _["lynx_lastDispX"] = lynx_lastDispX,
+                                   _["deathRoadOld"] = deathRoadOld,
+                                   _["step_count++"] = step_count);
+      return L_return;
+    }
+    
     
     //////////////////////////////////////////////////////////////////////
     /// work on dispersion env around indiv and type of movement
@@ -383,12 +407,13 @@ List dispersalGB(// DataFrame, NumericVector
         }
         
         Mat_Chosen(i) = R::rbinom(int_1, pMat * HabFreqDisp_matrix(i)); // number of samples is argument 2, ie matrix type
-        if(HabFreqDisp_matrix(i) == 9){
+        if(HabFreqDisp_matrix(i) == 9){ // ie if matrix picked 9 times out of nine, you have a prob one of using matrix type hab
           Mat_Chosen(i) = 1;
         }
-        // loop just to return at the end
+        // Sanity check, give resuts just before hend loop
         // if(i == (nDispLeft - 1)){
-        //   List L_return = List::create(Named("Lynx_who") = lynx_who,
+        //   List L_return = List::create(Named("where") = "hab_freq/mat_chosen",
+        //                                _["Lynx_who"] = lynx_who,
         //                                _["step_count++"] = step_count,
         //                                _["CellsDisp_lastDispX"] = CellsDisp_lastDispX,
         //                                _["Mat_Chosen"] = Mat_Chosen);
@@ -396,6 +421,15 @@ List dispersalGB(// DataFrame, NumericVector
         // }
         
       }
+      
+      //sanity check
+      // if(step==5){
+      //   List L_return = List::create(Named("where") = "mat_chosen",
+      //                                _["step_count++"] = step_count,
+      //                                _["dispersers_who"] = dispersers_who,
+      //                                _["Mat_Chosen"] = Mat_Chosen);
+      //   return L_return;
+      // } issue below
       
       // find final number cell for dispersing individuals, taking matrix or disprep only
       int nCellsDispLeft = 0;
@@ -408,7 +442,7 @@ List dispersalGB(// DataFrame, NumericVector
         }
       }
       
-      // loop to pick only the right habit for further dispersion based on whether mat_Chosen = 1
+      // loop to pick only the right habitat for further dispersion based on whether mat_Chosen = 1
       IntegerVector nextCellsType_lastDispX(nCellsDispLeft);
       IntegerVector nextCellsType_lastDispY(nCellsDispLeft);
       IntegerVector nextCellsType_pxcor(nCellsDispLeft);
@@ -480,7 +514,8 @@ List dispersalGB(// DataFrame, NumericVector
           double p = 0.5;
           while(p<1){
             for(int l = 0; l<randLines_move.size(); l++){
-              if((nextCellsType_ind(randLines_move(l)) == ind) & (p<1)){ // here keeps last one, while was not working
+              //if(nextCellsType_ind(randLines_move(l) == ind)){ // here keeps last one, while was not working
+              if((nextCellsType_ind(randLines_move(l)) == ind) & (p<1)){
                 ChosenCells_lastDispX.push_back(nextCellsType_lastDispX(randLines_move(l)));
                 ChosenCells_lastDispY.push_back(nextCellsType_lastDispY(randLines_move(l)));
                 ChosenCells_pxcor.push_back(nextCellsType_pxcor(randLines_move(l)));
@@ -499,7 +534,7 @@ List dispersalGB(// DataFrame, NumericVector
             }
           }
         }
-        
+        // sanity check
         // List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
         //                               _["nDispLeft"] = nDispLeft,
         //                               //_["randLines_move"] = randLines_move,
@@ -510,13 +545,15 @@ List dispersalGB(// DataFrame, NumericVector
         
       } //Works up to here
       
-      // List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
+      // sanity check
+      // List L_return = List::create(Named("where") = "nCellsDispLeft done",
+      // _["nCellsDispLeft"] = nCellsDispLeft
       //                              _["nDispLeft"] = nDispLeft,
       //                              _["randLines_move"] = randLines_move,
       //                              _["ChosenCell_lastDispX"] = ChosenCells_lastDispX,
       //                              _["ChosenCell_who"] = ChosenCells_who);
       // return  L_return;
-      // 
+      
       if(step>0){ // i.e if step more than first //////////////////////////////////////////////////
         
         //Have to define here and push_back values to be able to use latter on outside loop where it is filled up
@@ -585,10 +622,10 @@ List dispersalGB(// DataFrame, NumericVector
         }
         
         // dispersers with some steps left, ie final matrix
-        IntegerVector WStepsLeft = WhichAbove(nextCellsType_stepsSorted, step - 1);//- 1 because I want >= behavior from > function
+        IntegerVector WStepsLeft = WhichAbove(nextCellsType_stepsSorted, -10); //before was step - 1 but now all can go, selected before//- 1 because I want >= behavior from > function
         IntegerVector nextCellsType_indF = IntVecSubIndex(nextCellsType_indSorted, WStepsLeft);
         IntegerVector nextCellsType_habF = IntVecSubIndex(nextCellsType_habSorted, WStepsLeft);
-        IntegerVector nextCellsType_pxcorF = IntVecSubIndex( nextCellsType_pxcorSorted, WStepsLeft);
+        IntegerVector nextCellsType_pxcorF = IntVecSubIndex(nextCellsType_pxcorSorted, WStepsLeft);
         IntegerVector nextCellsType_pycorF = IntVecSubIndex(nextCellsType_pycorSorted, WStepsLeft);
         IntegerVector nextCellsType_pxcorHereF = IntVecSubIndex(nextCellsType_pxcorHereSorted, WStepsLeft);
         IntegerVector nextCellsType_pycorHereF = IntVecSubIndex(nextCellsType_pycorHereSorted, WStepsLeft);
@@ -655,19 +692,6 @@ List dispersalGB(// DataFrame, NumericVector
           }
           // now pick just one cell to move to for each ind
           IntegerVector UniqueLinesIndNoCorr = IntPosOneOfEach(nextCellsTypeNoCorr_indF);
-          //IntegerVector ChosenCellsNoCorr_ind(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_pxcor(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_pycor(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_pxcorHere(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_pycorHere(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_lastDispX(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_lastDispY(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_hab(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_who(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_steps(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_nMat(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_heading(UniqueLinesIndNoCorr.size());
-          // IntegerVector ChosenCellsNoCorr_IsMoveCorr(UniqueLinesIndNoCorr.size());
           for(int i = 0; i<UniqueLinesIndNoCorr.size(); i++){
             ChosenCellsNoCorr_ind.push_back(nextCellsTypeNoCorr_indF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_pxcor.push_back(nextCellsTypeNoCorr_pxcorF(UniqueLinesIndNoCorr(i)));
@@ -683,10 +707,12 @@ List dispersalGB(// DataFrame, NumericVector
             ChosenCellsNoCorr_heading.push_back(nextCellsTypeNoCorr_headingF(UniqueLinesIndNoCorr(i)));
             ChosenCellsNoCorr_IsMoveCorr.push_back(nextCellsTypeNoCorr_IsMoveCorrF(UniqueLinesIndNoCorr(i)));
           }
-          // List L_return = List::create(Named("ChosenCellsNoCorr_who") = ChosenCellsNoCorr_who,
+          // sanity check
+          // List L_return = List::create(Named("where") = "ChosenCellsNoCorr",
+          //                              _["ChosenCellsNoCorr_who"] = ChosenCellsNoCorr_who,
           //                              _["ChosenCellsNoCorr_ind"] = ChosenCellsNoCorr_ind,
           //                              _["ChosenCellsNoCorr_pycorHere"] = ChosenCellsNoCorr_pycorHere);
-          //return  L_return;
+          // return  L_return;
         }// end noCorr move indiv, works up to here
         
         // now deal with indiv with correlated movement
@@ -749,20 +775,6 @@ List dispersalGB(// DataFrame, NumericVector
           // keep only one line per indiv, with lowest value of rank
           IntegerVector unique_nextCellsTypeYesCorr_whoF = unique(nextCellsTypeYesCorr_whoF);
           unique_nextCellsTypeYesCorr_whoF = sortInt(unique_nextCellsTypeYesCorr_whoF);
-          // IntegerVector ChosenCellsYesCorr_who(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_prefDir(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_ind(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_hab(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_pxcorHere(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_pycorHere(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_pxcor(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_pycor(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_lastDispX(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_lastDispY(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_steps(unique_nextCellsTypeYesCorr_whoF.size());
-          // IntegerVector ChosenCellsYesCorr_nMat(unique_nextCellsTypeYesCorr_nMatF.size());
-          // IntegerVector ChosenCellsYesCorr_heading(unique_nextCellsTypeYesCorr_headingF.size());
-          // IntegerVector ChosenCellsYesCorr_IsMoveCorr(unique_nextCellsTypeYesCorr_whoF.size());
           // subset for one of the lower prefdir values
           for(int i = 0; i<unique_nextCellsTypeYesCorr_whoF.size(); i++){
             ChosenCellsYesCorr_prefDir.push_back(int_100);// set to 100 to be able to replace by values within table
@@ -801,35 +813,47 @@ List dispersalGB(// DataFrame, NumericVector
           }
         }
         
-        // List L_return = List::create(Named("nextCellsType_IsMoveCorrF") = nextCellsType_IsMoveCorrF,
-        //                              //_["YesCorr_Lind"] = YesCorr_Lind,
+        // sanity check
+        // List L_return = List::create(Named("where") = "correlated move part",
+        //                              _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
         //                              _["nCorr1"] = nCorr1,
-        //                              // _["nextCellsTypeYesCorr_indF"] = nextCellsTypeYesCorr_indF,
-        //                              // _["nextCellsTypeYesCorr_whoF"] = nextCellsTypeYesCorr_whoF,
-        //                              // _["nextCellsTypeYesCorr_DirF"] = nextCellsTypeYesCorr_DirF,
-        //                              // _["nextCellsTypeYesCorr_prefDirF"] = nextCellsTypeYesCorr_prefDirF,
         //                              _["ChosenCellsYesCorr_prefDir"] = ChosenCellsYesCorr_prefDir,
         //                              _["ChosenCellsYesCorr_who"] = ChosenCellsYesCorr_who,
+        //                              _["ChosenCellsNoCorr_who"] = ChosenCellsNoCorr_who,
         //                              _["ChosenCellsYesCorr_hab"] = ChosenCellsYesCorr_hab);
-        // return  L_return;
+        // return L_return;
         
         // get together moves for correlated and uncorrelated individuals
         int nLChosenCellsYesCorr = ChosenCellsYesCorr_who.size();
         int nLChosenCellsNoCorr = ChosenCellsNoCorr_who.size(); //ChosenCellsNoCorr
         int nChosenCells = nLChosenCellsYesCorr + nLChosenCellsNoCorr;
-        // IntegerVector ChosenCells_who(nChosenCells);
-        // IntegerVector ChosenCells_ind(nChosenCells);
-        // IntegerVector ChosenCells_hab(nChosenCells);
-        // IntegerVector ChosenCells_x(nChosenCells);
-        // IntegerVector ChosenCells_y(nChosenCells);
-        // IntegerVector ChosenCells_pxcorHere(nChosenCells);
-        // IntegerVector ChosenCells_pycorHere(nChosenCells);
-        // IntegerVector ChosenCells_pxcor(nChosenCells);
-        // IntegerVector ChosenCells_pycor(nChosenCells);
-        // IntegerVector ChosenCells_lastDispX(nChosenCells);
-        // IntegerVector ChosenCells_lastDispy(nChosenCells);
-        // IntegerVector ChosenCells_nMat(nChosenCells);
-        // IntegerVector ChosenCells_heading(nChosenCells);
+        
+        //sanity check
+        //if(step == 10){
+        if(nDispLeft > (nLChosenCellsYesCorr + nLChosenCellsNoCorr)){
+          List L_return = List::create(Named("where") = "Yes and No corr move",
+                                       _["step"] = step,
+                                       _["nCellsDispLeft"] = nCellsDispLeft,
+                                       _["nDispLeftOld"] = nDispLeftOld,
+                                       _["nDispLeft"] = nDispLeft,
+                                       _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
+                                       _["ChosenCellsYesCorr_who"] = ChosenCellsYesCorr_who,
+                                       _["ChosenCellsNoCorr_who"] = ChosenCellsNoCorr_who,
+                                       _["CellsDisp_who"] = CellsDisp_who,
+                                       _["nCellsDispLeft"] = nCellsDispLeft,
+                                       _["nextCellsType_who"] = nextCellsType_who,
+                                       _["nextCellsType_whoSorted"] = nextCellsType_whoSorted,
+                                       _["nLChosenCellsYesCorr"] = nLChosenCellsYesCorr,
+                                       _["nLChosenCellsNoCorr"] = nLChosenCellsNoCorr,
+                                       _["Dispersers_who"] = dispersers_who,
+                                       _["ChosenCell_who"] = ChosenCells_who,
+                                       _["Dispersers_steps"] = ChosenCells_steps,
+                                       _["ChosenCell_steps"] = ChosenCells_steps,
+                                       _["deathRoadOld"] = deathRoadOld);
+          return  L_return;
+        }
+        
+        
         for(int l = 0; l<nChosenCells; l++){
           if(l < nLChosenCellsYesCorr){
             ChosenCells_who.push_back(ChosenCellsYesCorr_who(l));
@@ -863,11 +887,21 @@ List dispersalGB(// DataFrame, NumericVector
         }
       }
       
-      // List L_return = List::create(Named("nCellsDispLeft") = nCellsDispLeft,
-      //                               _["nDispLeft"] = nDispLeft,
-      //                               _["ChosenCell_lastDispX"] = ChosenCells_lastDispX,
-      //                               _["ChosenCell_who"] = ChosenCells_who);
-      //  return  L_return;
+      //sanity
+      //if(step == 10){
+      if(nDispLeft > ChosenCells_who.size()){
+        List L_return = List::create(Named("where") = "chosenCells done",
+                                     _["step"] = step,
+                                     _["nCellsDispLeft"] = nCellsDispLeft,
+                                     _["nDispLeftOld"] = nDispLeftOld,
+                                     _["nDispLeft"] = nDispLeft,
+                                     _["Dispersers_who"] = dispersers_who,
+                                     _["ChosenCell_lastDispX"] = ChosenCells_lastDispX,
+                                     _["ChosenCell_who"] = ChosenCells_who,
+                                     _["ChosenCell_steps"] = ChosenCells_steps,
+                                     _["deathRoadOld"] = deathRoadOld);
+        return  L_return;
+      }
       
       // work on chosenMat and chosenDisp matrices and their processing /////////////////////////////////////////
       IntegerVector MatInd = WhichEqual(ChosenCells_hab, int_2);
@@ -1000,6 +1034,7 @@ List dispersalGB(// DataFrame, NumericVector
         }
       }
       // complete deadDisp
+      deathRoadOld = clone(deathRoad); // to track issue in next loop
       int deadDispLine = WhichEqual(deadDisp["time"], floorTimeSim)(0);
       IntegerVector deadDisp_nDispDeadColl = deadDisp["nDispDeadColl"];
       deadDisp_nDispDeadColl(deadDispLine) = sum(deathRoad);
@@ -1042,8 +1077,8 @@ List dispersalGB(// DataFrame, NumericVector
         res_index(i) = i;
       }
       // Initiate the vector for new lynx data
-      IntegerVector lynx_xcor_new(nLynx_new), lynx_ycor_new(nLynx_new), lynx_who_new(nLynx_new), lynx_heading_new(nLynx_new), lynx_prevX_new(nLynx_new), lynx_prevY_new(nLynx_new), lynx_age_new(nLynx_new), lynx_lastDispX_new(nLynx_new), lynx_lastDispY_new(nLynx_new), lynx_nMat_new(nLynx_new), lynx_maleID_new(nLynx_new), lynx_nFem_new(nLynx_new), lynx_rdMortTerr_new(nLynx_new);
-      StringVector lynx_breed_new(nLynx_new), lynx_steps_new(nLynx_new), lynx_color_new(nLynx_new), lynx_pop_new(nLynx_new), lynx_sex_new(nLynx_new), lynx_status_new(nLynx_new);
+      IntegerVector lynx_xcor_new(nLynx_new), lynx_steps_new(nLynx_new), lynx_ycor_new(nLynx_new), lynx_who_new(nLynx_new), lynx_heading_new(nLynx_new), lynx_prevX_new(nLynx_new), lynx_prevY_new(nLynx_new), lynx_age_new(nLynx_new), lynx_lastDispX_new(nLynx_new), lynx_lastDispY_new(nLynx_new), lynx_nMat_new(nLynx_new), lynx_maleID_new(nLynx_new), lynx_nFem_new(nLynx_new), lynx_rdMortTerr_new(nLynx_new);
+      StringVector lynx_breed_new(nLynx_new), lynx_color_new(nLynx_new), lynx_pop_new(nLynx_new), lynx_sex_new(nLynx_new), lynx_status_new(nLynx_new);
       // add residents bit
       for(int i = 0; i<nRes; i++){
         lynx_xcor_new(i) = residents_xcor(i), lynx_ycor_new(i) = residents_ycor(i), lynx_who_new(i) = residents_who(i), lynx_heading_new(i) = residents_heading(i), lynx_prevX_new(i) = residents_prevX(i), lynx_prevY_new(i) = residents_prevY(i), lynx_breed_new(i) = residents_breed(i), lynx_color_new(i) = residents_color(i), lynx_pop_new(i) = residents_pop(i), lynx_sex_new(i) = residents_sex(i), lynx_age_new(i) = residents_age(i), lynx_status_new(i) = residents_status(i), lynx_lastDispX_new(i) = residents_lastDispX(i), lynx_lastDispY_new(i) = residents_lastDispY(i), lynx_nMat_new(i) = residents_nMat(i), lynx_maleID_new(i) = residents_maleID(i), lynx_nFem_new(i) = residents_nFem(i), lynx_rdMortTerr_new(i) = residents_rdMortTerr(i), lynx_steps_new(i) = residents_steps(i);
@@ -1088,11 +1123,37 @@ List dispersalGB(// DataFrame, NumericVector
           //   return L_return;
           // }
           //lynx_xcor_new[disp_new_index] = dispersers_xcor_new, lynx_steps_new[disp_new_index] = dispersers_steps_new, lynx_ycor_new[disp_new_index] = dispersers_ycor_new, lynx_heading_new[disp_new_index] = dispersers_heading_new, lynx_prevX_new[disp_new_index] = dispersers_prevX_new, lynx_prevY_new[disp_new_index] = dispersers_prevY_new, lynx_breed_new[disp_new_index] = dispersers_breed_new, lynx_color_new[disp_new_index] = dispersers_color_new, lynx_pop_new[disp_new_index] = dispersers_pop_new, lynx_sex_new[disp_new_index] = dispersers_sex_new, lynx_age_new[disp_new_index] = dispersers_age_new, lynx_status_new[disp_new_index] = dispersers_status_new, lynx_maleID_new[disp_new_index] = dispersers_maleID_new, lynx_nFem_new[disp_new_index] = dispersers_nFem_new, lynx_rdMortTerr_new[disp_new_index] = dispersers_rdMortTerr;
-          lynx_xcor_new(i + nRes) = dispersers_xcor_new(i), lynx_ycor_new(i + nRes) = dispersers_ycor_new(i), lynx_who_new(i + nRes) = dispersers_who_new(i), lynx_heading_new(i + nRes) = dispersers_heading_new(i), lynx_prevX_new(i + nRes) = dispersers_prevX_new(i), lynx_prevY_new(i + nRes) = dispersers_prevY_new(i), lynx_breed_new(i + nRes) = dispersers_breed_new(i), lynx_color_new(i + nRes) = dispersers_color_new(i), lynx_pop_new(i + nRes) = dispersers_pop_new(i), lynx_sex_new(i + nRes) = dispersers_sex_new(i), lynx_age_new(i + nRes) = dispersers_age_new(i), lynx_status_new(i + nRes) = dispersers_status_new(i), lynx_lastDispX_new(i + nRes) = dispersers_lastDispX_new(i), lynx_lastDispY_new(i + nRes) = dispersers_lastDispY_new(i), lynx_nMat_new(i + nRes) = dispersers_nMat_new(i), lynx_maleID_new(i + nRes) = dispersers_maleID_new(i), lynx_nFem_new(i + nRes) = dispersers_nFem_new(i), lynx_rdMortTerr_new(i + nRes) = dispersers_rdMortTerr_new(i), lynx_steps_new(i + nRes) = dispersers_steps_new(i);
+          lynx_xcor_new(i + nRes) = dispersers_xcor_new(i), lynx_steps_new(i + nRes) =  dispersers_steps_new(i), lynx_ycor_new(i + nRes) = dispersers_ycor_new(i), lynx_who_new(i + nRes) = dispersers_who_new(i), lynx_heading_new(i + nRes) = dispersers_heading_new(i), lynx_prevX_new(i + nRes) = dispersers_prevX_new(i), lynx_prevY_new(i + nRes) = dispersers_prevY_new(i), lynx_breed_new(i + nRes) = dispersers_breed_new(i), lynx_color_new(i + nRes) = dispersers_color_new(i), lynx_pop_new(i + nRes) = dispersers_pop_new(i), lynx_sex_new(i + nRes) = dispersers_sex_new(i), lynx_age_new(i + nRes) = dispersers_age_new(i), lynx_status_new(i + nRes) = dispersers_status_new(i), lynx_lastDispX_new(i + nRes) = dispersers_lastDispX_new(i), lynx_lastDispY_new(i + nRes) = dispersers_lastDispY_new(i), lynx_nMat_new(i + nRes) = dispersers_nMat_new(i), lynx_maleID_new(i + nRes) = dispersers_maleID_new(i), lynx_nFem_new(i + nRes) = dispersers_nFem_new(i), lynx_rdMortTerr_new(i + nRes) = dispersers_rdMortTerr_new(i);
         }
       }
+      // List L_return = List::create(Named("lynx_who_new") = lynx_who_new,
+      //                              _["disperser_who_new"] = dispersers_who_new,
+      //                              _["lynx_steps_new"] = lynx_steps_new,
+      //                              _["disperser_steps_new"] = dispersers_steps_new,
+      //                              _["nDisp_new"] = nDisp_new,
+      //                              _["deadDisp"] = deadDisp,
+      //                              _["deadLynxColl"] = deadLynxColl);
+      // return L_return;
+      lynx_xcor = clone(lynx_xcor_new), lynx_steps = clone(lynx_steps_new);
+      lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new);
+      lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new);
+      lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new);
+      lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new);
+      lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new);
+      lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new); 
+      lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new); 
+      lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
     }
-    //lynx_xcor = clone(lynx_xcor_new), lynx_steps = clone(lynx_steps_new), lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new), lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
+    
+    //lynx_xcor = clone(lynx_xcor_new), lynx_steps = clone(lynx_steps_new), 
+    //lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), 
+    //lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), 
+    //lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), 
+    //lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new),
+    //lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), 
+    //lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), 
+    //lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), 
+    //lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
     // // List L_return = List::create(Named("lynx_who") = lynx_who,
     // //                              _["lynx_xcor"] = lynx_xcor,
     // //                              _["nDisp_new"] = nDisp_new,
@@ -1265,11 +1326,30 @@ List dispersalGB(// DataFrame, NumericVector
     //   }// of if dispersers left
     //   
     //   
-    // need to kinda reset dispNow as was not carried through
+    
+    // sizes before table updates
+    int nLynx_old = nLynx;
+    int nResOld = nRes; // resize does not work in rcpp
+    int nDispOld = nDisp; // resize does not work in rcpp
+    nDispLeftOld = nDispLeft; // resize does not work in rcpp
+    
+    // need to kinda reset dispNow as was not carried through above loop and did undergo reduction with death
     nLynx = lynx_status.size();
-    lynx_dispNow = clone(lynx_status);
+    if(lynx_dispNow.size() > nLynx){
+      lynx_dispNow.erase(nLynx, lynx_dispNow.size());
+    }
+    
+    // if(lynx_lastDispX.size() != lynx_status.size()){
+    //   List L_return = List::create(Named("Lynx_status") = lynx_status,
+    //                                _["lynx_dispNow"] = lynx_dispNow,
+    //                                _["Lynx_lastDispX"] = lynx_lastDispX,
+    //                                _["step_count++"] = step_count);
+    //   return L_return;
+    // }
+    
+    // now update lynx_dispNow
     for(int l = 0; l<nLynx; l++){
-      if((lynx_steps(l) > 0) & (lynx_status(l) == "disp")){
+      if((lynx_steps(l) >= step) & (lynx_status(l) == "disp")){
         lynx_dispNow(l) = "yes";
       }else{
         lynx_dispNow(l) = "no";
@@ -1278,42 +1358,67 @@ List dispersalGB(// DataFrame, NumericVector
     
     // create disperser and non disperser var /////////////////////////////////////////////////////////////////////
     
-    //define some dim
+    //define some updated dim
     nDisp = N_Eq_Str(lynx_status, "disp");
     nDispLeft = N_Eq_Str(lynx_dispNow, "yes");
     nRes = N_Eq_Str(lynx_dispNow, "no");
+    
     // reshape dispersers vector to right size
-    int nDispOld = dispersers_xcor.size();
-    if(nDispOld > nDisp){
-      dispersers_xcor.erase(nDispOld, nDisp - 1), dispersers_ycor.erase(nDispOld, nDisp - 1), dispersers_who.erase(nDispOld, nDisp - 1), dispersers_heading.erase(nDispOld, nDisp - 1), dispersers_prevX.erase(nDispOld, nDisp - 1), dispersers_prevY.erase(nDispOld, nDisp - 1), dispersers_breed.erase(nDispOld, nDisp - 1), dispersers_color.erase(nDispOld, nDisp - 1), dispersers_pop.erase(nDispOld, nDisp - 1), dispersers_sex.erase(nDispOld, nDisp - 1), dispersers_age.erase(nDispOld, nDisp - 1), dispersers_status.erase(nDispOld, nDisp - 1), dispersers_steps.erase(nDispOld, nDisp - 1), dispersers_lastDispX.erase(nDispOld, nDisp - 1), dispersers_lastDispY.erase(nDispOld, nDisp - 1), dispersers_nMat.erase(nDispOld, nDisp - 1), dispersers_maleID.erase(nDispOld, nDisp - 1), dispersers_nFem.erase(nDispOld, nDisp - 1), dispersers_rdMortTerr.erase(nDispOld, nDisp - 1), dispersers_steps.erase(nDispOld, nDisp - 1);
+    if(nDispLeftOld > nDispLeft){
+      dispersers_xcor.erase(nDispLeft, nDispLeftOld), dispersers_ycor.erase(nDispLeft, nDispLeftOld), dispersers_who.erase(nDispLeft, nDispLeftOld), dispersers_heading.erase(nDispLeft, nDispLeftOld), dispersers_prevX.erase(nDispLeft, nDispLeftOld), dispersers_prevY.erase(nDispLeft, nDispLeftOld), dispersers_breed.erase(nDispLeft, nDispLeftOld), dispersers_color.erase(nDispLeft, nDispLeftOld), dispersers_pop.erase(nDispLeft, nDispLeftOld), dispersers_sex.erase(nDispLeft, nDispLeftOld), dispersers_age.erase(nDispLeft, nDispLeftOld), dispersers_status.erase(nDispLeft, nDispLeftOld), dispersers_steps.erase(nDispLeft, nDispLeftOld), dispersers_lastDispX.erase(nDispLeft, nDispLeftOld), dispersers_lastDispY.erase(nDispLeft, nDispLeftOld), dispersers_nMat.erase(nDispLeft, nDispLeftOld), dispersers_maleID.erase(nDispLeft, nDispLeftOld), dispersers_nFem.erase(nDispLeft, nDispLeftOld), dispersers_rdMortTerr.erase(nDispLeft, nDispLeftOld), dispersers_steps.erase(nDispLeft, nDispLeftOld);
+      // if(dispersers_xcor.size() == nDispLeft){
+      //   List L_return = List::create(Named("Where") = "dispersers_xcor.erase",
+      //                                _["nDisp"] = nDisp,
+      //                                _["Lynx_status"] = lynx_status,
+      //                                _["lynx_dispNow"] = lynx_dispNow,
+      //                                _["Lynx_lastDispX"] = lynx_lastDispX,
+      //                                _["step_count++"] = step_count);
+      //   return L_return;
+      // }
     }
+    
     // update size of residents as disperser without steps left are considered that way
-    int nResOld = residents_who.size(); // resize does not work in rcpp
     // if(nRes>nResOld){
     //   residents_xcor.resize(nRes), residents_ycor.resize(nRes), residents_who.resize(nRes), residents_heading.resize(nRes), residents_prevX.resize(nRes), residents_prevY.resize(nRes), residents_breed.resize(nRes), residents_color.resize(nRes), residents_pop.resize(nRes), residents_sex.resize(nRes), residents_age.resize(nRes), residents_status.resize(nRes), residents_steps.resize(nRes), residents_lastDispX.resize(nRes), residents_lastDispY.resize(nRes), residents_nMat.resize(nRes), residents_maleID.resize(nRes), residents_nFem.resize(nRes), residents_rdMortTerr.resize(nRes), residents_steps.resize(nRes);
     // }
+    
     // make loop to fill residents and dispersers vectors again
-    for(int i = 0, i_disp = 0, i_ndisp = 0 ; i<lynx_status.size(); i++){
+    for(int i = 0, i_disp = 0, i_ndisp = 0 ; i<nLynx; i++){
       if(lynx_dispNow(i) == "yes"){
         dispersers_xcor(i_disp) = lynx_xcor(i), dispersers_steps(i_disp) = lynx_steps(i),  dispersers_ycor(i_disp) = lynx_ycor(i), dispersers_who(i_disp) = lynx_who(i), dispersers_heading(i_disp) = lynx_heading(i), dispersers_prevX(i_disp) = lynx_prevX(i), dispersers_prevY(i_disp) = lynx_prevY(i), dispersers_breed(i_disp) = lynx_breed(i), dispersers_color(i_disp) = lynx_color(i), dispersers_pop(i_disp) = lynx_pop(i), dispersers_sex(i_disp) = lynx_sex(i), dispersers_age(i_disp) = lynx_age(i), dispersers_status(i_disp) = lynx_status(i), dispersers_lastDispX(i_disp) = lynx_lastDispX(i), dispersers_lastDispY(i_disp) = lynx_lastDispY(i), dispersers_nMat(i_disp) = lynx_nMat(i), dispersers_maleID(i_disp) = lynx_maleID(i), dispersers_nFem(i_disp) = lynx_nFem(i), dispersers_rdMortTerr(i_disp) = lynx_rdMortTerr(i);
         i_disp++;
+        // if(i_disp>nDispLeft){
+        //   List L_return = List::create(Named("Where") = "dispersers_xcor(i_disp)",
+        //                                _["Lynx_status"] = lynx_status,
+        //                                _["lynx_dispNow"] = lynx_dispNow,
+        //                                _["Lynx_lastDispX"] = lynx_lastDispX,
+        //                                _["step_count++"] = step_count);
+        //   return L_return;
+        // }
       }
-      else{
-        if(i_ndisp <nResOld){
+      if(lynx_dispNow(i) == "no"){
+        if(i_ndisp<nResOld){
           residents_xcor(i_ndisp) = lynx_xcor(i), residents_steps(i_ndisp) = lynx_steps(i),  residents_ycor(i_ndisp) = lynx_ycor(i), residents_who(i_ndisp) = lynx_who(i), residents_heading(i_ndisp) = lynx_heading(i), residents_prevX(i_ndisp) = lynx_prevX(i), residents_prevY(i_ndisp) = lynx_prevY(i), residents_breed(i_ndisp) = lynx_breed(i), residents_color(i_ndisp) = lynx_color(i), residents_pop(i_ndisp) = lynx_pop(i), residents_sex(i_ndisp) = lynx_sex(i), residents_age(i_ndisp) = lynx_age(i), residents_status(i_ndisp) = lynx_status(i), residents_lastDispX(i_ndisp) = lynx_lastDispX(i), residents_lastDispY(i_ndisp) = lynx_lastDispY(i), residents_nMat(i_ndisp) = lynx_nMat(i), residents_maleID(i_ndisp) = lynx_maleID(i), residents_nFem(i_ndisp) = lynx_nFem(i), residents_rdMortTerr(i_ndisp) = lynx_rdMortTerr(i);
           i_ndisp++;
         }
         if(i_ndisp>=nResOld){
+          // if(i_ndisp>nRes){
+          //   List L_return = List::create(Named("Where") = "residents_xcor(i_ndisp) 2",
+          //                                _["Lynx_status"] = lynx_status,
+          //                                _["lynx_dispNow"] = lynx_dispNow,
+          //                                _["Lynx_lastDispX"] = lynx_lastDispX,
+          //                                _["step_count++"] = step_count);
+          //   return L_return;
+          // }
           residents_xcor.push_back(lynx_xcor(i)), residents_ycor.push_back(lynx_ycor(i)), residents_who.push_back(lynx_who(i)), residents_heading.push_back(lynx_heading(i)), residents_prevX.push_back(lynx_prevX(i)), residents_prevY.push_back(lynx_prevY(i)), residents_breed.push_back(lynx_breed(i)), residents_color.push_back(lynx_color(i)), residents_pop.push_back(lynx_pop(i)), residents_sex.push_back(lynx_sex(i)), residents_age.push_back(lynx_age(i)), residents_status.push_back(lynx_status(i)), residents_steps.push_back(lynx_steps(i)), residents_lastDispX.push_back(lynx_lastDispX(i)), residents_lastDispY.push_back(lynx_lastDispY(i)), residents_nMat.push_back(lynx_nMat(i)), residents_maleID.push_back(lynx_maleID(i)), residents_nFem.push_back(lynx_nFem(i)), residents_rdMortTerr.push_back(lynx_rdMortTerr(i)), residents_steps.push_back(lynx_steps(i));
           i_ndisp++;
         }
       }
     }
-    
   }// end step loop
   
   List L_return = List::create(Named("Lynx_who") = lynx_who,
-                               _["Lynx_steps"] = lynx_steps,
+                               _["lynx_lastDispX"] = lynx_lastDispX,
                                _["step_count++"] = step_count);
   //_["terrSize"] = terrSize
   return L_return;

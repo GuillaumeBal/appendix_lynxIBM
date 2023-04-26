@@ -58,5 +58,7 @@ my.mat[adj_cells$AdjY, adj_cells$AdjX] <- my.mat[adj_cells$AdjY, adj_cells$AdjX]
 
 plot(raster(my.mat))
 
-
-
+# ==============================================================================
+vec <- 1:10
+ShortenIntVec(vec, 8)
+length(vec)

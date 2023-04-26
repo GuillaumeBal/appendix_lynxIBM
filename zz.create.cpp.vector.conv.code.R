@@ -147,11 +147,12 @@ paste('dispersers_', c(colnames(lynx.gb), 'steps'), '.erase(nDispOld, nDisp - 1)
 paste('residents_', c(colnames(lynx.gb), 'steps'), '.resize(nRes)', sep = "") %>% 
   paste(., collapse = ', ') %>% paste(., ';', sep = '') %>% cat
 
-
 paste('residents_', c(colnames(lynx.gb), 'steps'), '.push_back(lynx_', c(colnames(lynx.gb), 'steps'), '(i))', sep = '') %>% 
   paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
 
 paste('lynx_', c(colnames(lynx.gb), 'steps'), '_new(i) = residents_', c(colnames(lynx.gb), 'steps'), '(i)', sep = '') %>% 
   paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
 
+paste('lynx_', c(colnames(lynx.gb), 'steps'), '_new(i + nRes) = dispersers_', c(colnames(lynx.gb), 'steps'), '_new(i)', sep = '') %>% 
+  paste(., collapse = ', ') %>% paste( ., ';', sep = '') %>% cat
 

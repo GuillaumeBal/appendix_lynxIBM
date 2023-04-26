@@ -234,6 +234,16 @@ List UniqAdjCells(IntegerVector x_coords, IntegerVector y_coords, NumericMatrix 
   return L_return;
 }
 
+// [[Rcpp::export]]
+// shorten vector
+IntegerVector ShortenIntVec(IntegerVector LongVec, int newSize){
+int oldSize = LongVec.size();
+  if(oldSize>newSize){
+    LongVec.erase(newSize, oldSize);
+  }
+  return LongVec;
+}
+
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically 
