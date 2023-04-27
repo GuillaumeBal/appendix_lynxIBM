@@ -272,7 +272,7 @@ List dispersalGB(// DataFrame, NumericVector
   IntegerVector lynx_xcor = lynx["xcor"], lynx_ycor = lynx["ycor"], lynx_who = lynx["who"], lynx_heading = lynx["heading"], lynx_prevX = lynx["prevX"], lynx_prevY = lynx["prevY"], lynx_age = lynx["age"], lynx_lastDispX = lynx["lastDispX"], lynx_lastDispY = lynx["lastDispY"], lynx_nMat = lynx["nMat"], lynx_maleID = lynx["maleID"], lynx_nFem = lynx["nFem"], lynx_rdMortTerr = lynx["rdMortTerr"]; 
   CharacterVector lynx_breed = lynx["breed"], lynx_color = lynx["color"], lynx_pop = lynx["pop"], lynx_sex = lynx["sex"], lynx_status = lynx["status"];
   // set a number of steps for all even though used only for dispersers
-  IntegerVector lynx_steps = sample(sMaxPs, nLynx, true); // number of samples is argument 2
+  IntegerVector lynx_steps = sample(sMaxPs - 1, nLynx, true) + 1; // number of samples is argument 2
   StringVector lynx_dispNow(nLynx);
   for(int l = 0; l<nLynx; l++){
     if((lynx_steps(l) > 0) & (lynx_status(l) == "disp")){
@@ -312,25 +312,27 @@ List dispersalGB(// DataFrame, NumericVector
   
   int maxDisp = max(dispersers_steps);
   int step_count = int_0;
-  for(int step = 0; step<maxDisp; step++){ //maxDisp
+  for(int step = 1; step < (maxDisp+1); step++){ //maxDisp
     
     step_count++;
     
+    Rcout << "Rcout 1" << std::endl << step_count << std::endl;
+    
     // sanity loop
-    if(dispersers_who.size() != nDispLeft){
-      List L_return = List::create(Named("where") = "beginning_step_2",
-                                   _["Lynx_who"] = lynx_who,
-                                   _["residents_who"] = residents_who,
-                                   _["dispersers_who"] = dispersers_who,
-                                   _["dispersers_steps"] = dispersers_steps,
-                                   _["nLynx"] = nLynx,
-                                   _["nDispLeft"] = nDispLeft,
-                                   _["nRes"] = nRes,
-                                   _["lynx_lastDispX"] = lynx_lastDispX,
-                                   _["deathRoadOld"] = deathRoadOld,
-                                   _["step_count++"] = step_count);
-      return L_return;
-    }
+    // if(dispersers_who.size() != nDispLeft){
+    //   List L_return = List::create(Named("where") = "beginning_step_2",
+    //                                _["Lynx_who"] = lynx_who,
+    //                                _["residents_who"] = residents_who,
+    //                                _["dispersers_who"] = dispersers_who,
+    //                                _["dispersers_steps"] = dispersers_steps,
+    //                                _["nLynx"] = nLynx,
+    //                                _["nDispLeft"] = nDispLeft,
+    //                                _["nRes"] = nRes,
+    //                                _["lynx_lastDispX"] = lynx_lastDispX,
+    //                                _["deathRoadOld"] = deathRoadOld,
+    //                                _["step_count++"] = step_count);
+    //   return L_return;
+    // }
     
     
     //////////////////////////////////////////////////////////////////////
@@ -422,6 +424,8 @@ List dispersalGB(// DataFrame, NumericVector
         
       }
       
+      Rcout << "Rcout 2 matchosen" << std::endl << step_count << std::endl;
+      
       //sanity check
       // if(step==5){
       //   List L_return = List::create(Named("where") = "mat_chosen",
@@ -489,6 +493,8 @@ List dispersalGB(// DataFrame, NumericVector
         }
       }// end second ind loop
       
+      Rcout << "Rcout 3 nextCellsType" << std::endl << step_count << std::endl;
+      
       // final steps elements def here for push back
       IntegerVector ChosenCells_lastDispX(0);
       IntegerVector ChosenCells_lastDispY(0);
@@ -508,7 +514,7 @@ List dispersalGB(// DataFrame, NumericVector
       
       //step++;
       IntegerVector randLines_move = sample((nextCellsType_hab.size()), (nextCellsType_hab.size()), false) - 1; // number of samples is argument 2;
-      if(step == 0){
+      if(step == 1){
         // here randomly shuffling line before picking one per ind, done above
         for(int ind = 0; ind < nDispLeft; ind++){
           double p = 0.5;
@@ -545,6 +551,8 @@ List dispersalGB(// DataFrame, NumericVector
         
       } //Works up to here
       
+      Rcout << "Rcout 4 after steps 0" << std::endl << step_count << std::endl;
+      
       // sanity check
       // List L_return = List::create(Named("where") = "nCellsDispLeft done",
       // _["nCellsDispLeft"] = nCellsDispLeft
@@ -554,7 +562,7 @@ List dispersalGB(// DataFrame, NumericVector
       //                              _["ChosenCell_who"] = ChosenCells_who);
       // return  L_return;
       
-      if(step>0){ // i.e if step more than first //////////////////////////////////////////////////
+      if(step>1){ // i.e if step more than first //////////////////////////////////////////////////
         
         //Have to define here and push_back values to be able to use latter on outside loop where it is filled up
         // final move of indiv with no correlated movements
@@ -620,6 +628,8 @@ List dispersalGB(// DataFrame, NumericVector
             }
           }
         }
+        
+        Rcout << "Rcout 5  nextCellsType step>0" << std::endl << step_count << std::endl;
         
         // dispersers with some steps left, ie final matrix
         IntegerVector WStepsLeft = WhichAbove(nextCellsType_stepsSorted, -10); //before was step - 1 but now all can go, selected before//- 1 because I want >= behavior from > function
@@ -715,6 +725,8 @@ List dispersalGB(// DataFrame, NumericVector
           // return  L_return;
         }// end noCorr move indiv, works up to here
         
+        Rcout << "Rcout 6 uncor mov" << std::endl << step_count << std::endl;
+        
         // now deal with indiv with correlated movement
         if(nCorr1 > int_0){
           //stop("got into loop");
@@ -771,6 +783,8 @@ List dispersalGB(// DataFrame, NumericVector
               nextCellsTypeYesCorr_prefDirF(l) = int_3;
             }
           }
+          
+          Rcout << "Rcout 7 cor mov" << std::endl << step_count << std::endl;
           
           // keep only one line per indiv, with lowest value of rank
           IntegerVector unique_nextCellsTypeYesCorr_whoF = unique(nextCellsTypeYesCorr_whoF);
@@ -830,29 +844,30 @@ List dispersalGB(// DataFrame, NumericVector
         
         //sanity check
         //if(step == 10){
-        if(nDispLeft > (nLChosenCellsYesCorr + nLChosenCellsNoCorr)){
-          List L_return = List::create(Named("where") = "Yes and No corr move",
-                                       _["step"] = step,
-                                       _["nCellsDispLeft"] = nCellsDispLeft,
-                                       _["nDispLeftOld"] = nDispLeftOld,
-                                       _["nDispLeft"] = nDispLeft,
-                                       _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
-                                       _["ChosenCellsYesCorr_who"] = ChosenCellsYesCorr_who,
-                                       _["ChosenCellsNoCorr_who"] = ChosenCellsNoCorr_who,
-                                       _["CellsDisp_who"] = CellsDisp_who,
-                                       _["nCellsDispLeft"] = nCellsDispLeft,
-                                       _["nextCellsType_who"] = nextCellsType_who,
-                                       _["nextCellsType_whoSorted"] = nextCellsType_whoSorted,
-                                       _["nLChosenCellsYesCorr"] = nLChosenCellsYesCorr,
-                                       _["nLChosenCellsNoCorr"] = nLChosenCellsNoCorr,
-                                       _["Dispersers_who"] = dispersers_who,
-                                       _["ChosenCell_who"] = ChosenCells_who,
-                                       _["Dispersers_steps"] = ChosenCells_steps,
-                                       _["ChosenCell_steps"] = ChosenCells_steps,
-                                       _["deathRoadOld"] = deathRoadOld);
-          return  L_return;
-        }
+        // if(nDispLeft > (nLChosenCellsYesCorr + nLChosenCellsNoCorr)){
+        //   List L_return = List::create(Named("where") = "Yes and No corr move",
+        //                                _["step"] = step,
+        //                                _["nCellsDispLeft"] = nCellsDispLeft,
+        //                                _["nDispLeftOld"] = nDispLeftOld,
+        //                                _["nDispLeft"] = nDispLeft,
+        //                                _["nextCellsType_IsMoveCorrF"] = nextCellsType_IsMoveCorrF,
+        //                                _["ChosenCellsYesCorr_who"] = ChosenCellsYesCorr_who,
+        //                                _["ChosenCellsNoCorr_who"] = ChosenCellsNoCorr_who,
+        //                                _["CellsDisp_who"] = CellsDisp_who,
+        //                                _["nCellsDispLeft"] = nCellsDispLeft,
+        //                                _["nextCellsType_who"] = nextCellsType_who,
+        //                                _["nextCellsType_whoSorted"] = nextCellsType_whoSorted,
+        //                                _["nLChosenCellsYesCorr"] = nLChosenCellsYesCorr,
+        //                                _["nLChosenCellsNoCorr"] = nLChosenCellsNoCorr,
+        //                                _["Dispersers_who"] = dispersers_who,
+        //                                _["ChosenCell_who"] = ChosenCells_who,
+        //                                _["Dispersers_steps"] = ChosenCells_steps,
+        //                                _["ChosenCell_steps"] = ChosenCells_steps,
+        //                                _["deathRoadOld"] = deathRoadOld);
+        //   return  L_return;
+        // }
         
+        Rcout << "Rcout 8 cor mov2" << std::endl << step_count << std::endl;
         
         for(int l = 0; l<nChosenCells; l++){
           if(l < nLChosenCellsYesCorr){
@@ -889,19 +904,19 @@ List dispersalGB(// DataFrame, NumericVector
       
       //sanity
       //if(step == 10){
-      if(nDispLeft > ChosenCells_who.size()){
-        List L_return = List::create(Named("where") = "chosenCells done",
-                                     _["step"] = step,
-                                     _["nCellsDispLeft"] = nCellsDispLeft,
-                                     _["nDispLeftOld"] = nDispLeftOld,
-                                     _["nDispLeft"] = nDispLeft,
-                                     _["Dispersers_who"] = dispersers_who,
-                                     _["ChosenCell_lastDispX"] = ChosenCells_lastDispX,
-                                     _["ChosenCell_who"] = ChosenCells_who,
-                                     _["ChosenCell_steps"] = ChosenCells_steps,
-                                     _["deathRoadOld"] = deathRoadOld);
-        return  L_return;
-      }
+      // if(nDispLeft > ChosenCells_who.size()){
+      //   List L_return = List::create(Named("where") = "chosenCells done",
+      //                                _["step"] = step,
+      //                                _["nCellsDispLeft"] = nCellsDispLeft,
+      //                                _["nDispLeftOld"] = nDispLeftOld,
+      //                                _["nDispLeft"] = nDispLeft,
+      //                                _["Dispersers_who"] = dispersers_who,
+      //                                _["ChosenCell_lastDispX"] = ChosenCells_lastDispX,
+      //                                _["ChosenCell_who"] = ChosenCells_who,
+      //                                _["ChosenCell_steps"] = ChosenCells_steps,
+      //                                _["deathRoadOld"] = deathRoadOld);
+      //   return  L_return;
+      // }
       
       // work on chosenMat and chosenDisp matrices and their processing /////////////////////////////////////////
       IntegerVector MatInd = WhichEqual(ChosenCells_hab, int_2);
@@ -971,6 +986,8 @@ List dispersalGB(// DataFrame, NumericVector
         }
       }
       
+      Rcout << "Rcout 9 chosenDisp" << std::endl << step_count << std::endl;
+      
       // process ChosenMat lynxMemory already integrated within loops above
       // same for pxcor /lastdisp update
       
@@ -1006,6 +1023,8 @@ List dispersalGB(// DataFrame, NumericVector
         connectivityMap(ChosenCells_pycor(l) , ChosenCells_pxcor(l)) +=1;
       }
       
+      Rcout << "Rcout 10 chosenCells" << std::endl << step_count << std::endl;
+      
       //////////////////////////////////////////////////////////////////////////////////////////////
       // bit on road mortality
       IntegerVector deathRoad(ChosenCells_pxcor.size());
@@ -1040,6 +1059,8 @@ List dispersalGB(// DataFrame, NumericVector
       deadDisp_nDispDeadColl(deadDispLine) = sum(deathRoad);
       deadDisp["nDispDeadColl"] = deadDisp_nDispDeadColl;
       
+      Rcout << "Rcout 11 deadDisp" << std::endl << step_count << std::endl;
+      
       // create dispdispersers_who_newerser new table, first two lines were some test
       //deathRoad(0) = 1, deathRoad(1) = 1, deathRoad(2) = 1, deathRoad(3) = 1 , deathRoad(4) = 1;
       //IntegerVector rand_values = sample(5, 10, true) - 1; // number of samples is argument 2; -1 to make it start at 0
@@ -1066,6 +1087,8 @@ List dispersalGB(// DataFrame, NumericVector
       }
       IntegerVector dispersers_xcor_new = dispersers_xcor[index_dispersers_dispersers_new], dispersers_ycor_new = dispersers_ycor[index_dispersers_dispersers_new], dispersers_heading_new = dispersers_heading[index_dispersers_dispersers_new], dispersers_prevX_new = dispersers_prevX[index_dispersers_dispersers_new], dispersers_prevY_new = dispersers_prevY[index_dispersers_dispersers_new], dispersers_age_new = dispersers_age[index_dispersers_dispersers_new], dispersers_maleID_new = dispersers_maleID[index_dispersers_dispersers_new], dispersers_nFem_new = dispersers_nFem[index_dispersers_dispersers_new], dispersers_rdMortTerr_new = dispersers_rdMortTerr[index_dispersers_dispersers_new];
       StringVector dispersers_breed_new = dispersers_breed[index_dispersers_dispersers_new], dispersers_color_new = dispersers_color[index_dispersers_dispersers_new], dispersers_pop_new = dispersers_pop[index_dispersers_dispersers_new], dispersers_sex_new = dispersers_sex[index_dispersers_dispersers_new], dispersers_status_new = dispersers_status[index_dispersers_dispersers_new];
+      
+      Rcout << "Rcout 12 dispersers new" << std::endl << step_count << std::endl;
       
       //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       // update all lynx values //////////////////////////////////////////////////////
@@ -1144,6 +1167,8 @@ List dispersalGB(// DataFrame, NumericVector
       lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new); 
       lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
     }
+    
+    Rcout << "Rcout 13 lynx updated" << std::endl << step_count << std::endl;
     
     //lynx_xcor = clone(lynx_xcor_new), lynx_steps = clone(lynx_steps_new), 
     //lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), 
@@ -1349,7 +1374,7 @@ List dispersalGB(// DataFrame, NumericVector
     
     // now update lynx_dispNow
     for(int l = 0; l<nLynx; l++){
-      if((lynx_steps(l) >= step) & (lynx_status(l) == "disp")){
+      if((lynx_steps(l) > step) & (lynx_status(l) == "disp")){
         lynx_dispNow(l) = "yes";
       }else{
         lynx_dispNow(l) = "no";
@@ -1363,9 +1388,14 @@ List dispersalGB(// DataFrame, NumericVector
     nDispLeft = N_Eq_Str(lynx_dispNow, "yes");
     nRes = N_Eq_Str(lynx_dispNow, "no");
     
+    Rcout << "Rcout 14 dispnow step" << std::endl << step_count << std::endl;
+    // Rcout << "Rcout 14.1 dispnow nDispLeft" << std::endl << nDispLeft << std::endl;
+    // Rcout << "Rcout 14.1 dispnow nDispLeftOld" << std::endl << nDispLeftOld << std::endl;
+    // Rcout << "Rcout 14.1 dispnow dispersers_who" << std::endl << dispersers_who << std::endl;
+    
     // reshape dispersers vector to right size
     if(nDispLeftOld > nDispLeft){
-      dispersers_xcor.erase(nDispLeft, nDispLeftOld), dispersers_ycor.erase(nDispLeft, nDispLeftOld), dispersers_who.erase(nDispLeft, nDispLeftOld), dispersers_heading.erase(nDispLeft, nDispLeftOld), dispersers_prevX.erase(nDispLeft, nDispLeftOld), dispersers_prevY.erase(nDispLeft, nDispLeftOld), dispersers_breed.erase(nDispLeft, nDispLeftOld), dispersers_color.erase(nDispLeft, nDispLeftOld), dispersers_pop.erase(nDispLeft, nDispLeftOld), dispersers_sex.erase(nDispLeft, nDispLeftOld), dispersers_age.erase(nDispLeft, nDispLeftOld), dispersers_status.erase(nDispLeft, nDispLeftOld), dispersers_steps.erase(nDispLeft, nDispLeftOld), dispersers_lastDispX.erase(nDispLeft, nDispLeftOld), dispersers_lastDispY.erase(nDispLeft, nDispLeftOld), dispersers_nMat.erase(nDispLeft, nDispLeftOld), dispersers_maleID.erase(nDispLeft, nDispLeftOld), dispersers_nFem.erase(nDispLeft, nDispLeftOld), dispersers_rdMortTerr.erase(nDispLeft, nDispLeftOld), dispersers_steps.erase(nDispLeft, nDispLeftOld);
+      dispersers_xcor.erase(nDispLeft, nDispLeftOld), dispersers_ycor.erase(nDispLeft, nDispLeftOld), dispersers_who.erase(nDispLeft, nDispLeftOld), dispersers_heading.erase(nDispLeft, nDispLeftOld), dispersers_prevX.erase(nDispLeft, nDispLeftOld), dispersers_prevY.erase(nDispLeft, nDispLeftOld), dispersers_breed.erase(nDispLeft, nDispLeftOld), dispersers_color.erase(nDispLeft, nDispLeftOld), dispersers_pop.erase(nDispLeft, nDispLeftOld), dispersers_sex.erase(nDispLeft, nDispLeftOld), dispersers_age.erase(nDispLeft, nDispLeftOld), dispersers_status.erase(nDispLeft, nDispLeftOld), dispersers_steps.erase(nDispLeft, nDispLeftOld), dispersers_lastDispX.erase(nDispLeft, nDispLeftOld), dispersers_lastDispY.erase(nDispLeft, nDispLeftOld), dispersers_nMat.erase(nDispLeft, nDispLeftOld), dispersers_maleID.erase(nDispLeft, nDispLeftOld), dispersers_nFem.erase(nDispLeft, nDispLeftOld), dispersers_rdMortTerr.erase(nDispLeft, nDispLeftOld);
       // if(dispersers_xcor.size() == nDispLeft){
       //   List L_return = List::create(Named("Where") = "dispersers_xcor.erase",
       //                                _["nDisp"] = nDisp,
@@ -1377,10 +1407,12 @@ List dispersalGB(// DataFrame, NumericVector
       // }
     }
     
-    // update size of residents as disperser without steps left are considered that way
-    // if(nRes>nResOld){
-    //   residents_xcor.resize(nRes), residents_ycor.resize(nRes), residents_who.resize(nRes), residents_heading.resize(nRes), residents_prevX.resize(nRes), residents_prevY.resize(nRes), residents_breed.resize(nRes), residents_color.resize(nRes), residents_pop.resize(nRes), residents_sex.resize(nRes), residents_age.resize(nRes), residents_status.resize(nRes), residents_steps.resize(nRes), residents_lastDispX.resize(nRes), residents_lastDispY.resize(nRes), residents_nMat.resize(nRes), residents_maleID.resize(nRes), residents_nFem.resize(nRes), residents_rdMortTerr.resize(nRes), residents_steps.resize(nRes);
-    // }
+    Rcout << "Rcout 15 dispersers erase update" << std::endl << step_count << std::endl;
+    Rcout << "Rcout 15.1 dispersers_who.size()" << std::endl << dispersers_who.size() << std::endl;
+    Rcout << "Rcout 15.2 residents_who.size()" << std::endl << residents_steps.size() << std::endl;
+    Rcout << "Rcout 15.3 nRes" << std::endl << nRes << std::endl;
+    Rcout << "Rcout 15.4 nResOld" << std::endl << nResOld << std::endl;
+    Rcout << "Rcout 15.5 lynx_who.size()" << std::endl << lynx_steps.size() << std::endl;
     
     // make loop to fill residents and dispersers vectors again
     for(int i = 0, i_disp = 0, i_ndisp = 0 ; i<nLynx; i++){
@@ -1400,8 +1432,8 @@ List dispersalGB(// DataFrame, NumericVector
         if(i_ndisp<nResOld){
           residents_xcor(i_ndisp) = lynx_xcor(i), residents_steps(i_ndisp) = lynx_steps(i),  residents_ycor(i_ndisp) = lynx_ycor(i), residents_who(i_ndisp) = lynx_who(i), residents_heading(i_ndisp) = lynx_heading(i), residents_prevX(i_ndisp) = lynx_prevX(i), residents_prevY(i_ndisp) = lynx_prevY(i), residents_breed(i_ndisp) = lynx_breed(i), residents_color(i_ndisp) = lynx_color(i), residents_pop(i_ndisp) = lynx_pop(i), residents_sex(i_ndisp) = lynx_sex(i), residents_age(i_ndisp) = lynx_age(i), residents_status(i_ndisp) = lynx_status(i), residents_lastDispX(i_ndisp) = lynx_lastDispX(i), residents_lastDispY(i_ndisp) = lynx_lastDispY(i), residents_nMat(i_ndisp) = lynx_nMat(i), residents_maleID(i_ndisp) = lynx_maleID(i), residents_nFem(i_ndisp) = lynx_nFem(i), residents_rdMortTerr(i_ndisp) = lynx_rdMortTerr(i);
           i_ndisp++;
-        }
-        if(i_ndisp>=nResOld){
+          Rcout << "Rcout 15.61 i_ndisp" << std::endl << i_ndisp << std::endl;
+        }else{
           // if(i_ndisp>nRes){
           //   List L_return = List::create(Named("Where") = "residents_xcor(i_ndisp) 2",
           //                                _["Lynx_status"] = lynx_status,
@@ -1410,15 +1442,21 @@ List dispersalGB(// DataFrame, NumericVector
           //                                _["step_count++"] = step_count);
           //   return L_return;
           // }
-          residents_xcor.push_back(lynx_xcor(i)), residents_ycor.push_back(lynx_ycor(i)), residents_who.push_back(lynx_who(i)), residents_heading.push_back(lynx_heading(i)), residents_prevX.push_back(lynx_prevX(i)), residents_prevY.push_back(lynx_prevY(i)), residents_breed.push_back(lynx_breed(i)), residents_color.push_back(lynx_color(i)), residents_pop.push_back(lynx_pop(i)), residents_sex.push_back(lynx_sex(i)), residents_age.push_back(lynx_age(i)), residents_status.push_back(lynx_status(i)), residents_steps.push_back(lynx_steps(i)), residents_lastDispX.push_back(lynx_lastDispX(i)), residents_lastDispY.push_back(lynx_lastDispY(i)), residents_nMat.push_back(lynx_nMat(i)), residents_maleID.push_back(lynx_maleID(i)), residents_nFem.push_back(lynx_nFem(i)), residents_rdMortTerr.push_back(lynx_rdMortTerr(i)), residents_steps.push_back(lynx_steps(i));
+          residents_xcor.push_back(lynx_xcor(i)), residents_ycor.push_back(lynx_ycor(i)), residents_who.push_back(lynx_who(i)), residents_heading.push_back(lynx_heading(i)), residents_prevX.push_back(lynx_prevX(i)), residents_prevY.push_back(lynx_prevY(i)), residents_breed.push_back(lynx_breed(i)), residents_color.push_back(lynx_color(i)), residents_pop.push_back(lynx_pop(i)), residents_sex.push_back(lynx_sex(i)), residents_age.push_back(lynx_age(i)), residents_status.push_back(lynx_status(i)), residents_steps.push_back(lynx_steps(i)), residents_lastDispX.push_back(lynx_lastDispX(i)), residents_lastDispY.push_back(lynx_lastDispY(i)), residents_nMat.push_back(lynx_nMat(i)), residents_maleID.push_back(lynx_maleID(i)), residents_nFem.push_back(lynx_nFem(i)), residents_rdMortTerr.push_back(lynx_rdMortTerr(i));
           i_ndisp++;
+          Rcout << "Rcout 15.62 i_ndisp" << std::endl << i_ndisp << std::endl;
         }
       }
     }
+    
+    Rcout << "Rcout 16 res and disp updated" << std::endl << step_count << std::endl;
+    
   }// end step loop
   
   List L_return = List::create(Named("Lynx_who") = lynx_who,
                                _["lynx_lastDispX"] = lynx_lastDispX,
+                               _["dispersers_who"] = dispersers_who,
+                               _["residents_who"] = residents_who,
                                _["step_count++"] = step_count);
   //_["terrSize"] = terrSize
   return L_return;

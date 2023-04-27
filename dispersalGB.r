@@ -17,6 +17,7 @@ trick <- c(1, 1)
 
 sourceCpp("dispersalGBcpp.cpp")
 
+rm('outputs.cpp')
 outputs.cpp <- try(
   dispersalGB(
     lynx_r = lynx.gb,
@@ -51,12 +52,12 @@ outputs.cpp <- try(
 # outputs.cpp$Lynx_status %>% length
 # outputs.cpp$Lynx_lastDispX %>% length
 
-
+rm('outputs.loop')
 outputs.loop <- list()
 for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
   outputs.loop[[i]] <- 
     #tryCatch(
-    try(
+    #try(
       dispersalGB(
         lynx_r = lynx.gb,#[lynx.gb$who != 1868, ],
         sMaxPs = sMaxPs,
@@ -84,7 +85,7 @@ for(i in 1:500){ # run several times to check for potential indexing issues that
         allowOverlap = FALSE
       )#,
       #error = function(e) e
-    )
+    #)
   #print(i)
   #print(outputs.loop[[i]])
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()

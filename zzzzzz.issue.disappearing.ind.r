@@ -13,3 +13,4 @@ issue.outputs$nextCellsType_who %>% unique %>% length
 issue.outputs$nextCellsType_whoSorted[issue.outputs$nextCellsType_IsMoveCorrF == 1] %>% unique
 issue.outputs$nextCellsType_whoSorted[issue.outputs$nextCellsType_IsMoveCorrF == 0] %>% unique
 issue.outputs$CellsDisp_who %>% unique %>% length
+issue.outputs$nCellsDispLeft
