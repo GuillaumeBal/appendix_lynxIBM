@@ -1166,191 +1166,163 @@ List dispersalGB(// DataFrame, NumericVector
       lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new); 
       lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new); 
       lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
-    }
+      //}
+      
+      Rcout << "Rcout 13 lynx updated" << std::endl << step_count << std::endl;
+      
+      //lynx_xcor = clone(lynx_xcor_new), lynx_steps = clone(lynx_steps_new), 
+      //lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), 
+      //lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), 
+      //lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), 
+      //lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new),
+      //lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), 
+      //lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), 
+      //lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), 
+      //lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
+      // // List L_return = List::create(Named("lynx_who") = lynx_who,
+      // //                              _["lynx_xcor"] = lynx_xcor,
+      // //                              _["nDisp_new"] = nDisp_new,
+      // //                              _["dispersers_who_new"] = dispersers_who_new,
+      // //                              _["deadDisp"] = deadDisp,
+      // //                              _["deadLynxColl"] = deadLynxColl
+      // //                              );
+      // // return L_return;
+      
+      
+      //       
+      //       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      //       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      //       // SEARCHTERRITORY BIT
+      
+      //compute number females in disp
+      int nfemDisp = 0;
+      for(int l = 0; l<nDisp_new; l++) {      /* loop over all rows  */
+        if(dispersers_sex_new(l) == "F"){
+          nfemDisp++;
+        }
+      }
+      //       // if some females do find lines and create subset matrix
+      if(nfemDisp > 1){
+        IntegerVector index_femDisp(nfemDisp);
+        for(int l = 0, j = 0; l<nDisp_new; l++){
+          if(dispersers_sex_new(l) == "F"){
+            index_femDisp[j] = l;
+            j++;
+          }
+        }
+        IntegerVector index_femDispRand = sample(index_femDisp, nfemDisp);
+        IntegerVector DispFem_xcor = dispersers_xcor_new[index_femDispRand], DispFem_ycor = dispersers_ycor_new[index_femDispRand], DispFem_who = dispersers_who_new[index_femDispRand], DispFem_heading = dispersers_heading_new[index_femDispRand], DispFem_prevX = dispersers_prevX_new[index_femDispRand], DispFem_prevY = dispersers_prevY_new[index_femDispRand], DispFem_age = dispersers_age_new[index_femDispRand], DispFem_steps = dispersers_steps_new[index_femDispRand], DispFem_lastDispX = dispersers_lastDispX_new[index_femDispRand], DispFem_lastDispY = dispersers_lastDispY_new[index_femDispRand], DispFem_nMat = dispersers_nMat_new[index_femDispRand], DispFem_maleID = dispersers_maleID_new[index_femDispRand], DispFem_nFem = dispersers_nFem_new[index_femDispRand], DispFem_rdMortTerr = dispersers_rdMortTerr_new[index_femDispRand];
+        StringVector DispFem_breed = dispersers_breed_new[index_femDispRand], DispFem_color = dispersers_color_new[index_femDispRand], DispFem_pop = dispersers_pop_new[index_femDispRand], DispFem_sex = dispersers_sex_new[index_femDispRand], DispFem_status = dispersers_status_new[index_femDispRand];
+        //stop("Got there");
+        // List L_return = List::create(Named("DispFem_breed") = DispFem_breed,
+        //                              _["nfemDisp"] = nfemDisp,
+        //                              _["step"] = step_count
+        //                                //_["terrSize"] = terrSize
+        // );
+        // return L_return;
+        //
+        // loop for female territory search
+        IntegerVector vec_out(nfemDisp);
+        for(int f = 0; f<nfemDisp; f++){ //for(searchingFemID in dispFemID) {
+          //for(int f = 0; f<2; f++){
+          if(
+            ((HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_4) |
+              (HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_3) |
+              (HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_2)) &
+              !(R_IsNA(TerrMap(DispFem_lastDispY(f), DispFem_lastDispX(f))))
+              //int_0 != int_1
+          ){
+            int terrSize = 0; // init terrSize
+            if((HabitatMap(1, 1) == 4) & R_IsNA(TerrMap(1, 1))){
+              for(int l = 0; l<TerrMap.nrow(); l++){
+                for(int c = 0; c<TerrMap.ncol(); c++){
+                  if(R_IsNA(TerrMap(l,c)) == false){
+                    availCellsUpdatedRas(l,c) = int_0;
+                    //stop("got in loop");
+                  }
+                }
+              }
+              if(popDist(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_1){
+                terrSize = int(coreTerrSizeFAlps);
+              }
+              if(popDist(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_2){
+                terrSize = int(coreTerrSizeFJura);
+              }
+              if(popDist(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_3){
+                terrSize = int(coreTerrSizeFVosgesPalatinate);
+              }
+              if(popDist(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_4){
+                terrSize = int(coreTerrSizeFBlackForest);
+              }
+            }
+            //beginning of spread function /////////////////////////////////////////////////////////////////////////
+            
+            // some inits
+            IntegerMatrix Spredprob = clone(availCellsUpdatedRas);
+            IntegerMatrix landscape = clone(availCellsUpdatedRas);
+            IntegerVector loci_ind(1); loci_ind(0) = HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY(f)) + DispFem_lastDispX(f);
+            IntegerVector loci_y(1); loci_y(0) = DispFem_lastDispY(f);
+            IntegerVector loci_x(1); loci_x(0) = DispFem_lastDispX(f);
+            int MaxSize = terrSize;
+            bool ReturnIndices = true;
+            bool spreadStateExists = false;
+            bool spreadProbLaterExists = true;
+            int initialLoci = int(loci_ind(0));
+            int sequenceInitialLoci = int_1;
+            int ncells = HabitatMap.ncol() * HabitatMap.nrow();
+            bool allowOverlapOrReturnDistances = allowOverlap | returnDistances;
+            bool useMatrixVersionSpreads = allowOverlapOrReturnDistances | spreadStateExists;
+            IntegerVector spreadsDT_spreads(ncells);
+            int n = int_0;
+            spreadsDT_spreads(loci_ind(0)) = n;
+            IntegerVector spreadIndices(100); spreadIndices(0) = 1;
+            IntegerVector prevSpreadIndicesActiveLen(1); prevSpreadIndicesActiveLen(0) = 1;
+            int prevSpreadIndicesFullLen = spreadIndices.size();
+            int size = int_1;
+            bool noMaxSize = false;
+            ////// now get within while loop
+            int iterations = int_5;
+            while(n <iterations){
+              List potentials = UniqFreeAdjCells(loci_x,
+                                                 loci_y,
+                                                 availCellsUpdatedRas);
+              IntegerVector potentials_AdjX = potentials["AdjX"];
+              IntegerVector potentials_AdjY = potentials["AdjY"];
+              IntegerVector potentials_CellInd = potentials["CellInd"];
+              // // potential cells kept
+              int nPot = potentials_AdjX.size();
+              IntegerVector kept_potentials(0);
+              for(int j = 0; j<nPot; j++){
+                if(availCellsUpdatedRas(potentials_AdjY(j), potentials_AdjX(j)) == int_1){
+                  kept_potentials.push_back(j);
+                }//else{
+                //kept_potentials(j) = false;
+                //}
+              }
+              if(kept_potentials.size()>int_0){
+                IntegerVector potentials_AdjXKept = potentials_AdjX[kept_potentials];
+              }else{
+                IntegerVector potentials_AdjXKept(0);
+              }
+              
+              //potentials_AdjY
+              //potentials_AdjCelInd
+              n++;
+            }
+            
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////
+          }// end of habitat 4 spread
+        } // for loop over dipersing females
+      }// end of dispersin female bit if(n_fem_Disp > 1){
+      
+      
+    /////////////////////////////  
+      
+    }// of if dispersers left
     
-    Rcout << "Rcout 13 lynx updated" << std::endl << step_count << std::endl;
     
-    //lynx_xcor = clone(lynx_xcor_new), lynx_steps = clone(lynx_steps_new), 
-    //lynx_ycor= clone(lynx_ycor_new), lynx_who= clone(lynx_who_new), 
-    //lynx_heading= clone(lynx_heading_new), lynx_prevX= clone(lynx_prevX_new), 
-    //lynx_prevY= clone(lynx_prevY_new), lynx_breed= clone(lynx_breed_new), 
-    //lynx_color= clone(lynx_color_new), lynx_pop= clone(lynx_pop_new), lynx_sex= clone(lynx_sex_new),
-    //lynx_age= clone(lynx_age_new), lynx_status= clone(lynx_status_new), 
-    //lynx_lastDispX= clone(lynx_lastDispX_new), lynx_lastDispY= clone(lynx_lastDispY_new), 
-    //lynx_nMat= clone(lynx_nMat_new), lynx_maleID= clone(lynx_maleID_new), 
-    //lynx_nFem= clone(lynx_nFem_new), lynx_rdMortTerr= clone(lynx_rdMortTerr_new);
-    // // List L_return = List::create(Named("lynx_who") = lynx_who,
-    // //                              _["lynx_xcor"] = lynx_xcor,
-    // //                              _["nDisp_new"] = nDisp_new,
-    // //                              _["dispersers_who_new"] = dispersers_who_new,
-    // //                              _["deadDisp"] = deadDisp,
-    // //                              _["deadLynxColl"] = deadLynxColl
-    // //                              );
-    // // return L_return;
-    
-    
-    //       
-    //       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //       ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //       // SEARCHTERRITORY BIT
-    //       
-    //       //compute number females in disp
-    //       int nfemDisp = 0;
-    //       for(int l = 0; l<nDisp_new; l++) {      /* loop over all rows  */
-    //         if(dispersers_sex_new(l) == "F"){
-    //           nfemDisp++;
-    //         }
-    //       }
-    //       // if some females do find lines and create subset matrix
-    //       if(nfemDisp > 1){
-    //         IntegerVector index_femDisp(nfemDisp);
-    //         for(int l = 0, j = 0; l<nDisp_new; l++){
-    //           if(dispersers_sex_new(l) == "F"){
-    //             index_femDisp[j] = l;
-    //             j++;
-    //           }
-    //         }
-    //         IntegerVector index_femDispRand = sample(index_femDisp, nfemDisp);
-    //         IntegerVector DispFem_xcor = dispersers_xcor_new[index_femDispRand], DispFem_ycor = dispersers_ycor_new[index_femDispRand], DispFem_who = dispersers_who_new[index_femDispRand], DispFem_heading = dispersers_heading_new[index_femDispRand], DispFem_prevX = dispersers_prevX_new[index_femDispRand], DispFem_prevY = dispersers_prevY_new[index_femDispRand], DispFem_age = dispersers_age_new[index_femDispRand], DispFem_steps = dispersers_steps_new[index_femDispRand], DispFem_lastDispX = dispersers_lastDispX_new[index_femDispRand], DispFem_lastDispY = dispersers_lastDispY_new[index_femDispRand], DispFem_nMat = dispersers_nMat_new[index_femDispRand], DispFem_maleID = dispersers_maleID_new[index_femDispRand], DispFem_nFem = dispersers_nFem_new[index_femDispRand], DispFem_rdMortTerr = dispersers_rdMortTerr_new[index_femDispRand];
-    //         StringVector DispFem_breed = dispersers_breed_new[index_femDispRand], DispFem_color = dispersers_color_new[index_femDispRand], DispFem_pop = dispersers_pop_new[index_femDispRand], DispFem_sex = dispersers_sex_new[index_femDispRand], DispFem_status = dispersers_status_new[index_femDispRand];
-    //         //stop("Got there");
-    //         // List L_return = List::create(Named("DispFem_breed") = DispFem_breed,
-    //         //                              _["nfemDisp"] = nfemDisp,
-    //         //                              _["step"] = step_count
-    //         //                                //_["terrSize"] = terrSize
-    //         // );
-    //         // return L_return;
-    //         // 
-    //         // loop for female territory search
-    //         //IntegerVector vec_out(nfemDisp);
-    //         //for(int f = 0; f<nfemDisp; f++){ //for(searchingFemID in dispFemID) {
-    //         for(int f = 0; f<2; f++){
-    //           if(
-    //             // ((HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_4) |
-    //             //   (HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_3) |
-    //             //   (HabitatMap(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_2)) &
-    //             //   !(R_IsNA(TerrMap(DispFem_lastDispY(f), DispFem_lastDispX(f))))
-    //             int_0 != int_1
-    //           ){
-    //             //if(HabitatMap(1, 1) == 4 & R_IsNA(TerrMap(1, 1))){
-    //             //  for(int l = 0; l<TerrMap.nrow(); l++){
-    //             //    for(int c = 0; c<TerrMap.ncol(); c++){
-    //             //      if(R_IsNA(TerrMap(l,c)) == false){
-    //             //        availCellsUpdatedRas(l,c) = int_0;
-    //             //        //stop("got in loop");
-    //             //      }
-    //             //    }
-    //             //  }
-    //             //  int terrSize = 0; // init terrSize
-    //             // if(popDist(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_1){
-    //             //   terrSize = int(coreTerrSizeFAlps);
-    //             // }
-    //             // if(popDist(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_2){
-    //             //   terrSize = int(coreTerrSizeFJura);
-    //             // }
-    //             // if(popDist(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_3){
-    //             //   terrSize = int(coreTerrSizeFVosgesPalatinate);
-    //             // }
-    //             // if(popDist(DispFem_lastDispY(f), DispFem_lastDispX(f)) == int_4){
-    //             //   terrSize = int(coreTerrSizeFBlackForest);
-    //             // }
-    //             //beginning of spread function /////////////////////////////////////////////////////////////////////////
-    //             
-    //             // some inits
-    //             // IntegerMatrix Spredprob = clone(availCellsUpdatedRas);
-    //             // IntegerMatrix landscape = clone(availCellsUpdatedRas);
-    //             // IntegerVector loci_ind(1); loci_ind(0) = HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY(f)) + DispFem_lastDispX(f);
-    //             // IntegerVector loci_y(1); loci_y(0) = DispFem_lastDispY(f);
-    //             // IntegerVector loci_x(1); loci_x(0) = DispFem_lastDispX(f);
-    //             // int MaxSize = int(terrSize);
-    //             // bool ReturnIndices = true;
-    //             // bool spreadStateExists = false;
-    //             // bool spreadProbLaterExists = true;
-    //             // int initialLoci = int(loci_ind(0));
-    //             // int sequenceInitialLoci = int_1;
-    //             // int ncells = HabitatMap.ncol() * HabitatMap.nrow();
-    //             // bool allowOverlapOrReturnDistances = allowOverlap | returnDistances;
-    //             // bool useMatrixVersionSpreads = allowOverlapOrReturnDistances | spreadStateExists;
-    //             // IntegerVector spreadsDT_spreads(ncells);
-    //             int n = int_0;
-    //             // spreadsDT_spreads(loci_ind(0)) = n;
-    //             // IntegerVector spreadIndices(100); spreadIndices(0) = 1;
-    //             // IntegerVector prevSpreadIndicesActiveLen(1); prevSpreadIndicesActiveLen(0) = 1;
-    //             // int prevSpreadIndicesFullLen = spreadIndices.size();
-    //             // int size = int_1;
-    //             // bool noMaxSize = false;
-    //             ////// now get within while loop
-    //             int iterations = int_5;
-    //             while(n <iterations){
-    //               // List potentials = UniqFreeAdjCells(loci_x,
-    //               //                                    loci_y,
-    //               //                                    availCellsUpdatedRas);
-    //               // IntegerVector potentials_AdjX = potentials["AdjX"];
-    //               // IntegerVector potentials_AdjY = potentials["AdjY"];
-    //               // IntegerVector potentials_CellInd = potentials["CellInd"];
-    //               // // // potential cells kept
-    //               // int nPot = potentials_AdjX.size();
-    //               // IntegerVector kept_potentials(0);
-    //               // for(int j = 0; j<nPot; j++){
-    //               //   if(availCellsUpdatedRas(potentials_AdjY(j), potentials_AdjX(j)) == int_1){
-    //               //     kept_potentials.push_back(j);
-    //               //   }//else{
-    //               //   //kept_potentials(j) = false;
-    //               //   //}
-    //               // }
-    //               // if(kept_potentials.size()>int_0){
-    //               //   IntegerVector potentials_AdjXKept = potentials_AdjX[kept_potentials];
-    //               // }else{
-    //               //   IntegerVector potentials_AdjXKept(0);
-    //               // }
-    //               
-    //               //potentials_AdjY
-    //               //potentials_AdjCelInd
-    //               n++;
-    //             }
-    //             // code
-    //             // 
-    //             // List L_return = List::create(Named("DispFem_breed") = DispFem_breed,
-    //             //                              _["index_femDispRand"] = index_femDispRand,
-    //             //                              _["DispFem_lastDispX"] = DispFem_lastDispX,
-    //             //                              _["DispFem_lastDispY"] = DispFem_lastDispY//,
-    //             //                                //_["terrSize"] = terrSize
-    //             // );
-    //             // List L_return = List::create(Named("disp_new_index") = disp_new_index,
-    //             //                              _["res_index"] = res_index
-    //             // );//,
-    //             // 
-    //             // 
-    //             // return L_return;
-    //             
-    //             ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //           }// end of habitat 4 spread
-    //         } //for(int f = 0; f<n_fem_Disp; f++){
-    //         // List L_return = List::create(Named("DispFem_breed") = DispFem_breed,
-    //         //                              _["nfemDisp"] = nfemDisp
-    //         //                                //_["terrSize"] = terrSize
-    //         // );
-    //         // return L_return;
-    //       }//if(n_fem_Disp > 1){
-    //       ///////////////////////////////////////////////////////////
-    //       
-    //       // List L_return = List::create(Named("nextCellsType_indF") = nextCellsType_indF,
-    //       //                              _["deathRoad"] = deathRoad,
-    //       //                              _["res_index"] = res_index,
-    //       //                              _["disp_new_index"]= disp_new_index,
-    //       //                              //_["dispersers_xcor_new"] = dispersers_xcor_new, _["dispersers_ycor_new"] = dispersers_ycor_new, _["dispersers_who_new"] = dispersers_who_new, _["dispersers_heading_new"] = dispersers_heading_new, _["dispersers_prevX_new"] = dispersers_prevX_new, _["dispersers_prevY_new"] = dispersers_prevY_new, _["dispersers_breed_new"] = dispersers_breed_new, _["dispersers_color_new"] = dispersers_color_new, _["dispersers_pop_new"] = dispersers_pop_new, _["dispersers_sex_new"] = dispersers_sex_new, _["dispersers_age_new"] = dispersers_age_new, _["dispersers_status_new"] = dispersers_status_new, _["dispersers_lastDispX_new"] = dispersers_lastDispX_new, _["dispersers_lastDispY_new"] = dispersers_lastDispY_new, _["dispersers_nMat_new"] = dispersers_nMat_new, _["dispersers_maleID_new"] = dispersers_maleID_new, _["dispersers_nFem_new"] = dispersers_nFem_new, _["dispersers_rdMortTerr_new"] = dispersers_rdMortTerr_new
-    //       //                              _["dispersers_xcor_new"] = dispersers_xcor_new,
-    //       //                              _["residents_xcor"] = residents_xcor,
-    //       //                              _["lynx_xcor"] = lynx_xcor,
-    //       //                              _["lynx_xcor_new"] = lynx_xcor_new,
-    //       //                                //_["dispersersNew_who"] = dispersersNew_who
-    //       // );
-    //       // return  L_return;
-    //       
-    //     }
-    //   }// of if dispersers left
-    //   
-    //   
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    // reupdate res and disp tables for next stp
     
     // sizes before table updates
     int nLynx_old = nLynx;
@@ -1455,6 +1427,7 @@ List dispersalGB(// DataFrame, NumericVector
   
   List L_return = List::create(Named("Lynx_who") = lynx_who,
                                _["lynx_lastDispX"] = lynx_lastDispX,
+                               _["lynx_lastDispY"] = lynx_lastDispY,
                                _["dispersers_who"] = dispersers_who,
                                _["residents_who"] = residents_who,
                                _["step_count++"] = step_count);
