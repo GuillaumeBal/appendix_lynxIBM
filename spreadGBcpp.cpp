@@ -291,6 +291,7 @@ List spreadGB(// DataFrame, NumericVector
   Rcout << "Rcout spread 1 var def prevSpreadIndicesFullLen : " << std::endl << prevSpreadIndicesFullLen << std::endl;
   //// now get within while loop
   int iterations = int_5;
+  IntegerVector events; // define high because used everywhere 
   while((n - 1) < iterations){
     n++;
     // sanity check
@@ -330,7 +331,7 @@ List spreadGB(// DataFrame, NumericVector
     //Rcout << "Rcout spread 3 / nKeptPot" << std::endl <<  nKeptPot << std::endl;
     
     if(nKeptPot>0){
-      IntegerVector events = clone(potentials_CellIndKept);
+      events = clone(potentials_CellIndKept);
       
       if(noMaxSize == false){
         IntegerVector spreadsDT_spreads_pot = spreadsDT_spreads[potentials_CellIndKept];
@@ -339,18 +340,53 @@ List spreadGB(// DataFrame, NumericVector
         if(((len + size) > MaxSize) & (size < MaxSize)){
           // sanity check
           //Rcout << "Rcout spread 3 / len" << std::endl << len << std::endl;
-          int stuff = 0;
+          // numer of active cells to remove to no more than size of territory possible
+          //int toRm = (size + len) - MaxSize; replace by to keep
+          IntegerVector cells_to_kep = sample(spreadsDT_spreads_pot.size(), MaxSize, false) - 1;//number of samples is argument 2, -1 to make it start at 0
+          IntegerVector spreadsDT_spreads_pot_resized = spreadsDT_spreads_pot[cells_to_kep];
+          spreadsDT_spreads_pot = clone(spreadsDT_spreads_pot_resized);
+          events = clone(spreadsDT_spreads_pot);
         }
-        
-      }
+        size = std::min((size + len) , MaxSize);
+      } // if(noMaxSize == false){
       
+      
+      // what to do depending of length of events
+      if(events.size()>0){
+        int curEventsLen = events.size();
+        IntegerVector addedIndices(curEventsLen);
+        for(int i = 0; i<curEventsLen; i++){
+          // maybe error and  prevSpreadIndicesActiveLen shoud be integer
+          addedIndices(i) = prevSpreadIndicesActiveLen(0) + i + int_1;
+        }
+        // if more values push back
+        
+        if((curEventsLen + prevSpreadIndicesActiveLen(0)) > prevSpreadIndicesFullLen){
+          for(int j= prevSpreadIndicesFullLen; j<(curEventsLen + prevSpreadIndicesActiveLen(0)); j++){
+            spreadIndices.push_back(0); //increase length if necessary, then complete below 
+          }
+        }
+        for(int j = 0; j<addedIndices.size(); j++){
+          spreadIndices(addedIndices(j)) = events(j);
+        }
+      } //if(events.size()>0){
+      
+    }else{// if(nKeptPot>0){
+      IntegerVector events_null;
+      events = clone(events_null);
     }
-    
+    IntegerVector loci_ind_null;
+    loci_ind = clone(loci_ind_null);
+    //loci_y set to null as well ?
+    //loci_x
   }// while(n< iterations)
   
+  
   List L_return = List::create(Named("where") = "very end",
+                               _["spreadsDT_spreads"] = spreadsDT_spreads,
                                _["prevSpreadIndicesFullLen"] = prevSpreadIndicesFullLen,
-                               _["size"] = prevSpreadIndicesFullLen);
+                               _["size"] = prevSpreadIndicesFullLen,
+                               _["event"] = events);
   return L_return;
   
-} // end of function
+}// end of function

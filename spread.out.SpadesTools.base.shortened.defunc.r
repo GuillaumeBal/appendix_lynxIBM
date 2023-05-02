@@ -146,11 +146,12 @@ while (length(loci) & (n <= iterations)) {
       len <- tabulate(spreadsDT$spreads[potentials[, 1L]], length(maxSize))
       #}
       if (any((size + len) > maxSize & size <= maxSize)) {
-        whichID <- which(size + len > maxSize)
+        stop()
+        whichID <- which(size + len > maxSize) # for us always one
         print(whichID)
         
         # remove some active cells, if more than maxSize
-        toRm <- (size + len)[whichID] - maxSize[whichID]
+        toRm <- (size + len)[whichID] - maxSize[whichID] # us one maxsize
         print(toRm)
         
         for (i in 1:length(whichID)) {
@@ -186,12 +187,12 @@ while (length(loci) & (n <= iterations)) {
     
     # remove the cells from "events" that push it over maxSize
     #  There are some edge cases that aren't captured above ... identify them...
-    if (length(maxSize) > 1L) {
-      potentials <- potentials[0L,] # remove any potential cells, as size is met
-      events <- NULL
-    }
+    # if (length(maxSize) > 1L) {
+    #   potentials <- potentials[0L,] # remove any potential cells, as size is met
+    #   events <- NULL
+    # } GN , FOR US ALWAYS 1 
     
-  } else {
+  } else { # end if (length(potentials) > 0) {
     # there are no potentials -- possibly from failed runif, or spreadProbs all 0
     events <- NULL
   }
