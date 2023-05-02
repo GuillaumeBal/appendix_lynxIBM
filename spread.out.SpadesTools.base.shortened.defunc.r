@@ -1,4 +1,4 @@
-# THO
+# THiS ONE
 
 
 if (getRversion() >= "3.1.0") {
@@ -146,7 +146,7 @@ while (length(loci) & (n <= iterations)) {
       len <- tabulate(spreadsDT$spreads[potentials[, 1L]], length(maxSize))
       #}
       if (any((size + len) > maxSize & size <= maxSize)) {
-        stop()
+        #stop()
         whichID <- which(size + len > maxSize) # for us always one
         print(whichID)
         
@@ -206,6 +206,11 @@ while (length(loci) & (n <= iterations)) {
 
 # Reset the base R seed so it is deterministic
 spreadsIndices <- spreadsIndices[1:prevSpreadIndicesActiveLen]
+
+# GB some checking addition
+potentials <- matrix(c(1, 1), ncol = 2)
+if(potentials %>% dim %>% `[`(1) %>% `>`(0)) stop()
+
 
 # Convert the data back to raster
 if (!allowOverlap & !returnDistances & !spreadStateExists) {

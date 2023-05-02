@@ -292,6 +292,10 @@ List spreadGB(// DataFrame, NumericVector
   //// now get within while loop
   int iterations = int_5;
   IntegerVector events; // define high because used everywhere 
+  
+  ////////////////////////////////////////////////////////////////////////////////////
+  // while loop
+  
   while((n - 1) < iterations){
     n++;
     // sanity check
@@ -381,12 +385,28 @@ List spreadGB(// DataFrame, NumericVector
     //loci_x
   }// while(n< iterations)
   
+  /////////////////////////////////////////////////////////////////////////
+  // after while loop
+  IntegerVector spreadsIndices_final_indices(prevSpreadIndicesActiveLen); 
+  for(int j = 0; j < prevSpreadIndicesActiveLen(0); j++){
+    spreadsIndices_final_indices(j) = j;
+  }
+  IntegerVector spreadIndices_final = spreadIndices[spreadsIndices_final_indices]; 
+  IntegerVector initialLocus_final(spreadIndices_final.size()); 
+  StringVector id_final(spreadIndices_final.size());
+  LogicalVector active_final(spreadIndices_final.size());
+  for(int j = 0; j < prevSpreadIndicesActiveLen(0); j++){
+    initialLocus_final(j) = initialLoci;
+    id_final(j) = int_1;
+    active_final(j) = false;
+  }
   
   List L_return = List::create(Named("where") = "very end",
                                _["spreadsDT_spreads"] = spreadsDT_spreads,
                                _["prevSpreadIndicesFullLen"] = prevSpreadIndicesFullLen,
                                _["size"] = prevSpreadIndicesFullLen,
-                               _["event"] = events);
+                               _["event"] = events,
+                               _["spreadIndices_final"] = spreadIndices_final);
   return L_return;
   
 }// end of function
