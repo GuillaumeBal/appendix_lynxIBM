@@ -60,7 +60,7 @@ if(NLcount(disp) != 0) {
                              maxSize = terrSize, 
                              returnIndices = TRUE,
                              quick = TRUE)
-        #spread.res
+        spread.res
         dim.1.spredf <- spread.res %>% dim %>% `[`(1)
       }
     }
@@ -253,5 +253,6 @@ if(testON == TRUE) {
   expect_true(all(terrNumTerrMap[!is.na(terrNumTerrMap)] %in% terrNumLynx))
 }
 }
+
 
 

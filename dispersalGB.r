@@ -43,7 +43,9 @@ outputs.cpp <- try(
     coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
     coreTerrSizeFBlackForest = coreTerrSizeFBlackForest,
     returnDistances = FALSE,
-    allowOverlap = FALSE
+    allowOverlap = FALSE,
+    DispFem_lastDispY = y.picked,
+    DispFem_lastDispY = x.picked
   )
 )
 # outputs.cpp

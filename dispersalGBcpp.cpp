@@ -164,7 +164,7 @@ int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
 
 // [[Rcpp::export]]
 // adjacent cells coordinates
-List UniqFreeAdjCells(IntegerVector x_coords, IntegerVector y_coords, IntegerMatrix Matrix){
+List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, IntegerMatrix Matrix){
   IntegerVector deltaX = {-1, 0, 1};
   IntegerVector deltaY = {-1, 0, 1};
   int nColMat = Matrix.ncol();
@@ -204,9 +204,11 @@ List UniqFreeAdjCells(IntegerVector x_coords, IntegerVector y_coords, IntegerMat
       }
     }
   }
-  IntegerVector AdjX_left = AdjX[keptCells];
-  IntegerVector AdjY_left = AdjY[keptCells];
-  IntegerVector CellInd_left = CellInd[keptCells];
+  IntegerVector randorder = sample(AdjX.size(), AdjX.size(), false) - 1;
+  IntegerVector keptCellsRandOrder = keptCells[randorder];
+  IntegerVector AdjX_left = AdjX[keptCellsRandOrder];
+  IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
+  IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
   List L_return = List::create(Named("AdjX") = AdjX_left,
                                _["AdjY"] = AdjY_left,
                                _["CellInd"] = CellInd_left);
@@ -1273,7 +1275,7 @@ List dispersalGB(// DataFrame, NumericVector
             bool allowOverlapOrReturnDistances = allowOverlap | returnDistances;
             bool useMatrixVersionSpreads = allowOverlapOrReturnDistances | spreadStateExists;
             IntegerVector spreadsDT_spreads(ncells);
-            int n = int_0;
+            int n = int_1;
             spreadsDT_spreads(loci_ind(0)) = n;
             IntegerVector spreadIndices(100); spreadIndices(0) = 1;
             IntegerVector prevSpreadIndicesActiveLen(1); prevSpreadIndicesActiveLen(0) = 1;
@@ -1283,13 +1285,13 @@ List dispersalGB(// DataFrame, NumericVector
             ////// now get within while loop
             int iterations = int_5;
             while(n <iterations){
-              List potentials = UniqFreeAdjCells(loci_x,
-                                                 loci_y,
-                                                 availCellsUpdatedRas);
+              List potentials = UniqFreeAdjCellsRandOrd(loci_x,
+                                                        loci_y,
+                                                        availCellsUpdatedRas);
               IntegerVector potentials_AdjX = potentials["AdjX"];
               IntegerVector potentials_AdjY = potentials["AdjY"];
               IntegerVector potentials_CellInd = potentials["CellInd"];
-              // // potential cells kept
+              // potential cells kept
               int nPot = potentials_AdjX.size();
               IntegerVector kept_potentials(0);
               for(int j = 0; j<nPot; j++){
@@ -1299,14 +1301,32 @@ List dispersalGB(// DataFrame, NumericVector
                 //kept_potentials(j) = false;
                 //}
               }
+              IntegerVector potentials_AdjXKept(0);
+              IntegerVector potentials_AdjYKept(0);
+              IntegerVector potentials_CellIndKept(0);
               if(kept_potentials.size()>int_0){
-                IntegerVector potentials_AdjXKept = potentials_AdjX[kept_potentials];
-              }else{
-                IntegerVector potentials_AdjXKept(0);
+                for(int i = 0; i<kept_potentials.size();i++){
+                  potentials_AdjXKept(i) = potentials_AdjX[kept_potentials(i)];
+                  potentials_AdjYKept(i) = potentials_AdjY[kept_potentials(i)];
+                  potentials_CellIndKept(i) = potentials_CellInd[kept_potentials(i)];
+                }
               }
+              int nKeptPot = potentials_CellIndKept.size();// light not be useful for us
               
-              //potentials_AdjY
-              //potentials_AdjCelInd
+              if(nKeptPot>0){
+                IntegerVector events = clone(potentials_CellIndKept);
+                
+                if(noMaxSize == false){
+                  IntegerVector spreadsDT_spreads_pot = spreadsDT_spreads[potentials_CellIndKept];
+                  int len = std::accumulate(spreadsDT_spreads_pot.begin(), spreadsDT_spreads_pot.end(), 0u); // on our case, length is one sone only a sum of that, no need to tabulate  
+                  
+                  if(((len + size) > MaxSize) & (size < MaxSize)){
+                    Rcout << "Rcout spread" << std::endl << step_count << std::endl;
+                  }
+                  
+                }
+                
+              }
               n++;
             }
             
@@ -1316,7 +1336,7 @@ List dispersalGB(// DataFrame, NumericVector
       }// end of dispersin female bit if(n_fem_Disp > 1){
       
       
-    /////////////////////////////  
+      /////////////////////////////  
       
     }// of if dispersers left
     

@@ -102,7 +102,7 @@ toColumn <- c("to", "indices")
 
 while (length(loci) & (n <= iterations)) {
   
-  if(n>1) stop()
+  if(n>1) #stop()
   
   # identify neighbours
   potentials <- adj(landscape, loci, directions, pairs = TRUE)
@@ -129,6 +129,8 @@ while (length(loci) & (n <= iterations)) {
   
   # increment iteration
   n <- n + 1L
+  
+  stop()
   
   # potentials can become zero because all active cells are edge cells
   if (length(potentials) > 0) {
@@ -237,13 +239,4 @@ if (returnIndices == 1) {
 }
 
 allCells
-
-
-
-
-
-
-
-
-
 

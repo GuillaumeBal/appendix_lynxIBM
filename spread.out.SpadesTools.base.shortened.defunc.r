@@ -1,3 +1,6 @@
+# THO
+
+
 if (getRversion() >= "3.1.0") {
   utils::globalVariables(c(".", ".I", "dists", "dup", "id", "indices", "initialLocus"))
 }
@@ -144,9 +147,11 @@ while (length(loci) & (n <= iterations)) {
       #}
       if (any((size + len) > maxSize & size <= maxSize)) {
         whichID <- which(size + len > maxSize)
+        print(whichID)
         
         # remove some active cells, if more than maxSize
         toRm <- (size + len)[whichID] - maxSize[whichID]
+        print(toRm)
         
         for (i in 1:length(whichID)) {
           

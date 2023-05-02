@@ -223,8 +223,14 @@ spread.short.gb <-
     
   }
 
-
-
+spread.short.gb(landscape = availCellsUpdatedRas,
+                     loci = cellFromPxcorPycor(world = sim$habitatMap,
+                                               pxcor = x.picked,#10,#searchingFemCell[, 1],
+                                               pycor = y.picked),#520),#searchingFemCell[, 2]),
+                     spreadProb = availCellsUpdatedRas,
+                     maxSize = terrSize, 
+                     returnIndices = TRUE,
+                     quick = TRUE)
 
 
 

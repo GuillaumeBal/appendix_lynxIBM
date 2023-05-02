@@ -387,3 +387,4 @@ sim$lynx <- sortOn(agents = sim$lynx, var = "who")
 #} # end of if(NLcount(disperser) != 0)
 #} # end of number of steps during the day
 #}
+
