@@ -34,3 +34,20 @@ spread.res <- spread(landscape = availCellsUpdatedRas,
        quick = TRUE)
 dim.1.spredf <- spread.res %>% dim %>% `[`(1)
 }
+
+######################################################################################
+# check spread outputs 
+
+# first things, car def ========================================
+outputs.cpp$loci_ind
+loci
+
+outputs.cpp$spreadsDT_spreads %>% length
+spreadsDT %>% nrow
+
+outputs.cpp$spreadsDT_spreads %>% `==`(spreadsDT$spreads) %>% table
+outputs.cpp$spreadsDT_spreads[loci]
+outputs.cpp$spreadsDT_spreads %>% sum
+spreadsDT$spreads[loci]
+
+#

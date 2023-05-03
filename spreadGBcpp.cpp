@@ -276,21 +276,33 @@ List spreadGB(// DataFrame, NumericVector
   bool spreadProbLaterExists = true;
   int initialLoci = int(loci_ind(0));
   int sequenceInitialLoci = int_1;
-  int ncells = HabitatMap.ncol() * HabitatMap.nrow();
+  int nCells = HabitatMap.ncol() * HabitatMap.nrow();
   bool allowOverlapOrReturnDistances = allowOverlap | returnDistances;
   bool useMatrixVersionSpreads = allowOverlapOrReturnDistances | spreadStateExists;
-  IntegerVector spreadsDT_spreads(ncells);
+  IntegerVector spreadsDT_spreads(nCells);
   int n = int_1;
-  spreadsDT_spreads(loci_ind(0)) = n;
+  spreadsDT_spreads(initialLoci - 1) = n; // as cpp starts at 0
   IntegerVector spreadIndices(100); spreadIndices(0) = 1;
   IntegerVector prevSpreadIndicesActiveLen(1); prevSpreadIndicesActiveLen(0) = 1;
   int prevSpreadIndicesFullLen = spreadIndices.size();
   int size = int_1;
   bool noMaxSize = false;
   // sanity check var def
-  Rcout << "Rcout spread 1 var def prevSpreadIndicesFullLen : " << std::endl << prevSpreadIndicesFullLen << std::endl;
+  //Rcout << "Rcout 1.1 loci : " << std::endl << loci_ind << std::endl;
+  //Rcout << "Rcout 1.2 nCells : " << std::endl << nCells << std::endl;
+  //Rcout << "Rcout 1.3 prevSpreadIndicesFullLen : " << std::endl << prevSpreadIndicesFullLen << std::endl;
+  //Rcout << "Rcout 1.4 spreadsDT_spreads : " << std::endl << spreadsDT_spreads << std::endl;
+  //Rcout << "Rcout 1.5 spreadIndices : " << std::endl << spreadIndices << std::endl;
+  //stop("beginning check");
+  List L_return_1 = List::create(Named("where") = "base def parameters",
+                               _["loci_ind"] = loci_ind,
+                               _["prevSpreadIndicesFullLen"] = prevSpreadIndicesFullLen,
+                               _["spreadsDT_spreads"] = spreadsDT_spreads,
+                               _["spreadIndices"] = spreadIndices);
+  return L_return_1;
+  
   //// now get within while loop
-  int iterations = int_5;
+  int iterations = int_2;
   IntegerVector events; // define high because used everywhere 
   
   ////////////////////////////////////////////////////////////////////////////////////

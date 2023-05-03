@@ -207,8 +207,8 @@ while (length(loci) & (n <= iterations)) {
 # Reset the base R seed so it is deterministic
 spreadsIndices <- spreadsIndices[1:prevSpreadIndicesActiveLen]
 
-# GB some checking addition
-potentials <- matrix(c(1, 1), ncol = 2)
+# GB some checking addition, potential alway null
+# potentials <- matrix(c(1, 1), ncol = 2)
 if(potentials %>% dim %>% `[`(1) %>% `>`(0)) stop()
 
 
@@ -222,7 +222,7 @@ if (!allowOverlap & !returnDistances & !spreadStateExists) {
   if (returnIndices > 0) {
     # wh already contains the potentials for next iteration -- these should be not duplicated
     #   inside "completed"
-    wh <- wh[!(wh %in% potentials[,2L])]
+    wh <- wh[!(wh %in% potentials[,2L])] # unnecessary
     completed <- data.table(indices = wh, id = spreadsDT$spreads[wh], active = FALSE)
     active <- data.table(indices = integer(0), id = integer(0), active = logical(0))
   }
