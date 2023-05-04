@@ -17,6 +17,9 @@ trick <- c(1, 1)
 
 sourceCpp("spreadGBcpp.cpp")
 
+x.picked
+y.picked
+
 rm('outputs.cpp')
 outputs.cpp <- try(
   spreadGB(
@@ -33,7 +36,7 @@ outputs.cpp <- try(
     startSimYear = start(sim, "year")[1],
     ncoll_ncoll = sim$nColl$ncoll,
     ncoll_time = sim$nColl$time,
-    deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,] %>% `[`(,c('who', "steps", "heading", "lastDispX", "lastDispY")),
+    deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,] %>% `[`( ,c('who', "steps", "heading", "lastDispX", "lastDispY")),
     deadDisp = sim$deadDisp[,],
     TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
     availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
@@ -53,43 +56,63 @@ outputs.cpp <- try(
 outputs.cpp
 
 rm('outputs.loop')
+n_try <- 100000
+record.freq <- 10
 outputs.loop <- list()
-for(i in 1:500){ # run several times to check for potential indexing issues that are sometimes fine a few times
-  outputs.loop[[i]] <- 
+
+rec <- 1
+for(i in 1:n_try){ # run several times to check for potential indexing issues that are sometimes fine a few times
+  x.picked <- 428#sample.int(sim$habitatMap@maxPxcor, 1)
+  y.picked <- 495#sample.int(sim$habitatMap@maxPycor, 1)
+  if(i == 1){ 
+    y.x.piched.df <- data.frame("y.picked" = y.picked, "x.picked" = x.picked)
+    write.table(
+      y.x.piched.df,
+      file = 'x.y.picked.txt')
+  }
+  #y.x.piched.df <- rbind(y.x.piched.df, c(y.picked, x.picked))
+  write.table(c(y.picked, x.picked), file = 'x.y.picked.txt', append = TRUE)
+  outputs.loop.current <- 
     #tryCatch(
-    #try(
-    spreadGB(
-      lynx_r = lynx.gb,#[lynx.gb$who != 1868, ],
-      sMaxPs = sMaxPs,
-      HabitatMap = habitatMap.gb,
-      pMat = pMat, #round(1/9, 2)
-      pCorr = pCorr,
-      nMatMax = nMatMax,
-      connectivityMap = sim$connectivityMap@.Data[,],
-      roadMortMap = sim$roadMortMap@.Data[,],
-      corrFactorDisp = corrFactorDisp,
-      floorTimeSim = floor(time(sim))[1],
-      startSimYear = start(sim, "year")[1],
-      ncoll_ncoll = sim$nColl$ncoll,
-      ncoll_time = sim$nColl$time,
-      deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,] %>% `[`(,c('who', "steps", "heading", "lastDispX", "lastDispY")), # did not bother to do the others
-      deadDisp = sim$deadDisp[,],
-      TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
-      availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
-      popDist = sim$popDist@.Data[,],
-      coreTerrSizeFAlps = coreTerrSizeFAlps,
-      coreTerrSizeFJura = coreTerrSizeFJura,
-      coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
-      coreTerrSizeFBlackForest = coreTerrSizeFBlackForest,
-      returnDistances = FALSE,
-      allowOverlap = FALSE,
-      DispFem_lastDispY = y.picked,# DispFem_lastDispY(f) in full cpp 
-      DispFem_lastDispX = x.picked,# DispFem_lastDispX(f) in full cpp
-      terrSize = terrSize # in full cpp
-    )#,
-  #error = function(e) e
-  #)
-  print(i)
+    try(
+      spreadGB(
+        lynx_r = lynx.gb,#[lynx.gb$who != 1868, ],
+        sMaxPs = sMaxPs,
+        HabitatMap = habitatMap.gb,
+        pMat = pMat, #round(1/9, 2)
+        pCorr = pCorr,
+        nMatMax = nMatMax,
+        connectivityMap = sim$connectivityMap@.Data[,],
+        roadMortMap = sim$roadMortMap@.Data[,],
+        corrFactorDisp = corrFactorDisp,
+        floorTimeSim = floor(time(sim))[1],
+        startSimYear = start(sim, "year")[1],
+        ncoll_ncoll = sim$nColl$ncoll,
+        ncoll_time = sim$nColl$time,
+        deadLynxColl = sim$deadLynxColl[[time(sim, "year")[1]]][,] %>% `[`(,c('who', "steps", "heading", "lastDispX", "lastDispY")), # did not bother to do the others
+        deadDisp = sim$deadDisp[,],
+        TerrMap = sim$terrMap@.Data[,],  # bits for searchterritory,
+        availCellsUpdatedRas = sim$availCellsRas %>% as.matrix,
+        popDist = sim$popDist@.Data[,],
+        coreTerrSizeFAlps = coreTerrSizeFAlps,
+        coreTerrSizeFJura = coreTerrSizeFJura,
+        coreTerrSizeFVosgesPalatinate = coreTerrSizeFVosgesPalatinate,
+        coreTerrSizeFBlackForest = coreTerrSizeFBlackForest,
+        returnDistances = FALSE,
+        allowOverlap = FALSE,
+        DispFem_lastDispY = y.picked,# DispFem_lastDispY(f) in full cpp 
+        DispFem_lastDispX = x.picked,# DispFem_lastDispX(f) in full cpp
+        terrSize = terrSize # in full cpp
+      )#,
+      #error = function(e) 
+    )
+  if(i %in% seq(0, n_try, record.freq)){
+    outputs.loop[[rec]] <- outputs.loop.current
+    outputs.loop[[rec]]$x.picked = x.picked
+    outputs.loop[[rec]]$y.picked = y.picked
+    rec <- rec + 1
+  }
+  if(i %in% seq(0, n_try, n_try/100)) print(i)
   #print(outputs.loop[[i]])
   #if(outputs.loop$MatInd %>% length %>% `==`(0)) stop()
 }

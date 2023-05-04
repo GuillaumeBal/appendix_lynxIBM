@@ -24,21 +24,22 @@ dim.hab[2] * (dim.hab[1] - searchingFemCell[, 2]) +  searchingFemCell[, 1]
 ####################################################################################
 dim.1.spredf <- 1
 while(dim.1.spredf <= 1){
-x.picked <- sample.int(sim$habitatMap@maxPxcor, 1)
-y.picked <- sample.int(sim$habitatMap@maxPycor, 1)
-spread.res <- spread(landscape = availCellsUpdatedRas,
-       loci = cellFromPxcorPycor(world = sim$habitatMap,
-                                 pxcor = x.picked,#10,#searchingFemCell[, 1],
-                                 pycor = y.picked),#520),#searchingFemCell[, 2]),
-       spreadProb = availCellsUpdatedRas, maxSize = terrSize, returnIndices = TRUE,
-       quick = TRUE)
-dim.1.spredf <- spread.res %>% dim %>% `[`(1)
+  x.picked <- sample.int(sim$habitatMap@maxPxcor, 1)
+  y.picked <- sample.int(sim$habitatMap@maxPycor, 1)
+  spread.res <- spread(landscape = availCellsUpdatedRas,
+                       loci = cellFromPxcorPycor(world = sim$habitatMap,
+                                                 pxcor = x.picked,#10,#searchingFemCell[, 1],
+                                                 pycor = y.picked),#520),#searchingFemCell[, 2]),
+                       spreadProb = availCellsUpdatedRas, maxSize = terrSize, returnIndices = TRUE,
+                       quick = TRUE)
+  dim.1.spredf <- spread.res %>% dim %>% `[`(1)
 }
 
 ######################################################################################
 # check spread outputs 
 
 # first things, car def ========================================
+
 outputs.cpp$loci_ind
 loci
 
@@ -50,4 +51,44 @@ outputs.cpp$spreadsDT_spreads[loci]
 outputs.cpp$spreadsDT_spreads %>% sum
 spreadsDT$spreads[loci]
 
-#
+# here potential cells kept ==========================================
+
+error.cases <- 
+  outputs.loop %>% 
+  sapply(.,
+         function(x){
+           #names(x)[1] == 'int_100'
+           x[1] %>% as.character(.) %>% substr(., 1, 5)
+         }) %>% `==`('Error') %>% which 
+
+outputs.loop[[1]]
+outputs.loop %>% 
+  sapply(.,
+         function(x){
+           #names(x)[1] == 'int_100'
+           length(x$kept_potentials) == x$nKeptPot
+         }) %>% table 
+
+outputs.loop %>% 
+  sapply(.,
+         function(x){
+           #names(x)[1] == 'int_100'
+           x$nKeptPot
+         }) %>% table 
+
+
+error.cases %>% length 
+
+outputs.cpp$potentials_CellIndKept
+outputs.loop %>% sapply(function(x){
+  x$potentials_CellInd %>% length()}) %>% table
+outputs.loop %>% sapply(function(x){
+  x$potentials_CellIndKept %>% length()}) %>% table
+
+
+
+
+
+
+
+

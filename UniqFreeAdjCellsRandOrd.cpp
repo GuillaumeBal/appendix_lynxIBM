@@ -1,0 +1,78 @@
+#include <Rcpp.h>
+using namespace Rcpp;
+#include <math.h>       /* atan2 */
+#define PI 3.14159265
+#include <algorithm>
+
+// This is a simple example of exporting a C++ function to R. You can
+// source this function into an R session using the Rcpp::sourceCpp 
+// function (or via the Source button on the editor toolbar). Learn
+// more about Rcpp at:
+//
+//   http://www.rcpp.org/
+//   http://adv-r.had.co.nz/Rcpp.html
+//   http://gallery.rcpp.org/
+//
+
+////////////////////////////////////////////////////////////////////////////////
+// series of helper function for lynx script
+
+// [[Rcpp::export]]
+// adjacent cells coordinates
+List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, IntegerMatrix Matrix){
+  IntegerVector deltaX = {-1, 0, 1};
+  IntegerVector deltaY = {-1, 0, 1};
+  int nColMat = Matrix.ncol();
+  int nRowMat = Matrix.nrow();
+  IntegerVector AdjX(0);
+  IntegerVector AdjY(0);
+  IntegerVector CellInd(0);
+  int new_y;
+  int new_x;
+  int new_index;
+  //Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
+  for(int z = 0; z<x_coords.size(); z++){
+    for(int l = 0; l<deltaY.size(); l++){
+      for(int c = 0; c<deltaX.size(); c++){
+        new_y = y_coords(z) + deltaY(l);
+        new_x = x_coords(z) + deltaX(c);
+        //HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY) + DispFem_lastDispX;
+        new_index = nColMat * (nRowMat -  new_y) + new_x;
+        if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) &
+           ((deltaY(l) != 0) | (deltaX(c) != 0))){
+          if(Matrix(new_y, new_x) == 0 ){ // add to keep only unoccupied cell  s
+            AdjX.push_back(new_x);
+            AdjY.push_back(new_y);
+            CellInd.push_back(new_index);
+            //stop("Went into loop");
+          }
+        }
+      }
+    }
+  }
+  //Rcout << "Rcout 2 cell with duplicates" << std::endl << CellInd << std::endl;
+  // find unique index and then pick just one of each
+  IntegerVector UniqCell = unique(CellInd);
+  int nUniqCell = UniqCell.size();
+  IntegerVector keptCells(nUniqCell);
+  for(int i = 0; i<nUniqCell; i++){
+    for(int j = 0; j<CellInd.size(); j++){
+      if(CellInd(j) == UniqCell(i)){
+        keptCells(i) = j;
+        //break;
+      }
+    }
+  }
+  //Rcout << "Rcout 3 cells kept" << std::endl << keptCells << std::endl;
+  IntegerVector randorder = sample(AdjX.size(), AdjX.size(), false) - 1;
+  IntegerVector keptCellsRandOrder = keptCells[randorder];
+  IntegerVector AdjX_left = AdjX[keptCellsRandOrder];
+  IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
+  IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
+  //Rcout << "Rcout 4 before outputs" << std::endl << keptCells << std::endl;
+  List L_return = List::create(Named("AdjX") = AdjX_left,
+                               _["AdjY"] = AdjY_left,
+                               _["CellInd"] = CellInd_left);
+  // return L_return;
+  return L_return;
+}

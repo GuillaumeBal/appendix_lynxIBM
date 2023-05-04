@@ -50,15 +50,15 @@ quick = TRUE
 
 samInt <- sample.int
 spreadStateExists <- is(spreadState, "data.table")
-spreadProbLaterExists <- TRUE
+# spreadProbLaterExists <- TRUE
 
 # essential if loop GB !!!!!!!!!!!!!!!!!!! 
-if (!is(spreadProbLater, "Raster")) {
-  if (anyNA(spreadProbLater)) {
-    spreadProbLaterExists <- FALSE
-    spreadProbLater <- spreadProb
-  }
-}
+# if (!is(spreadProbLater, "Raster")) {
+#   if (anyNA(spreadProbLater)) {
+#     spreadProbLaterExists <- FALSE
+#     spreadProbLater <- spreadProb
+#   }
+# }
 
 loci <- as.integer(loci)
 initialLoci <- loci
@@ -116,7 +116,7 @@ while (length(loci) & (n <= iterations)) {
   if (anyNA(spreadProbs)) spreadProbs[is.na(spreadProbs)] <- 0
   
   randomSuccesses <- runifC(NROW(potentials)) <= spreadProbs
-  potentials <- potentials[randomSuccesses, , drop = FALSE]
+  potentials <- potentials[randomSuccesses, , drop = FALSE] # porential kept
   
   # random ordering so not always same:
   lenPot <- NROW(potentials)

@@ -294,13 +294,13 @@ List spreadGB(// DataFrame, NumericVector
   //Rcout << "Rcout 1.4 spreadsDT_spreads : " << std::endl << spreadsDT_spreads << std::endl;
   //Rcout << "Rcout 1.5 spreadIndices : " << std::endl << spreadIndices << std::endl;
   //stop("beginning check");
-  List L_return_1 = List::create(Named("where") = "base def parameters",
-                               _["loci_ind"] = loci_ind,
-                               _["prevSpreadIndicesFullLen"] = prevSpreadIndicesFullLen,
-                               _["spreadsDT_spreads"] = spreadsDT_spreads,
-                               _["spreadIndices"] = spreadIndices);
-  return L_return_1;
-  
+  // List L_return_1 = List::create(Named("where") = "base def parameters",
+  //                              _["loci_ind"] = loci_ind,
+  //                              _["prevSpreadIndicesFullLen"] = prevSpreadIndicesFullLen,
+  //                              _["spreadsDT_spreads"] = spreadsDT_spreads,
+  //                              _["spreadIndices"] = spreadIndices);
+  // return L_return_1;
+
   //// now get within while loop
   int iterations = int_2;
   IntegerVector events; // define high because used everywhere 
@@ -310,43 +310,76 @@ List spreadGB(// DataFrame, NumericVector
   
   while((n - 1) < iterations){
     n++;
+    
+    ///////////////////////////////////////////////
+    //find potential cells
+    
     // sanity check
-    Rcout << "Rcout spread 4 n : " << std::endl << n << std::endl;
+    // Rcout << "Rcout spread 4 n : " << std::endl << n << std::endl;
     List potentials = UniqFreeAdjCellsRandOrd(loci_x,
                                               loci_y,
                                               availCellsUpdatedRas);
+    // sanity check
+    return(potentials);
+    
     IntegerVector potentials_AdjX = potentials["AdjX"];
     IntegerVector potentials_AdjY = potentials["AdjY"];
     IntegerVector potentials_CellInd = potentials["CellInd"];
     // potential cells kept
     int nPot = potentials_AdjX.size();
     IntegerVector kept_potentials(0);
-    for(int j = 0; j<nPot; j++){
-      if(availCellsUpdatedRas(potentials_AdjY(j), potentials_AdjX(j)) == int_1){
-        kept_potentials.push_back(j);
-      }//else{
-      //kept_potentials(j) = false;
-      //}
+    if(nPot>0){
+      for(int j = 0; j<nPot; j++){
+        if(((availCellsUpdatedRas.nrow() - 1) < potentials_AdjY(j)) | ((availCellsUpdatedRas.ncol() - 1) < potentials_AdjX(j))){
+          stop("you fucked up, too big");
+        }
+        if((0 > potentials_AdjY(j)) | (0 > potentials_AdjX(j))){
+            stop("you fucked up, too small");
+          }
+        if(availCellsUpdatedRas(potentials_AdjY(j), potentials_AdjX(j)) == int_0){
+          kept_potentials.push_back(j);
+        }//else{
+        //kept_potentials(j) = false;
+        //}
+      }
     }
     // sanity check
-    //Rcout << "Rcout spread 2 / kept_potentials" << std::endl <<  kept_potentials << std::endl;
+    //Rcout << "Rcout spread 2 / kept_potentials" << std::endl <<  kept_potentials.size() << std::endl;
     
-    IntegerVector potentials_AdjXKept(0);
-    IntegerVector potentials_AdjYKept(0);
-    IntegerVector potentials_CellIndKept(0);
-    if(kept_potentials.size()>int_0){
-      for(int i = 0; i<kept_potentials.size();i++){
+    List L_return_2 = List::create(Named("where") = "potentials kept",
+                                   _["loci_ind"] = loci_ind,
+                                   _["potentials_CellInd"] = potentials_CellInd,
+                                   _["kept_potentials"] = kept_potentials,
+                                   _["nKeptPot"] = kept_potentials.size());
+    return L_return_2;
+    int nKeptPot = kept_potentials.size();
+    
+    IntegerVector potentials_AdjXKept(nKeptPot);
+    IntegerVector potentials_AdjYKept(nKeptPot);
+    IntegerVector potentials_CellIndKept(nKeptPot);
+    if(nKeptPot>int_0){
+      for(int i = 0; i<nKeptPot;i++){
         potentials_AdjXKept(i) = potentials_AdjX[kept_potentials(i)];
         potentials_AdjYKept(i) = potentials_AdjY[kept_potentials(i)];
         potentials_CellIndKept(i) = potentials_CellInd[kept_potentials(i)];
       }
     }
-    int nKeptPot = potentials_CellIndKept.size();// light not be useful for us
     
     // sanity check
     //Rcout << "Rcout spread 3 / nKeptPot" << std::endl <<  nKeptPot << std::endl;
+    // List L_return_3 = List::create(Named("where") = "potentials kept",
+    //                                _["loci_ind"] = loci_ind,
+    //                                _["potentials_CellInd"] = potentials_CellInd,
+    //                                _["kept_potentials"] = kept_potentials,
+    //                                _["potentials_CellIndKept"] = potentials_CellIndKept);
+    // return L_return_3;
+    
+    
+    ///////////////////////////////////////
+    // if som potential cells
     
     if(nKeptPot>0){
+      
       events = clone(potentials_CellIndKept);
       
       if(noMaxSize == false){
@@ -366,6 +399,12 @@ List spreadGB(// DataFrame, NumericVector
         size = std::min((size + len) , MaxSize);
       } // if(noMaxSize == false){
       
+      // sanity check
+      // List L_return_3 = List::create(Named("where") = "after noMaxSize loop",
+      //                                _["loci_ind"] = loci_ind,
+      //                                _["events"] = events,
+      //                                _["size"] = size);
+      // return L_return_3;
       
       // what to do depending of length of events
       if(events.size()>0){
