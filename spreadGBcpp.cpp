@@ -175,23 +175,27 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
   int new_y;
   int new_x;
   int new_index;
+  //Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
   for(int z = 0; z<x_coords.size(); z++){
     for(int l = 0; l<deltaY.size(); l++){
       for(int c = 0; c<deltaX.size(); c++){
         new_y = y_coords(z) + deltaY(l);
         new_x = x_coords(z) + deltaX(c);
-        new_index = (new_x + 1) * nRowMat + new_y;
+        //HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY) + DispFem_lastDispX;
+        new_index = nColMat * (nRowMat -  new_y) + new_x;
         if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) &
-           (Matrix(new_y, new_x) == 0) &
-           ((deltaY(l) != 0) | (deltaX(c) != 0))){ // add to keep only unoccupied cell  s
-          AdjX.push_back(new_x);
-          AdjY.push_back(new_y);
-          CellInd.push_back(new_index);
-          //stop("Went into loop");
+           ((deltaY(l) != 0) | (deltaX(c) != 0))){
+          if(Matrix(new_y, new_x) == 0 ){ // add to keep only unoccupied cell  s
+            AdjX.push_back(new_x);
+            AdjY.push_back(new_y);
+            CellInd.push_back(new_index);
+            //stop("Went into loop");
+          }
         }
       }
     }
   }
+  //Rcout << "Rcout 2 cell with duplicates" << std::endl << CellInd << std::endl;
   // find unique index and then pick just one of each
   IntegerVector UniqCell = unique(CellInd);
   int nUniqCell = UniqCell.size();
@@ -204,11 +208,13 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
       }
     }
   }
+  //Rcout << "Rcout 3 cells kept" << std::endl << keptCells << std::endl;
   IntegerVector randorder = sample(AdjX.size(), AdjX.size(), false) - 1;
   IntegerVector keptCellsRandOrder = keptCells[randorder];
   IntegerVector AdjX_left = AdjX[keptCellsRandOrder];
   IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
   IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
+  //Rcout << "Rcout 4 before outputs" << std::endl << keptCells << std::endl;
   List L_return = List::create(Named("AdjX") = AdjX_left,
                                _["AdjY"] = AdjY_left,
                                _["CellInd"] = CellInd_left);

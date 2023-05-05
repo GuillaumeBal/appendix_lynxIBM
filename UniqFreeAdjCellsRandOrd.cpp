@@ -37,7 +37,8 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
         new_y = y_coords(z) + deltaY(l);
         new_x = x_coords(z) + deltaX(c);
         //HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY) + DispFem_lastDispX;
-        new_index = nColMat * (nRowMat -  new_y) + new_x;
+        //ncol(my.mat) * (nrow(my.mat) - my.coords[1]) + my.coords[2]
+        new_index = nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1); // plus one because starts 0 in cpp
         if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) &
            ((deltaY(l) != 0) | (deltaX(c) != 0))){
           if(Matrix(new_y, new_x) == 0 ){ // add to keep only unoccupied cell  s
@@ -45,6 +46,9 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
             AdjY.push_back(new_y);
             CellInd.push_back(new_index);
             //stop("Went into loop");
+            if(new_index >(nColMat * nRowMat)){
+              Rcout << "Index too big" << std::endl << new_index << std::endl;
+            }
           }
         }
       }

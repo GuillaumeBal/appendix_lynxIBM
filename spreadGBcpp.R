@@ -17,8 +17,8 @@ trick <- c(1, 1)
 
 sourceCpp("spreadGBcpp.cpp")
 
-x.picked
-y.picked
+x.picked <- x.picked -1
+y.picked <- y.picked -1
 
 rm('outputs.cpp')
 outputs.cpp <- try(
@@ -62,8 +62,8 @@ outputs.loop <- list()
 
 rec <- 1
 for(i in 1:n_try){ # run several times to check for potential indexing issues that are sometimes fine a few times
-  x.picked <- 428#sample.int(sim$habitatMap@maxPxcor, 1)
-  y.picked <- 495#sample.int(sim$habitatMap@maxPycor, 1)
+  x.picked <- sample.int(sim$habitatMap@maxPxcor, 1) - 1
+  y.picked <- sample.int(sim$habitatMap@maxPycor, 1) - 1 
   if(i == 1){ 
     y.x.piched.df <- data.frame("y.picked" = y.picked, "x.picked" = x.picked)
     write.table(
