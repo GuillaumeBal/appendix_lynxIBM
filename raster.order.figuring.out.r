@@ -7,12 +7,13 @@ my.rast[2] <- 2
 my.coords <- c(2,3)
 my.rast[my.coords <- c(2,3)] <- 3
 
-# lynx map count
+# lynx map count ===============================================================
 my.rast[cellFromPxcorPycor(world = createWorld(minPxcor = 1, maxPxcor = 10,
                                               minPycor = 1, maxPycor = 10),
                            pxcor = 3,#10,#searchingFemCell[, 1],
                            pycor = 2)] <- 4
 
+# compute same cell number =====================================================
 nrow(my.mat) * ncol(my.mat) - 
   ((ncol(my.mat)) * (my.coords[1]) - my.coords[2])
 

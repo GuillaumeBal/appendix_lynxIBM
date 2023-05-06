@@ -25,7 +25,7 @@ spreadProb = 0.23
 persistence = 0
 maxSize = 1e8L
 directions = 8L
-iterations = 1e6L
+iterations = 1e2L #1e6L
 returnIndices = FALSE
 returnDistances = FALSE
 id = FALSE
@@ -130,6 +130,7 @@ while (length(loci) & (n <= iterations)) {
   
   # increment iteration
   n <- n + 1L
+  print(n)
   
   # potentials can become zero because all active cells are edge cells
   if (length(potentials) > 0) {
@@ -148,11 +149,11 @@ while (length(loci) & (n <= iterations)) {
       if (any((size + len) > maxSize & size <= maxSize)) {
         #stop()
         whichID <- which(size + len > maxSize) # for us always one
-        print(whichID)
+        #print(whichID)
         
         # remove some active cells, if more than maxSize
         toRm <- (size + len)[whichID] - maxSize[whichID] # us one maxsize
-        print(toRm)
+        #print(toRm)
         
         for (i in 1:length(whichID)) {
           
@@ -167,12 +168,18 @@ while (length(loci) & (n <= iterations)) {
       size <- pmin(size + len, maxSize) ## Quick? and dirty. fast but loose (too flexible)
     }
     
+    #if(n>21) stop()
+    
     if (length(events) > 0) {
       if (id | returnIndices > 0 | relativeSpreadProb) {
         # give new cells, the id of the source cell
         set(spreadsDT, events, "spreads", spreadsDT$spreads[potentials[, 1L]])
       } else {
+        print(paste0('length.events ', events %>% length))
+        print(paste0('n.before.set ', n))
         set(spreadsDT, events, "spreads", n)
+        print(paste0('n.after.set ', n))
+        stop()
       }
       curEventsLen <- length(events)
       addedIndices <- prevSpreadIndicesActiveLen + 1:curEventsLen
@@ -202,14 +209,17 @@ while (length(loci) & (n <= iterations)) {
   loci <- NULL
   # new loci list for next while loop, concat of persistent and new events
   loci <- c(loci, events)
+  
+  #print(n)
+  
 } # end of while loop
 
 # Reset the base R seed so it is deterministic
 spreadsIndices <- spreadsIndices[1:prevSpreadIndicesActiveLen]
 
-# GB some checking addition, potential alway null
+# GB some checking addition, potential always null
 # potentials <- matrix(c(1, 1), ncol = 2)
-if(potentials %>% dim %>% `[`(1) %>% `>`(0)) stop()
+if(potentials %>% dim %>% `[`(1) %>% `>`(0)) stop("dim pot")
 
 
 # Convert the data back to raster

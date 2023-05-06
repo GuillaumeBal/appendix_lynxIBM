@@ -64,15 +64,15 @@ IntegerVector WhichAbove(IntegerVector ToCheck, int Crit) {
       n_above++;
     }
   }
-  IntegerVector which_vec(n_above);
+  IntegerVector which_vec_above(n_above);
   int p = 0;
   for(int i = 0; i<ToCheck.size(); i++){
     if(ToCheck(i)>Crit){
-      which_vec(p) = i;
+      which_vec_above(p) = i;
       p++;
     }
   }
-  return which_vec;
+  return which_vec_above;
 }
 
 // [[Rcpp::export]]
@@ -84,15 +84,15 @@ IntegerVector WhichEqual(IntegerVector ToCheck, int Crit) {
       n_equal++;
     }
   }
-  IntegerVector which_vec(n_equal);
+  IntegerVector which_vec_equal(n_equal);
   int p = 0;
   for(int i = 0; i<ToCheck.size(); i++){
     if(ToCheck(i)==Crit){
-      which_vec(p) = i;
+      which_vec_equal(p) = i;
       p++;
     }
   }
-  return which_vec;
+  return which_vec_equal;
 }
 
 // [[Rcpp::export]]
@@ -116,17 +116,17 @@ IntegerVector WhichInSetInt(IntegerVector ToCheck, IntegerVector subset) {
       }
     }
   }
-  IntegerVector which_vec(n_in);
+  IntegerVector which_vec_in_set(n_in);
   int p = 0;
   for(int i = 0; i<ToCheck.size(); i++){
     for(int j = 0; j<subset.size(); j++){
       if(ToCheck(i)==subset(j)){
-        which_vec(p) = i;
+        which_vec_in_set(p) = i;
         p++;
       }
     }
   }
-  return which_vec;
+  return which_vec_in_set;
 }
 
 // [[Rcpp::export]]
@@ -182,7 +182,8 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
         new_y = y_coords(z) + deltaY(l);
         new_x = x_coords(z) + deltaX(c);
         //HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY) + DispFem_lastDispX;
-        new_index = nColMat * (nRowMat -  new_y) + new_x;
+        //ncol(my.mat) * (nrow(my.mat) - my.coords[1]) + my.coords[2]
+        new_index = nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1); // plus one because starts 0 in cpp
         if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) &
            ((deltaY(l) != 0) | (deltaX(c) != 0))){
           if(Matrix(new_y, new_x) == 0 ){ // add to keep only unoccupied cell  s
@@ -190,6 +191,9 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
             AdjY.push_back(new_y);
             CellInd.push_back(new_index);
             //stop("Went into loop");
+            //if(new_index >(nColMat * nRowMat)){
+            //  Rcout << "Index too big" << std::endl << new_index << std::endl;
+            //}
           }
         }
       }
@@ -215,17 +219,19 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
   IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
   IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
   //Rcout << "Rcout 4 before outputs" << std::endl << keptCells << std::endl;
-  List L_return = List::create(Named("AdjX") = AdjX_left,
-                               _["AdjY"] = AdjY_left,
-                               _["CellInd"] = CellInd_left);
+  List L_cells = List::create(Named("AdjX") = AdjX_left,
+                              _["AdjY"] = AdjY_left,
+                              _["CellInd"] = CellInd_left);
   // return L_return;
-  return L_return;
+  return L_cells;
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // [[Rcpp::export]]
+// the spread function, fire like
 List spreadGB(// DataFrame, NumericVector
     DataFrame lynx_r,
     int sMaxPs, // dispersal
@@ -267,13 +273,19 @@ List spreadGB(// DataFrame, NumericVector
   int int_4 = 4;
   int int_5 = 5;
   int int_100 = 100;
+  int int_1e3 = 1000;
+  int int_1e4 = 10000;
+  int int_1e5 = 100000;
+  int int_1e6 = 1000000;
   
   //beginning of spread function /////////////////////////////////////////////////////////////////////////
   
   // some inits
   IntegerMatrix Spredprob = clone(availCellsUpdatedRas);
   IntegerMatrix landscape = clone(availCellsUpdatedRas);
-  IntegerVector loci_ind(1); loci_ind(0) = HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY) + DispFem_lastDispX;
+  IntegerVector loci_ind(1); 
+  //nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1)
+  loci_ind(0) = HabitatMap.ncol() * (HabitatMap.nrow() - (DispFem_lastDispY + 1)) + (DispFem_lastDispX + 1);
   IntegerVector loci_y(1); loci_y(0) = DispFem_lastDispY;
   IntegerVector loci_x(1); loci_x(0) = DispFem_lastDispX;
   int MaxSize = terrSize;
@@ -306,16 +318,15 @@ List spreadGB(// DataFrame, NumericVector
   //                              _["spreadsDT_spreads"] = spreadsDT_spreads,
   //                              _["spreadIndices"] = spreadIndices);
   // return L_return_1;
-
+  
   //// now get within while loop
-  int iterations = int_2;
+  int iterations = int_1e6;
   IntegerVector events; // define high because used everywhere 
   
   ////////////////////////////////////////////////////////////////////////////////////
   // while loop
   
-  while((n - 1) < iterations){
-    n++;
+  while((loci_ind.size() <= int_1) & ((n - 1) < iterations)){
     
     ///////////////////////////////////////////////
     //find potential cells
@@ -325,8 +336,8 @@ List spreadGB(// DataFrame, NumericVector
     List potentials = UniqFreeAdjCellsRandOrd(loci_x,
                                               loci_y,
                                               availCellsUpdatedRas);
-    // sanity check
-    return(potentials);
+    // // sanity check
+    // return(potentials);
     
     IntegerVector potentials_AdjX = potentials["AdjX"];
     IntegerVector potentials_AdjY = potentials["AdjY"];
@@ -336,12 +347,12 @@ List spreadGB(// DataFrame, NumericVector
     IntegerVector kept_potentials(0);
     if(nPot>0){
       for(int j = 0; j<nPot; j++){
-        if(((availCellsUpdatedRas.nrow() - 1) < potentials_AdjY(j)) | ((availCellsUpdatedRas.ncol() - 1) < potentials_AdjX(j))){
-          stop("you fucked up, too big");
-        }
-        if((0 > potentials_AdjY(j)) | (0 > potentials_AdjX(j))){
-            stop("you fucked up, too small");
-          }
+        // if(((availCellsUpdatedRas.nrow() - 1) < potentials_AdjY(j)) | ((availCellsUpdatedRas.ncol() - 1) < potentials_AdjX(j))){
+        //   stop("you fucked up, too big");
+        // }
+        // if((0 > potentials_AdjY(j)) | (0 > potentials_AdjX(j))){
+        //   stop("you fucked up, too small");
+        // }
         if(availCellsUpdatedRas(potentials_AdjY(j), potentials_AdjX(j)) == int_0){
           kept_potentials.push_back(j);
         }//else{
@@ -349,20 +360,22 @@ List spreadGB(// DataFrame, NumericVector
         //}
       }
     }
-    // sanity check
-    //Rcout << "Rcout spread 2 / kept_potentials" << std::endl <<  kept_potentials.size() << std::endl;
-    
-    List L_return_2 = List::create(Named("where") = "potentials kept",
-                                   _["loci_ind"] = loci_ind,
-                                   _["potentials_CellInd"] = potentials_CellInd,
-                                   _["kept_potentials"] = kept_potentials,
-                                   _["nKeptPot"] = kept_potentials.size());
-    return L_return_2;
     int nKeptPot = kept_potentials.size();
+    // sanity check
+    //Rcout << "Rcout spread 2 / kept_potentials" << std::endl <<  nKeptPot << std::endl;
+    // List L_return_2 = List::create(Named("where") = "potentials kept",
+    //                                _["loci_ind"] = loci_ind,
+    //                                _["potentials_CellInd"] = potentials_CellInd,
+    //                                _["kept_potentials"] = kept_potentials,
+    //                                _["nKeptPot"] = nKeptPot);
+    // return L_return_2;
     
     IntegerVector potentials_AdjXKept(nKeptPot);
     IntegerVector potentials_AdjYKept(nKeptPot);
     IntegerVector potentials_CellIndKept(nKeptPot);
+    
+    n++;// why here ?
+    
     if(nKeptPot>int_0){
       for(int i = 0; i<nKeptPot;i++){
         potentials_AdjXKept(i) = potentials_AdjX[kept_potentials(i)];
@@ -390,7 +403,7 @@ List spreadGB(// DataFrame, NumericVector
       
       if(noMaxSize == false){
         IntegerVector spreadsDT_spreads_pot = spreadsDT_spreads[potentials_CellIndKept];
-        int len = std::accumulate(spreadsDT_spreads_pot.begin(), spreadsDT_spreads_pot.end(), 0u); // on our case, length is one sone only a sum of that, no need to tabulate
+        int len = std::accumulate(spreadsDT_spreads_pot.begin(), spreadsDT_spreads_pot.end(), int_0); // on our case, length is one sone only a sum of that, no need to tabulate
         
         if(((len + size) > MaxSize) & (size < MaxSize)){
           // sanity check
@@ -402,15 +415,19 @@ List spreadGB(// DataFrame, NumericVector
           spreadsDT_spreads_pot = clone(spreadsDT_spreads_pot_resized);
           events = clone(spreadsDT_spreads_pot);
         }
+        //Rcout << "Rcout len" << std::endl << len << std::endl;
+        //Rcout << "Rcout len, n" << std::endl << n << std::endl;
         size = std::min((size + len) , MaxSize);
       } // if(noMaxSize == false){
       
       // sanity check
-      // List L_return_3 = List::create(Named("where") = "after noMaxSize loop",
+      // if(n > int_1e3){
+      // List L_return_4 = List::create(Named("where") = "after noMaxSize loop",
       //                                _["loci_ind"] = loci_ind,
       //                                _["events"] = events,
       //                                _["size"] = size);
-      // return L_return_3;
+      // return L_return_4;
+      // }
       
       // what to do depending of length of events
       if(events.size()>0){
@@ -437,14 +454,23 @@ List spreadGB(// DataFrame, NumericVector
       events = clone(events_null);
     }
     IntegerVector loci_ind_null;
-    loci_ind = clone(loci_ind_null);
+    loci_ind = clone(events);
+    //loci_ind = clone(loci_ind_null);
+    //loci_ind = clone(loci_ind_null);
     //loci_y set to null as well ?
     //loci_x
   }// while(n< iterations)
   
+  Rcout << "Rcout n" << std::endl << n << std::endl;
+  // List L_return_4 = List::create(Named("where") = "after while loop",
+  //                                _["prevSpreadIndicesActiveLen"] = prevSpreadIndicesActiveLen,
+  //                                _["events"] = events,
+  //                                _["size"] = size);
+  // return L_return_4;
+  
   /////////////////////////////////////////////////////////////////////////
   // after while loop
-  IntegerVector spreadsIndices_final_indices(prevSpreadIndicesActiveLen); 
+  IntegerVector spreadsIndices_final_indices(prevSpreadIndicesActiveLen(0)); 
   for(int j = 0; j < prevSpreadIndicesActiveLen(0); j++){
     spreadsIndices_final_indices(j) = j;
   }
@@ -459,11 +485,9 @@ List spreadGB(// DataFrame, NumericVector
   }
   
   List L_return = List::create(Named("where") = "very end",
-                               _["spreadsDT_spreads"] = spreadsDT_spreads,
-                               _["prevSpreadIndicesFullLen"] = prevSpreadIndicesFullLen,
-                               _["size"] = prevSpreadIndicesFullLen,
-                               _["event"] = events,
-                               _["spreadIndices_final"] = spreadIndices_final);
+                               _["initialLocus_final"] =  initialLocus_final,
+                               _["id_final"] = id_final,
+                               _["active_final"] = active_final);
   return L_return;
   
 }// end of function

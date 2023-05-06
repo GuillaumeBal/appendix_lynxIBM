@@ -56,8 +56,8 @@ outputs.cpp <- try(
 outputs.cpp
 
 rm('outputs.loop')
-n_try <- 100000
-record.freq <- 10
+n_try <- 10000
+record.freq <- 5
 outputs.loop <- list()
 
 rec <- 1

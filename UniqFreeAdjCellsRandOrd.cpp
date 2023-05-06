@@ -46,9 +46,9 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
             AdjY.push_back(new_y);
             CellInd.push_back(new_index);
             //stop("Went into loop");
-            if(new_index >(nColMat * nRowMat)){
-              Rcout << "Index too big" << std::endl << new_index << std::endl;
-            }
+            //if(new_index >(nColMat * nRowMat)){
+            //  Rcout << "Index too big" << std::endl << new_index << std::endl;
+            //}
           }
         }
       }

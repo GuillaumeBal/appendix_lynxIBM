@@ -61,23 +61,22 @@ error.cases <-
            x[1] %>% as.character(.) %>% substr(., 1, 5)
          }) %>% `==`('Error') %>% which 
 
-outputs.loop[[1]]
-outputs.loop %>% 
+return.cases <- 
+  outputs.loop %>% 
   sapply(.,
          function(x){
-           #names(x)[1] == 'int_100'
-           length(x$kept_potentials) == x$nKeptPot
+           x$where
          }) %>% table 
+return.cases
 
-outputs.loop %>% 
+return.very.end <- 
+  outputs.loop %>% 
   sapply(.,
          function(x){
-           #names(x)[1] == 'int_100'
-           x$nKeptPot
-         }) %>% table 
+           x$where
+         }) %>% substr(., 1, 5) %>% `==`("very ") %>% which
 
-
-error.cases %>% length 
+outputs.loop[-return.very.end]
 
 outputs.cpp$potentials_CellIndKept
 outputs.loop %>% sapply(function(x){
