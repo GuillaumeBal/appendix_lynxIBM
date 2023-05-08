@@ -163,8 +163,38 @@ int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
 }
 
 // [[Rcpp::export]]
+// cell number to coords in cpp
+List CellNumtoRowCol(IntegerVector cellNum, NumericMatrix Matrix){
+  IntegerVector rowNum(cellNum.size());
+  IntegerVector colNum(cellNum.size());
+  int nRowMat = Matrix.nrow();
+  int nColMat = Matrix.ncol();
+  for(int i = 0; i<cellNum.size(); i++){
+    rowNum(i) = trunc(cellNum(i) / nColMat);
+    colNum(i) = cellNum(i) - rowNum(i) * nColMat - 1;
+  }
+  List coordsRC = List::create(Named("x_coords") = colNum,
+                               _["y_coords"] = rowNum,
+                               _["cellNum"] = cellNum);
+  return coordsRC;
+}
+
+// [[Rcpp::export]]
+// x y to cellNum
+IntegerVector RowColtoCellNum(IntegerVector y_coords, IntegerVector x_coords, NumericMatrix Matrix){
+  IntegerVector cellNum(y_coords.size());
+  int nRowMat = Matrix.nrow();
+  int nColMat = Matrix.ncol();
+  for(int i = 0; i<cellNum.size(); i++){
+    cellNum(i) = nRowMat * nColMat - (nColMat * (y_coords(i)) - x_coords(i));
+  }
+  return cellNum;
+}
+
+// [[Rcpp::export]]
 // adjacent cells coordinates
-List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, IntegerMatrix Matrix){
+//List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, IntegerMatrix Matrix){
+List UniqFreeAdjCellsRandOrd(IntegerVector cellNums, IntegerMatrix Matrix){
   IntegerVector deltaX = {-1, 0, 1};
   IntegerVector deltaY = {-1, 0, 1};
   int nColMat = Matrix.ncol();
@@ -175,6 +205,12 @@ List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, Int
   int new_y;
   int new_x;
   int new_index;
+  // addition to work from cellNum instead of coordinates
+  IntegerVector x_coords(cellNums.size());
+  IntegerVector y_coords(cellNums.size());
+  List all_coords = CellNumtoRowCol(y_coords = y_coords, x_coords = x_coords, Matrix = Matrix);
+  y_coords = all_coords["y_coords"];
+  x_coords = all_coords["x_coords"];
   //Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
   for(int z = 0; z<x_coords.size(); z++){
     for(int l = 0; l<deltaY.size(); l++){

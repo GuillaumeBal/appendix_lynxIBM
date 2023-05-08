@@ -244,6 +244,39 @@ int oldSize = LongVec.size();
   return LongVec;
 }
 
+// [[Rcpp::export]]
+// cell number to coords on map in cpp
+List CellNumtoRowCol(IntegerVector cellNum, NumericMatrix Matrix){
+  IntegerVector rowNum(cellNum.size());
+  IntegerVector colNum(cellNum.size());
+  int nRowMat = Matrix.nrow();
+  int nColMat = Matrix.ncol();
+  for(int i = 0; i<cellNum.size(); i++){
+    rowNum(i) = trunc(cellNum(i) / nRowMat);
+    //trunc(cellNum(i) / nColMat);
+    colNum(i) = cellNum(i) - (rowNum(i) * nColMat) - 1 ;
+      //cellNum(i) - (rowNum(i) * nColMat + 1);
+  }
+  List coordsRC = List::create(Named("y_coords") = rowNum,
+                               _["x_coords"] = colNum,
+                               _["cellNum"] = cellNum);
+  return coordsRC;
+}
+
+// [[Rcpp::export]]
+// x y to cellNum
+IntegerVector RowColtoCellNum(IntegerVector y_coords, IntegerVector x_coords, NumericMatrix Matrix){
+  IntegerVector cellNum(y_coords.size());
+  int nRowMat = Matrix.nrow();
+  int nColMat = Matrix.ncol();
+  for(int i = 0; i<cellNum.size(); i++){
+    cellNum(i) = y_coords(i) * nColMat + x_coords(i) + 1;
+      //nRowMat * nColMat - (nColMat * (y_coords(i)) - x_coords(i));
+  }
+  return cellNum;
+}
+
+
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically 

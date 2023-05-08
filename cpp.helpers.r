@@ -62,3 +62,10 @@ plot(raster(my.mat))
 vec <- 1:10
 ShortenIntVec(vec, 8)
 length(vec)
+
+# some bit on coords ==========================================================
+sourceCpp("cpp.helpers.cpp") 
+my.mat <- matrix(NA, ncol = 10, nrow = 10)
+RowColtoCellNum(y_coords = c(2) - 1, x_coords = c(3) -1, my.mat);
+CellNumtoRowCol(c(13), my.mat)
+
