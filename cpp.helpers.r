@@ -65,7 +65,12 @@ length(vec)
 
 # some bit on coords ==========================================================
 sourceCpp("cpp.helpers.cpp") 
-my.mat <- matrix(NA, ncol = 10, nrow = 10)
-RowColtoCellNum(y_coords = c(2) - 1, x_coords = c(3) -1, my.mat);
-CellNumtoRowCol(c(13), my.mat)
+# my.mat <- matrix(NA, ncol = 10, nrow = 10)
+# RowColtoCellNum(y_coords = c(2) - 1, x_coords = c(3) -1, my.mat);
+# CellNumtoRowCol(c(13), my.mat)
+
+RowColtoCellNum(c(47-1,47-1), c(101 -1, 101-1), sim$availCellsRas %>% as.matrix)
+CellNumtoRowCol(c(181943, 181943), sim$availCellsRas %>% as.matrix)
+
+
 

@@ -35,8 +35,8 @@ allowOverlap = FALSE
 relativeSpreadProb = FALSE
 
 # arguments Sarah ================================
-x.picked <- sample.int(sim$habitatMap@maxPxcor, 1)
-y.picked <- sample.int(sim$habitatMap@maxPycor, 1)
+x.picked <- 47#sample.int(sim$habitatMap@maxPxcor, 1)
+y.picked <- 101#sample.int(sim$habitatMap@maxPycor, 1)
 landscape = availCellsUpdatedRas
 loci = cellFromPxcorPycor(world = sim$habitatMap,
                           pxcor = x.picked,

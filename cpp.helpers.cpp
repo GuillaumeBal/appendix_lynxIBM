@@ -228,8 +228,8 @@ List UniqAdjCells(IntegerVector x_coords, IntegerVector y_coords, NumericMatrix 
   IntegerVector AdjY_left = AdjY[keptCells];
   IntegerVector CellInd_left = CellInd[keptCells];
   List L_return = List::create(Named("AdjX") = AdjX_left,
-                          _["AdjY"] = AdjY_left,
-                          _["CellInd"] = CellInd_left);
+                               _["AdjY"] = AdjY_left,
+                               _["CellInd"] = CellInd_left);
   // return L_return;
   return L_return;
 }
@@ -237,7 +237,7 @@ List UniqAdjCells(IntegerVector x_coords, IntegerVector y_coords, NumericMatrix 
 // [[Rcpp::export]]
 // shorten vector
 IntegerVector ShortenIntVec(IntegerVector LongVec, int newSize){
-int oldSize = LongVec.size();
+  int oldSize = LongVec.size();
   if(oldSize>newSize){
     LongVec.erase(newSize, oldSize);
   }
@@ -252,31 +252,29 @@ List CellNumtoRowCol(IntegerVector cellNum, NumericMatrix Matrix){
   int nRowMat = Matrix.nrow();
   int nColMat = Matrix.ncol();
   for(int i = 0; i<cellNum.size(); i++){
-    rowNum(i) = trunc(cellNum(i) / nRowMat);
+    rowNum(i) = nRowMat - trunc(cellNum(i) / nColMat) - 1;
     //trunc(cellNum(i) / nColMat);
-    colNum(i) = cellNum(i) - (rowNum(i) * nColMat) - 1 ;
-      //cellNum(i) - (rowNum(i) * nColMat + 1);
+    colNum(i) = cellNum(i) - nColMat * (nRowMat - rowNum(i) - 1) - 1 ; 
+    //cellNum(i) - (rowNum(i) * nColMat + 1);
   }
-  List coordsRC = List::create(Named("y_coords") = rowNum,
+  List coordsRC = List::create(Named("cellNum") = cellNum,
                                _["x_coords"] = colNum,
-                               _["cellNum"] = cellNum);
+                               _["y_coords"] = rowNum);
   return coordsRC;
 }
 
 // [[Rcpp::export]]
 // x y to cellNum
-IntegerVector RowColtoCellNum(IntegerVector y_coords, IntegerVector x_coords, NumericMatrix Matrix){
+IntegerVector RowColtoCellNum(IntegerVector x_coords, IntegerVector y_coords, NumericMatrix Matrix){
   IntegerVector cellNum(y_coords.size());
   int nRowMat = Matrix.nrow();
   int nColMat = Matrix.ncol();
   for(int i = 0; i<cellNum.size(); i++){
-    cellNum(i) = y_coords(i) * nColMat + x_coords(i) + 1;
-      //nRowMat * nColMat - (nColMat * (y_coords(i)) - x_coords(i));
+    cellNum(i) = nColMat * (nRowMat - (y_coords(i) + 1)) + (x_coords(i) + 1);
+    //HabitatMap.ncol() * (HabitatMap.nrow() - (DispFem_lastDispY + 1)) + (DispFem_lastDispX + 1);
   }
   return cellNum;
 }
-
-
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically 

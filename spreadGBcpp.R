@@ -17,8 +17,8 @@ trick <- c(1, 1)
 
 sourceCpp("spreadGBcpp.cpp")
 
-x.picked.base <- sample.int(sim$habitatMap@maxPxcor, 1)
-y.picked.base <- sample.int(sim$habitatMap@maxPycor, 1)
+x.picked.base <- 47#sample.int(sim$habitatMap@maxPxcor, 1)
+y.picked.base <- 101#sample.int(sim$habitatMap@maxPycor, 1)
 x.picked <- x.picked.base - 1 # cpp correction as starts at 0
 y.picked <- y.picked.base - 1 
 

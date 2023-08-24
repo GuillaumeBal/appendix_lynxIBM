@@ -17,13 +17,16 @@ trick <- c(1, 1)
 
 sourceCpp("UniqFreeAdjCellsRandOrdFromNum.cpp")
 
-x.picked #<- 428
-y.picked #<- 523
+x.picked.base <- 47
+y.picked.base <- 101
 
-nColMat <-ncol(sim$availCellsRas %>% as.matrix) - 1
-nRowMat <- nrow(sim$availCellsRas %>% as.matrix) - 1
+x.picked <- x.picked.base - 1 #<- 428
+y.picked <- y.picked.base - 1  #<- 523
 
-cellnum.picked <- nColMat * (nRowMat - (y.picked + 1)) + (x.picked + 1);
+nColMat <-ncol(sim$availCellsRas %>% as.matrix) 
+nRowMat <- nrow(sim$availCellsRas %>% as.matrix)
+
+cellnum.picked <- nColMat * (nRowMat - (y.picked.base)) + (x.picked.base);
 
 rm('outputs.cpp')
 outputs.cpp <- try(

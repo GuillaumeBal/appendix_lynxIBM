@@ -18,22 +18,36 @@ using namespace Rcpp;
 // series of helper function for lynx script
 
 // [[Rcpp::export]]
-// cell number to coords in cpp
-List CellNumtoRowCol(IntegerVector cellNums, IntegerMatrix Matrix){
-  IntegerVector rowNum(cellNums.size());
-  IntegerVector colNum(cellNums.size());
+// cell number to coords on map in cpp
+List CellNumtoRowCol(IntegerVector cellNum, IntegerMatrix Matrix){
+  IntegerVector rowNum(cellNum.size());
+  IntegerVector colNum(cellNum.size());
   int nRowMat = Matrix.nrow();
   int nColMat = Matrix.ncol();
-  for(int i = 0; i<cellNums.size(); i++){
-    rowNum(i) = trunc(cellNums(i) / nColMat);
-    colNum(i) = cellNums(i) - rowNum(i) * nColMat - 1;
+  for(int i = 0; i<cellNum.size(); i++){
+    rowNum(i) = nRowMat - trunc(cellNum(i) / nColMat) - 1;
+    //trunc(cellNum(i) / nColMat);
+    colNum(i) = cellNum(i) - nColMat * (nRowMat - rowNum(i) - 1) - 1 ; 
+    //cellNum(i) - (rowNum(i) * nColMat + 1);
   }
-  List coordsRCNum = List::create(Named("x_coords") = colNum,
-                                  _["y_coords"] = rowNum,
-                                  _["cellNums"] = cellNums);
-  return coordsRCNum;
+  List coordsRC = List::create(Named("cellNum") = cellNum,
+                               _["x_coords"] = colNum,
+                               _["y_coords"] = rowNum);
+  return coordsRC;
 }
 
+// [[Rcpp::export]]
+// x y to cellNum
+IntegerVector RowColtoCellNum(IntegerVector x_coords, IntegerVector y_coords, IntegerMatrix Matrix){
+  IntegerVector cellNum(y_coords.size());
+  int nRowMat = Matrix.nrow();
+  int nColMat = Matrix.ncol();
+  for(int i = 0; i<cellNum.size(); i++){
+    cellNum(i) = nColMat * (nRowMat - (y_coords(i) + 1)) + (x_coords(i) + 1);
+    //HabitatMap.ncol() * (HabitatMap.nrow() - (DispFem_lastDispY + 1)) + (DispFem_lastDispX + 1);
+  }
+  return cellNum;
+}
 // [[Rcpp::export]]
 // adjacent cells coordinates
 List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
@@ -51,7 +65,7 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   List all_coords = CellNumtoRowCol(cellNum = cellNum, Matrix = Matrix);
   IntegerVector x_coords = all_coords["x_coords"];
   IntegerVector y_coords = all_coords["y_coords"];
-  //Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
+  Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
   for(int z = 0; z<x_coords.size(); z++){
     for(int l = 0; l<deltaY.size(); l++){
       for(int c = 0; c<deltaX.size(); c++){
@@ -95,9 +109,9 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
   IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
   //Rcout << "Rcout 4 before outputs" << std::endl << keptCells << std::endl;
-  List L_return = List::create(Named("AdjX") = AdjX_left,
-                               _["AdjY"] = AdjY_left,
-                               _["CellInd"] = CellInd_left);
+  List L_return = List::create(Named("CellInd") = CellInd_left,
+                               _["AdjX"] = AdjX_left,
+                               _["AdjY"] = AdjY_left);
   // return L_return;
   return L_return;
 }

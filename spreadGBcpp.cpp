@@ -162,38 +162,38 @@ int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
   return degrees;
 }
 
+
+// [[Rcpp::export]]
+// cell number to coords on map in cpp
+List CellNumtoRowCol(IntegerVector cellNum, IntegerMatrix Matrix){
+  IntegerVector rowNum(cellNum.size());
+  IntegerVector colNum(cellNum.size());
+  int nRowMat = Matrix.nrow();
+  int nColMat = Matrix.ncol();
+  for(int i = 0; i<cellNum.size(); i++){
+    rowNum(i) = nRowMat - trunc(cellNum(i) / nColMat) - 1;
+    //trunc(cellNum(i) / nColMat);
+    colNum(i) = cellNum(i) - nColMat * (nRowMat - rowNum(i) - 1) - 1 ; 
+    //cellNum(i) - (rowNum(i) * nColMat + 1);
+  }
+  List coordsRC = List::create(Named("cellNum") = cellNum,
+                               _["x_coords"] = colNum,
+                               _["y_coords"] = rowNum);
+  return coordsRC;
+}
+
 // [[Rcpp::export]]
 // x y to cellNum
-List RowColtoCellNum(IntegerVector y_coords, IntegerVector x_coords, IntegerMatrix Matrix){
-  IntegerVector cellNums(y_coords.size());
+IntegerVector RowColtoCellNum(IntegerVector x_coords, IntegerVector y_coords, IntegerMatrix Matrix){
+  IntegerVector cellNum(y_coords.size());
   int nRowMat = Matrix.nrow();
   int nColMat = Matrix.ncol();
-  for(int i = 0; i<cellNums.size(); i++){
-    cellNums(i) = nRowMat * nColMat - (nColMat * (y_coords(i)) - x_coords(i));
+  for(int i = 0; i<cellNum.size(); i++){
+    cellNum(i) = nColMat * (nRowMat - (y_coords(i) + 1)) + (x_coords(i) + 1);
+    //HabitatMap.ncol() * (HabitatMap.nrow() - (DispFem_lastDispY + 1)) + (DispFem_lastDispX + 1);
   }
-  List coordsRCNum = List::create(Named("x_coords") = x_coords,
-                               _["y_coords"] = y_coords,
-                               _["cellNums"] = cellNums);
-  return coordsRCNum;
+  return cellNum;
 }
-
-// [[Rcpp::export]]
-// cell number to coords in cpp
-List CellNumtoRowCol(IntegerVector cellNums, IntegerMatrix Matrix){
-  IntegerVector rowNum(cellNums.size());
-  IntegerVector colNum(cellNums.size());
-  int nRowMat = Matrix.nrow();
-  int nColMat = Matrix.ncol();
-  for(int i = 0; i<cellNums.size(); i++){
-    rowNum(i) = trunc(cellNums(i) / nColMat);
-    colNum(i) = cellNums(i) - rowNum(i) * nColMat - 1;
-  }
-  List coordsRCNum = List::create(Named("x_coords") = colNum,
-                                  _["y_coords"] = rowNum,
-                                  _["cellNums"] = cellNums);
-  return coordsRCNum;
-}
-
 // [[Rcpp::export]]
 // adjacent cells coordinates
 List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
@@ -211,7 +211,7 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   List all_coords = CellNumtoRowCol(cellNum = cellNum, Matrix = Matrix);
   IntegerVector x_coords = all_coords["x_coords"];
   IntegerVector y_coords = all_coords["y_coords"];
-  //Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
+  Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
   for(int z = 0; z<x_coords.size(); z++){
     for(int l = 0; l<deltaY.size(); l++){
       for(int c = 0; c<deltaX.size(); c++){
@@ -255,9 +255,9 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
   IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
   //Rcout << "Rcout 4 before outputs" << std::endl << keptCells << std::endl;
-  List L_return = List::create(Named("AdjX") = AdjX_left,
-                               _["AdjY"] = AdjY_left,
-                               _["CellInd"] = CellInd_left);
+  List L_return = List::create(Named("CellInd") = CellInd_left,
+                               _["AdjX"] = AdjX_left,
+                               _["AdjY"] = AdjY_left);
   // return L_return;
   return L_return;
 }
@@ -371,9 +371,10 @@ List spreadGB(// DataFrame, NumericVector
     
     
     //loci_x and loci_y, before when was based on XY coord
+    Rcout << "Rcout loci_ind start: " << std::endl << loci_ind << std::endl;
     List potentials = UniqFreeAdjCellsRandOrd(loci_ind, availCellsUpdatedRas);
-    // // sanity check
-    // return(potentials);
+    // sanity check
+    //return(potentials);
     
     IntegerVector potentials_AdjX = potentials["AdjX"];
     IntegerVector potentials_AdjY = potentials["AdjY"];
@@ -389,7 +390,7 @@ List spreadGB(// DataFrame, NumericVector
         // if((0 > potentials_AdjY(j)) | (0 > potentials_AdjX(j))){
         //   stop("you fucked up, too small");
         // }
-        if(availCellsUpdatedRas(potentials_AdjY(j), potentials_AdjX(j)) == int_0){
+        if(availCellsUpdatedRas(availCellsUpdatedRas.nrow() - 1 - potentials_AdjY(j), potentials_AdjX(j)) == int_1){
           kept_potentials.push_back(j);
         }//else{
         //kept_potentials(j) = false;
@@ -421,7 +422,7 @@ List spreadGB(// DataFrame, NumericVector
     }
     
     // sanity check
-    //Rcout << "Rcout spread 3 / nKeptPot" << std::endl <<  nKeptPot << std::endl;
+    Rcout << "Rcout spread 3 / nKeptPot" << std::endl <<  nKeptPot << std::endl;
     // List L_return_3 = List::create(Named("where") = "potentials kept",
     //                                _["loci_ind"] = loci_ind,
     //                                _["potentials_CellInd"] = potentials_CellInd,
@@ -431,7 +432,7 @@ List spreadGB(// DataFrame, NumericVector
     
     
     ///////////////////////////////////////
-    // if som potential cells
+    // if some potential cells
     
     if(nKeptPot>0){
       
@@ -446,12 +447,12 @@ List spreadGB(// DataFrame, NumericVector
           //Rcout << "Rcout spread 3 / len" << std::endl << len << std::endl;
           // numer of active cells to remove to no more than size of territory possible
           //int toRm = (size + len) - MaxSize; replace by to keep
-          IntegerVector cells_to_kep = sample(spreadsDT_spreads_pot.size(), MaxSize, false) - 1;//number of samples is argument 2, -1 to make it start at 0
-          IntegerVector spreadsDT_spreads_pot_resized = spreadsDT_spreads_pot[cells_to_kep];
+          IntegerVector cells_to_keep = sample(spreadsDT_spreads_pot.size(), MaxSize, false) - 1;//number of samples is argument 2, -1 to make it start at 0
+          IntegerVector spreadsDT_spreads_pot_resized = spreadsDT_spreads_pot[cells_to_keep];
           spreadsDT_spreads_pot = clone(spreadsDT_spreads_pot_resized);
           events = clone(spreadsDT_spreads_pot);
         }
-        //Rcout << "Rcout len" << std::endl << len << std::endl;
+        Rcout << "Rcout len" << std::endl << len << std::endl;
         //Rcout << "Rcout len, n" << std::endl << n << std::endl;
         size = std::min((size + len) , MaxSize);
       } // if(noMaxSize == false){
@@ -462,8 +463,8 @@ List spreadGB(// DataFrame, NumericVector
       //                                _["loci_ind"] = loci_ind,
       //                                _["events"] = events,
       //                                _["size"] = size);
-      // return L_return_4;
-      // }
+      // return L_return_4; OKAY UP TO THERE
+      // } 
       
       // what to do depending of length of events
       if(events.size()>0){
@@ -498,11 +499,11 @@ List spreadGB(// DataFrame, NumericVector
   }// while(n< iterations)
   
   Rcout << "Rcout n" << std::endl << n << std::endl;
-  // List L_return_4 = List::create(Named("where") = "after while loop",
-  //                                _["prevSpreadIndicesActiveLen"] = prevSpreadIndicesActiveLen,
-  //                                _["events"] = events,
-  //                                _["size"] = size);
-  // return L_return_4;
+  List L_return_4 = List::create(Named("where") = "after while loop",
+                                  _["prevSpreadIndicesActiveLen"] = prevSpreadIndicesActiveLen,
+                                  _["events"] = events,
+                                  _["size"] = size);
+  return L_return_4;
   
   /////////////////////////////////////////////////////////////////////////
   // after while loop
@@ -521,7 +522,8 @@ List spreadGB(// DataFrame, NumericVector
   }
   
   List L_return = List::create(Named("where") = "very end",
-                               _["initialLocus_final"] =  initialLocus_final,
+                               _["initialLocus_final"] = initialLocus_final,
+                               _["spreadIndices_final"] = spreadIndices_final,
                                _["id_final"] = id_final,
                                _["active_final"] = active_final);
   return L_return;
