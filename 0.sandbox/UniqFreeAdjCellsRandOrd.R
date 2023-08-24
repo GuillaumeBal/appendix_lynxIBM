@@ -15,7 +15,7 @@ availCellsUpdatedRas.gb <- sim$availCellsRas %>% as.matrix() # in fact before up
 popDist.gb <- sim$popDist@.Data
 trick <- c(1, 1)
 
-sourceCpp("UniqFreeAdjCellsRandOrdFromNum.cpp")
+sourceCpp("UniqFreeAdjCellsRandOrd.cpp")
 
 x.picked
 y.picked

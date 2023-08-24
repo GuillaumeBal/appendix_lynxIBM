@@ -50,12 +50,12 @@ if(NLcount(disp) != 0) {
     dim.1.spredf <- 1
     if(pick.new.values.spred){
       while(dim.1.spredf <= 96){
-        x.picked <- sample.int(sim$habitatMap@maxPxcor, 1)
-        y.picked <- sample.int(sim$habitatMap@maxPycor, 1)
+        x.picked.base <- sample.int(sim$habitatMap@maxPxcor, 1)
+        y.picked.base <- sample.int(sim$habitatMap@maxPycor, 1)
         spread.res <- spread(landscape = availCellsUpdatedRas,
                              loci = cellFromPxcorPycor(world = sim$habitatMap,
-                                                       pxcor = x.picked,#10,#searchingFemCell[, 1],
-                                                       pycor = y.picked),#520),#searchingFemCell[, 2]),
+                                                       pxcor = x.picked.base,#10,#searchingFemCell[, 1],
+                                                       pycor = y.picked.base),#520),#searchingFemCell[, 2]),
                              spreadProb = availCellsUpdatedRas,
                              maxSize = terrSize, 
                              returnIndices = TRUE,

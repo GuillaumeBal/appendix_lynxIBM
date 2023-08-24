@@ -17,29 +17,36 @@ trick <- c(1, 1)
 
 sourceCpp("UniqFreeAdjCellsRandOrdFromNum.cpp")
 
-x.picked
-y.picked
+x.picked #<- 428
+y.picked #<- 523
+
+nColMat <-ncol(sim$availCellsRas %>% as.matrix) - 1
+nRowMat <- nrow(sim$availCellsRas %>% as.matrix) - 1
+
+cellnum.picked <- nColMat * (nRowMat - (y.picked + 1)) + (x.picked + 1);
 
 rm('outputs.cpp')
 outputs.cpp <- try(
   UniqFreeAdjCellsRandOrd(
     Matrix = sim$availCellsRas %>% as.matrix,
-    y_coords = y.picked,# DispFem_lastDispY(f) in full cpp 
-    x_coords = x.picked
+    cellNum = cellnum.picked
+    #y_coords = y.picked,# DispFem_lastDispY(f) in full cpp 
+    #x_coords = x.picked
   )
 )
 
 outputs.cpp
 
 rm('outputs.loop')
-n_try <- 100000
+n_try <- 20000
 record.freq <- 10
 outputs.loop <- list()
 
 rec <- 1
+file.remove('x.y.picked.txt')
 for(i in 1:n_try){ # run several times to check for potential indexing issues that are sometimes fine a few times
-  x.picked <- sample.int(sim$habitatMap@maxPxcor, 1) -1
-  y.picked <- sample.int(sim$habitatMap@maxPycor, 1) -1
+  x.picked <- sample.int(sim$habitatMap@maxPxcor, 1) - 1
+  y.picked <- sample.int(sim$habitatMap@maxPycor, 1) - 1
   if(i == 1){ 
     y.x.piched.df <- data.frame("y.picked" = y.picked, "x.picked" = x.picked)
     write.table(

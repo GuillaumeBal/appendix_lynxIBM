@@ -163,38 +163,40 @@ int towards_simple_unique(int x_cur, int y_cur, int x_to, int y_to){
 }
 
 // [[Rcpp::export]]
-// cell number to coords in cpp
-List CellNumtoRowCol(IntegerVector cellNum, NumericMatrix Matrix){
-  IntegerVector rowNum(cellNum.size());
-  IntegerVector colNum(cellNum.size());
+// x y to cellNum
+List RowColtoCellNum(IntegerVector y_coords, IntegerVector x_coords, IntegerMatrix Matrix){
+  IntegerVector cellNums(y_coords.size());
   int nRowMat = Matrix.nrow();
   int nColMat = Matrix.ncol();
-  for(int i = 0; i<cellNum.size(); i++){
-    rowNum(i) = trunc(cellNum(i) / nColMat);
-    colNum(i) = cellNum(i) - rowNum(i) * nColMat - 1;
+  for(int i = 0; i<cellNums.size(); i++){
+    cellNums(i) = nRowMat * nColMat - (nColMat * (y_coords(i)) - x_coords(i));
   }
-  List coordsRC = List::create(Named("x_coords") = colNum,
-                               _["y_coords"] = rowNum,
-                               _["cellNum"] = cellNum);
-  return coordsRC;
+  List coordsRCNum = List::create(Named("x_coords") = x_coords,
+                               _["y_coords"] = y_coords,
+                               _["cellNums"] = cellNums);
+  return coordsRCNum;
 }
 
 // [[Rcpp::export]]
-// x y to cellNum
-IntegerVector RowColtoCellNum(IntegerVector y_coords, IntegerVector x_coords, NumericMatrix Matrix){
-  IntegerVector cellNum(y_coords.size());
+// cell number to coords in cpp
+List CellNumtoRowCol(IntegerVector cellNums, IntegerMatrix Matrix){
+  IntegerVector rowNum(cellNums.size());
+  IntegerVector colNum(cellNums.size());
   int nRowMat = Matrix.nrow();
   int nColMat = Matrix.ncol();
-  for(int i = 0; i<cellNum.size(); i++){
-    cellNum(i) = nRowMat * nColMat - (nColMat * (y_coords(i)) - x_coords(i));
+  for(int i = 0; i<cellNums.size(); i++){
+    rowNum(i) = trunc(cellNums(i) / nColMat);
+    colNum(i) = cellNums(i) - rowNum(i) * nColMat - 1;
   }
-  return cellNum;
+  List coordsRCNum = List::create(Named("x_coords") = colNum,
+                                  _["y_coords"] = rowNum,
+                                  _["cellNums"] = cellNums);
+  return coordsRCNum;
 }
 
 // [[Rcpp::export]]
 // adjacent cells coordinates
-//List UniqFreeAdjCellsRandOrd(IntegerVector x_coords, IntegerVector y_coords, IntegerMatrix Matrix){
-List UniqFreeAdjCellsRandOrd(IntegerVector cellNums, IntegerMatrix Matrix){
+List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   IntegerVector deltaX = {-1, 0, 1};
   IntegerVector deltaY = {-1, 0, 1};
   int nColMat = Matrix.ncol();
@@ -205,12 +207,10 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNums, IntegerMatrix Matrix){
   int new_y;
   int new_x;
   int new_index;
-  // addition to work from cellNum instead of coordinates
-  IntegerVector x_coords(cellNums.size());
-  IntegerVector y_coords(cellNums.size());
-  List all_coords = CellNumtoRowCol(y_coords = y_coords, x_coords = x_coords, Matrix = Matrix);
-  y_coords = all_coords["y_coords"];
-  x_coords = all_coords["x_coords"];
+  // change cell num into XY
+  List all_coords = CellNumtoRowCol(cellNum = cellNum, Matrix = Matrix);
+  IntegerVector x_coords = all_coords["x_coords"];
+  IntegerVector y_coords = all_coords["y_coords"];
   //Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
   for(int z = 0; z<x_coords.size(); z++){
     for(int l = 0; l<deltaY.size(); l++){
@@ -255,13 +255,12 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNums, IntegerMatrix Matrix){
   IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
   IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
   //Rcout << "Rcout 4 before outputs" << std::endl << keptCells << std::endl;
-  List L_cells = List::create(Named("AdjX") = AdjX_left,
-                              _["AdjY"] = AdjY_left,
-                              _["CellInd"] = CellInd_left);
+  List L_return = List::create(Named("AdjX") = AdjX_left,
+                               _["AdjY"] = AdjY_left,
+                               _["CellInd"] = CellInd_left);
   // return L_return;
-  return L_cells;
+  return L_return;
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -369,9 +368,10 @@ List spreadGB(// DataFrame, NumericVector
     
     // sanity check
     // Rcout << "Rcout spread 4 n : " << std::endl << n << std::endl;
-    List potentials = UniqFreeAdjCellsRandOrd(loci_x,
-                                              loci_y,
-                                              availCellsUpdatedRas);
+    
+    
+    //loci_x and loci_y, before when was based on XY coord
+    List potentials = UniqFreeAdjCellsRandOrd(loci_ind, availCellsUpdatedRas);
     // // sanity check
     // return(potentials);
     
