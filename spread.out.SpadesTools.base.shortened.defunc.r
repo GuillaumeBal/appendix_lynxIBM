@@ -25,7 +25,7 @@ spreadProb = 0.23
 persistence = 0
 maxSize = 1e8L
 directions = 8L
-iterations = 1e2L #1e6L
+iterations = 1e6L #1e6L
 returnIndices = FALSE
 returnDistances = FALSE
 id = FALSE
@@ -35,8 +35,8 @@ allowOverlap = FALSE
 relativeSpreadProb = FALSE
 
 # arguments Sarah ================================
-x.picked <- 47#sample.int(sim$habitatMap@maxPxcor, 1)
-y.picked <- 101#sample.int(sim$habitatMap@maxPycor, 1)
+x.picked <- 131#sample.int(sim$habitatMap@maxPxcor, 1)
+y.picked <- 380#sample.int(sim$habitatMap@maxPycor, 1)
 landscape = availCellsUpdatedRas
 loci = cellFromPxcorPycor(world = sim$habitatMap,
                           pxcor = x.picked,
@@ -211,6 +211,8 @@ while (length(loci) & (n <= iterations)) {
   loci <- c(loci, events)
   
   #print(n)
+  
+  #stop()
   
 } # end of while loop
 

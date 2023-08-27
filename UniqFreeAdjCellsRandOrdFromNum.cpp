@@ -65,8 +65,9 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   List all_coords = CellNumtoRowCol(cellNum = cellNum, Matrix = Matrix);
   IntegerVector x_coords = all_coords["x_coords"];
   IntegerVector y_coords = all_coords["y_coords"];
-  Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
+  //Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
   for(int z = 0; z<x_coords.size(); z++){
+    //Rcout << "Rcout z" << std::endl << z << std::endl;
     for(int l = 0; l<deltaY.size(); l++){
       for(int c = 0; c<deltaX.size(); c++){
         new_y = y_coords(z) + deltaY(l);
@@ -89,9 +90,10 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
       }
     }
   }
-  //Rcout << "Rcout 2 cell with duplicates" << std::endl << CellInd << std::endl;
+  //Rcout << "Rcout cells with duplicates" << std::endl << CellInd << std::endl;
   // find unique index and then pick just one of each
   IntegerVector UniqCell = unique(CellInd);
+  //Rcout << "Rcout UniqCell" << std::endl << UniqCell << std::endl;
   int nUniqCell = UniqCell.size();
   IntegerVector keptCells(nUniqCell);
   for(int i = 0; i<nUniqCell; i++){
@@ -102,13 +104,13 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
       }
     }
   }
-  //Rcout << "Rcout 3 cells kept" << std::endl << keptCells << std::endl;
-  IntegerVector randorder = sample(AdjX.size(), AdjX.size(), false) - 1;
+  //Rcout << "Rcout keptCells" << std::endl << keptCells << std::endl;
+  IntegerVector randorder = sample(keptCells.size(), keptCells.size(), false) - 1;
   IntegerVector keptCellsRandOrder = keptCells[randorder];
   IntegerVector AdjX_left = AdjX[keptCellsRandOrder];
   IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
   IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
-  //Rcout << "Rcout 4 before outputs" << std::endl << keptCells << std::endl;
+  //Rcout << "Rcout CellInd_left" << std::endl << CellInd_left << std::endl;
   List L_return = List::create(Named("CellInd") = CellInd_left,
                                _["AdjX"] = AdjX_left,
                                _["AdjY"] = AdjY_left);

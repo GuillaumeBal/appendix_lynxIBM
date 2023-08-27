@@ -130,20 +130,6 @@ IntegerVector WhichInSetInt(IntegerVector ToCheck, IntegerVector subset) {
 }
 
 // [[Rcpp::export]]
-// check cells within subset for integer 
-bool IntInSet(int ToCheck, IntegerVector pool) { 
-  bool is_in_set = false;
-  for(int p = 0; p<pool.size(); p++){
-    if(pool(p) == ToCheck){
-      is_in_set = true;
-      p = pool.size() - 1;
-    }
-  }
-  return is_in_set;
-}
-
-
-// [[Rcpp::export]]
 // here randomly shuffling line before picking one per unique number of x
 IntegerVector IntPosOneOfEach(IntegerVector x){
   IntegerVector randLines_move = sample(x.size(), x.size(), false) - 1; // number of samples is argument 2; -1 to make it start at 0
@@ -208,7 +194,6 @@ IntegerVector RowColtoCellNum(IntegerVector x_coords, IntegerVector y_coords, In
   }
   return cellNum;
 }
-
 // [[Rcpp::export]]
 // adjacent cells coordinates
 List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
@@ -216,7 +201,6 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   IntegerVector deltaY = {-1, 0, 1};
   int nColMat = Matrix.ncol();
   int nRowMat = Matrix.nrow();
-  int int_1 = 1;
   IntegerVector AdjX(0);
   IntegerVector AdjY(0);
   IntegerVector CellInd(0);
@@ -227,9 +211,8 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   List all_coords = CellNumtoRowCol(cellNum = cellNum, Matrix = Matrix);
   IntegerVector x_coords = all_coords["x_coords"];
   IntegerVector y_coords = all_coords["y_coords"];
-  //Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
+  Rcout << "Rcout 1 inits" << std::endl << CellInd << std::endl;
   for(int z = 0; z<x_coords.size(); z++){
-    //Rcout << "Rcout z" << std::endl << z << std::endl;
     for(int l = 0; l<deltaY.size(); l++){
       for(int c = 0; c<deltaX.size(); c++){
         new_y = y_coords(z) + deltaY(l);
@@ -237,39 +220,41 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
         //HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY) + DispFem_lastDispX;
         //ncol(my.mat) * (nrow(my.mat) - my.coords[1]) + my.coords[2]
         new_index = nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1); // plus one because starts 0 in cpp
-        bool new_index_exist = IntInSet(new_index, cellNum); // check does not already exist
-        if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) & 
-           new_index_exist == false &
-           //availCellsUpdatedRas.nrow() - 1 - potentials_AdjY(j)
-           Matrix(nRowMat - 1 - new_y, new_x) == int_1){ // add to keep only unoccupied cells
-          AdjX.push_back(new_x);
-          AdjY.push_back(new_y);
-          CellInd.push_back(new_index);
+        if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) &
+           ((deltaY(l) != 0) | (deltaX(c) != 0))){
+          if(Matrix(new_y, new_x) == 0 ){ // add to keep only unoccupied cell  s
+            AdjX.push_back(new_x);
+            AdjY.push_back(new_y);
+            CellInd.push_back(new_index);
+            //stop("Went into loop");
+            //if(new_index >(nColMat * nRowMat)){
+            //  Rcout << "Index too big" << std::endl << new_index << std::endl;
+            //}
+          }
         }
       }
     }
   }
-  //Rcout << "Rcout cells with duplicates" << std::endl << CellInd << std::endl;
+  //Rcout << "Rcout 2 cell with duplicates" << std::endl << CellInd << std::endl;
   // find unique index and then pick just one of each
   IntegerVector UniqCell = unique(CellInd);
-  //Rcout << "Rcout UniqCell" << std::endl << UniqCell << std::endl;
   int nUniqCell = UniqCell.size();
   IntegerVector keptCells(nUniqCell);
   for(int i = 0; i<nUniqCell; i++){
     for(int j = 0; j<CellInd.size(); j++){
       if(CellInd(j) == UniqCell(i)){
-        keptCells(i) = j; // this is a position
+        keptCells(i) = j;
         //break;
       }
     }
   }
-  //Rcout << "Rcout keptCells" << std::endl << keptCells << std::endl;
-  IntegerVector randorder = sample(keptCells.size(), keptCells.size(), false) - 1;
+  //Rcout << "Rcout 3 cells kept" << std::endl << keptCells << std::endl;
+  IntegerVector randorder = sample(AdjX.size(), AdjX.size(), false) - 1;
   IntegerVector keptCellsRandOrder = keptCells[randorder];
   IntegerVector AdjX_left = AdjX[keptCellsRandOrder];
   IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
   IntegerVector CellInd_left = CellInd[keptCellsRandOrder];
-  //Rcout << "Rcout CellInd_left" << std::endl << CellInd_left << std::endl;
+  //Rcout << "Rcout 4 before outputs" << std::endl << keptCells << std::endl;
   List L_return = List::create(Named("CellInd") = CellInd_left,
                                _["AdjX"] = AdjX_left,
                                _["AdjY"] = AdjY_left);
@@ -322,8 +307,6 @@ List spreadGB(// DataFrame, NumericVector
   int int_3 = 3;
   int int_4 = 4;
   int int_5 = 5;
-  int int_10 = 10;
-  int int_20 = 20;
   int int_100 = 100;
   int int_1e3 = 1000;
   int int_1e4 = 10000;
@@ -372,13 +355,13 @@ List spreadGB(// DataFrame, NumericVector
   // return L_return_1;
   
   //// now get within while loop
-  int iterations =  int_20;//int_1e6;
+  int iterations = int_1e6;
   IntegerVector events; // define high because used everywhere 
   
   ////////////////////////////////////////////////////////////////////////////////////
   // while loop
   
-  while((loci_ind.size() < MaxSize) & ((n - 1) < iterations)){
+  while((loci_ind.size() <  MaxSize) & ((n - 1) < iterations)){
     
     ///////////////////////////////////////////////
     //find potential cells
@@ -388,42 +371,139 @@ List spreadGB(// DataFrame, NumericVector
     
     
     //loci_x and loci_y, before when was based on XY coord
-    Rcout << "Rcout loci_ind start while: " << std::endl << loci_ind << std::endl;
+    Rcout << "Rcout loci_ind start: " << std::endl << loci_ind << std::endl;
     List potentials = UniqFreeAdjCellsRandOrd(loci_ind, availCellsUpdatedRas);
     // sanity check
     //return(potentials);
+    
     IntegerVector potentials_AdjX = potentials["AdjX"];
     IntegerVector potentials_AdjY = potentials["AdjY"];
     IntegerVector potentials_CellInd = potentials["CellInd"];
-    Rcout << "Rcout potentials_CellInd: " << std::endl << potentials_CellInd << std::endl;
     // potential cells kept
     int nPot = potentials_AdjX.size();
-    
-    if(nPot > 0){
-      // decided to put everything in a single loop
-      for(int p = 0; p<nPot; p++){
-        if(loci_ind.size() < MaxSize){
-          loci_ind.push_back(potentials_CellInd(p));
-        }else{
-          n = iterations;
-        }
+    IntegerVector kept_potentials(0);
+    if(nPot>0){
+      for(int j = 0; j<nPot; j++){
+        // if(((availCellsUpdatedRas.nrow() - 1) < potentials_AdjY(j)) | ((availCellsUpdatedRas.ncol() - 1) < potentials_AdjX(j))){
+        //   stop("you fucked up, too big");
+        // }
+        // if((0 > potentials_AdjY(j)) | (0 > potentials_AdjX(j))){
+        //   stop("you fucked up, too small");
+        // }
+        if(availCellsUpdatedRas(availCellsUpdatedRas.nrow() - 1 - potentials_AdjY(j), potentials_AdjX(j)) == int_1){
+          kept_potentials.push_back(j);
+        }//else{
+        //kept_potentials(j) = false;
+        //}
       }
-      Rcout << "Rcout loci_ind updated: " << std::endl << loci_ind << std::endl;
-    }else{ //if not_a_closure new potential cells
-      n = iterations;
     }
+    int nKeptPot = kept_potentials.size();
+    // sanity check
+    //Rcout << "Rcout spread 2 / kept_potentials" << std::endl <<  nKeptPot << std::endl;
+    // List L_return_2 = List::create(Named("where") = "potentials kept",
+    //                                _["loci_ind"] = loci_ind,
+    //                                _["potentials_CellInd"] = potentials_CellInd,
+    //                                _["kept_potentials"] = kept_potentials,
+    //                                _["nKeptPot"] = nKeptPot);
+    // return L_return_2;
+    
+    IntegerVector potentials_AdjXKept(nKeptPot);
+    IntegerVector potentials_AdjYKept(nKeptPot);
+    IntegerVector potentials_CellIndKept(nKeptPot);
     
     n++;// why here ?
-    Rcout << "Rcout n value update : " << std::endl << n << std::endl;
     
+    if(nKeptPot>int_0){
+      for(int i = 0; i<nKeptPot;i++){
+        potentials_AdjXKept(i) = potentials_AdjX[kept_potentials(i)];
+        potentials_AdjYKept(i) = potentials_AdjY[kept_potentials(i)];
+        potentials_CellIndKept(i) = potentials_CellInd[kept_potentials(i)];
+      }
+    }
+    
+    // sanity check
+    Rcout << "Rcout spread 3 / nKeptPot" << std::endl <<  nKeptPot << std::endl;
+    // List L_return_3 = List::create(Named("where") = "potentials kept",
+    //                                _["loci_ind"] = loci_ind,
+    //                                _["potentials_CellInd"] = potentials_CellInd,
+    //                                _["kept_potentials"] = kept_potentials,
+    //                                _["potentials_CellIndKept"] = potentials_CellIndKept);
+    // return L_return_3;
+    
+    
+    ///////////////////////////////////////
+    // if some potential cells
+    
+    if(nKeptPot>0){
+      
+      events = clone(potentials_CellIndKept);
+      
+      if(noMaxSize == false){
+        IntegerVector spreadsDT_spreads_pot = spreadsDT_spreads[potentials_CellIndKept];
+        int len = std::accumulate(spreadsDT_spreads_pot.begin(), spreadsDT_spreads_pot.end(), int_0); // on our case, length is one sone only a sum of that, no need to tabulate
+        Rcout << "Rcout spread 3 / len" << std::endl << len << std::endl;
+        
+        if(((len + size) > MaxSize) & (size < MaxSize)){
+          // sanity check
+          //Rcout << "Rcout spread 3 / len" << std::endl << len << std::endl;
+          // numer of active cells to remove to no more than size of territory possible
+          //int toRm = (size + len) - MaxSize; replace by to keep
+          IntegerVector cells_to_keep = sample(spreadsDT_spreads_pot.size(), MaxSize, false) - 1;//number of samples is argument 2, -1 to make it start at 0
+          IntegerVector spreadsDT_spreads_pot_resized = spreadsDT_spreads_pot[cells_to_keep];
+          spreadsDT_spreads_pot = clone(spreadsDT_spreads_pot_resized);
+          events = clone(spreadsDT_spreads_pot);
+        }
+        Rcout << "Rcout len" << std::endl << len << std::endl;
+        //Rcout << "Rcout len, n" << std::endl << n << std::endl;
+        size = std::min((size + len) , MaxSize);
+      } // if(noMaxSize == false){
+      
+      // sanity check
+      // if(n > int_1e3){
+      // List L_return_4 = List::create(Named("where") = "after noMaxSize loop",
+      //                                _["loci_ind"] = loci_ind,
+      //                                _["events"] = events,
+      //                                _["size"] = size);
+      // return L_return_4; OKAY UP TO THERE
+      // } 
+      
+      // what to do depending of length of events
+      if(events.size()>0){
+        int curEventsLen = events.size();
+        IntegerVector addedIndices(curEventsLen);
+        for(int i = 0; i<curEventsLen; i++){
+          // maybe error and  prevSpreadIndicesActiveLen shoud be integer
+          addedIndices(i) = prevSpreadIndicesActiveLen(0) + i + int_1;
+        }
+        // if more values push back
+        
+        if((curEventsLen + prevSpreadIndicesActiveLen(0)) > prevSpreadIndicesFullLen){
+          for(int j= prevSpreadIndicesFullLen; j<(curEventsLen + prevSpreadIndicesActiveLen(0)); j++){
+            spreadIndices.push_back(0); //increase length if necessary, then complete below 
+          }
+        }
+        for(int j = 0; j<addedIndices.size(); j++){
+          spreadIndices(addedIndices(j)) = events(j);
+        }
+      } //if(events.size()>0){
+      
+    }else{// if(nKeptPot>0){
+      IntegerVector events_null;
+      events = clone(events_null);
+    }
+    IntegerVector loci_ind_null;
+    loci_ind = clone(events);
+    //loci_ind = clone(loci_ind_null);
+    //loci_ind = clone(loci_ind_null);
+    //loci_y set to null as well ?
+    //loci_x
   }// while(n< iterations)
   
-  //Rcout << "Rcout n" << std::endl << n << std::endl;
+  Rcout << "Rcout n" << std::endl << n << std::endl;
   List L_return_4 = List::create(Named("where") = "after while loop",
-                                 _["n"] = n,
-                                 _["events"] = events,
-                                 _["loci_ind"] = loci_ind 
-  );
+                                  _["prevSpreadIndicesActiveLen"] = prevSpreadIndicesActiveLen,
+                                  _["events"] = events,
+                                  _["size"] = size);
   return L_return_4;
   
   /////////////////////////////////////////////////////////////////////////

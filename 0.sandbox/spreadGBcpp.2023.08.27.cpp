@@ -130,20 +130,6 @@ IntegerVector WhichInSetInt(IntegerVector ToCheck, IntegerVector subset) {
 }
 
 // [[Rcpp::export]]
-// check cells within subset for integer 
-bool IntInSet(int ToCheck, IntegerVector pool) { 
-  bool is_in_set = false;
-  for(int p = 0; p<pool.size(); p++){
-    if(pool(p) == ToCheck){
-      is_in_set = true;
-      p = pool.size() - 1;
-    }
-  }
-  return is_in_set;
-}
-
-
-// [[Rcpp::export]]
 // here randomly shuffling line before picking one per unique number of x
 IntegerVector IntPosOneOfEach(IntegerVector x){
   IntegerVector randLines_move = sample(x.size(), x.size(), false) - 1; // number of samples is argument 2; -1 to make it start at 0
@@ -216,7 +202,6 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   IntegerVector deltaY = {-1, 0, 1};
   int nColMat = Matrix.ncol();
   int nRowMat = Matrix.nrow();
-  int int_1 = 1;
   IntegerVector AdjX(0);
   IntegerVector AdjY(0);
   IntegerVector CellInd(0);
@@ -237,14 +222,17 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
         //HabitatMap.ncol() * (HabitatMap.nrow() - DispFem_lastDispY) + DispFem_lastDispX;
         //ncol(my.mat) * (nrow(my.mat) - my.coords[1]) + my.coords[2]
         new_index = nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1); // plus one because starts 0 in cpp
-        bool new_index_exist = IntInSet(new_index, cellNum); // check does not already exist
-        if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) & 
-           new_index_exist == false &
-           //availCellsUpdatedRas.nrow() - 1 - potentials_AdjY(j)
-           Matrix(nRowMat - 1 - new_y, new_x) == int_1){ // add to keep only unoccupied cells
-          AdjX.push_back(new_x);
-          AdjY.push_back(new_y);
-          CellInd.push_back(new_index);
+        if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) &
+           ((deltaY(l) != 0) | (deltaX(c) != 0))){
+          if(Matrix(new_y, new_x) == 1){ // add to keep only unoccupied cells
+            AdjX.push_back(new_x);
+            AdjY.push_back(new_y);
+            CellInd.push_back(new_index);
+            //stop("Went into loop");
+            //if(new_index >(nColMat * nRowMat)){
+            //  Rcout << "Index too big" << std::endl << new_index << std::endl;
+            //}
+          }
         }
       }
     }
@@ -258,7 +246,7 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   for(int i = 0; i<nUniqCell; i++){
     for(int j = 0; j<CellInd.size(); j++){
       if(CellInd(j) == UniqCell(i)){
-        keptCells(i) = j; // this is a position
+        keptCells(i) = j;
         //break;
       }
     }
@@ -372,7 +360,7 @@ List spreadGB(// DataFrame, NumericVector
   // return L_return_1;
   
   //// now get within while loop
-  int iterations =  int_20;//int_1e6;
+  int iterations =  int_100;//int_1e6;
   IntegerVector events; // define high because used everywhere 
   
   ////////////////////////////////////////////////////////////////////////////////////
@@ -395,20 +383,54 @@ List spreadGB(// DataFrame, NumericVector
     IntegerVector potentials_AdjX = potentials["AdjX"];
     IntegerVector potentials_AdjY = potentials["AdjY"];
     IntegerVector potentials_CellInd = potentials["CellInd"];
-    Rcout << "Rcout potentials_CellInd: " << std::endl << potentials_CellInd << std::endl;
     // potential cells kept
     int nPot = potentials_AdjX.size();
-    
-    if(nPot > 0){
-      // decided to put everything in a single loop
-      for(int p = 0; p<nPot; p++){
-        if(loci_ind.size() < MaxSize){
-          loci_ind.push_back(potentials_CellInd(p));
-        }else{
-          n = iterations;
+    Rcout << "Rcout potential cells : " << std::endl << potentials_CellInd << std::endl;
+    IntegerVector kept_potentials(0);
+    if(nPot>0){
+      for(int j = 0; j<nPot; j++){
+        if(availCellsUpdatedRas(availCellsUpdatedRas.nrow() - (potentials_AdjY(j) + 1), potentials_AdjX(j)) == int_1){
+          kept_potentials.push_back(j);
         }
       }
+    }
+    int nKeptPot = kept_potentials.size();
+    // sanity check
+    Rcout << "Rcout kept_potentials" << std::endl <<  nKeptPot << std::endl;
+    // List L_return_2 = List::create(Named("where") = "potentials kept",
+    //                                _["loci_ind"] = loci_ind,
+    //                                _["potentials_CellInd"] = potentials_CellInd,
+    //                                _["kept_potentials"] = kept_potentials,
+    //                                _["nKeptPot"] = nKeptPot);
+    // return L_return_2;
+    
+    IntegerVector potentials_AdjXKept(nKeptPot);
+    IntegerVector potentials_AdjYKept(nKeptPot);
+    IntegerVector potentials_CellIndKept(nKeptPot);
+    
+    if(nKeptPot>int_0){
+      for(int i = 0; i<nKeptPot;i++){
+        potentials_AdjXKept(i) = potentials_AdjX[kept_potentials(i)];
+        potentials_AdjYKept(i) = potentials_AdjY[kept_potentials(i)];
+        potentials_CellIndKept(i) = potentials_CellInd[kept_potentials(i)];
+      }
+      
+      // decided to put everything in a single loop
+      events = clone(potentials_CellIndKept);
+      Rcout << "Rcout new events: " << std::endl << events << std::endl;
+      
+      // if((loci_ind.size() + events.size()) > MaxSize){
+      //   
+      //   IntegerVector events_to_keep = sample(events.size(), MaxSize - (loci_ind.size() + events.size()) > terrSize, false);
+      //   IntegerVector events_restrained = events[events_to_keep]; 
+      //   events = clone(events_to_keep);
+      //   Rcout << "Rcout events limit 97: " << std::endl << events << std::endl;
+      //   
+      // }
+      
+      loci_ind = clone(events);
       Rcout << "Rcout loci_ind updated: " << std::endl << loci_ind << std::endl;
+      
     }else{ //if not_a_closure new potential cells
       n = iterations;
     }
@@ -421,9 +443,7 @@ List spreadGB(// DataFrame, NumericVector
   //Rcout << "Rcout n" << std::endl << n << std::endl;
   List L_return_4 = List::create(Named("where") = "after while loop",
                                  _["n"] = n,
-                                 _["events"] = events,
-                                 _["loci_ind"] = loci_ind 
-  );
+                                 _["events"] = events);
   return L_return_4;
   
   /////////////////////////////////////////////////////////////////////////

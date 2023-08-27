@@ -32,7 +32,7 @@ rm('outputs.cpp')
 outputs.cpp <- try(
   UniqFreeAdjCellsRandOrd(
     Matrix = sim$availCellsRas %>% as.matrix,
-    cellNum = cellnum.picked
+    cellNum = c(181515, 181942, 182372, 181944, 182373, 182371)#cellnum.picked
     #y_coords = y.picked,# DispFem_lastDispY(f) in full cpp 
     #x_coords = x.picked
   )
