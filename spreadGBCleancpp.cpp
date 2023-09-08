@@ -311,43 +311,16 @@ List spreadGB(// DataFrame, NumericVector
   //beginning of spread function /////////////////////////////////////////////////////////////////////////
   
   // some inits
-  //IntegerMatrix Spredprob = clone(availCellsUpdatedRas);
-  //IntegerMatrix landscape = clone(availCellsUpdatedRas);
   IntegerVector loci_ind(1); 
   //nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1)
   loci_ind(0) = HabitatMap.ncol() * (HabitatMap.nrow() - (DispFem_lastDispY + 1)) + (DispFem_lastDispX + 1);
   IntegerVector loci_y(1); loci_y(0) = DispFem_lastDispY;
   IntegerVector loci_x(1); loci_x(0) = DispFem_lastDispX;
   int MaxSize = terrSize;
-  //bool ReturnIndices = true;
-  //bool spreadStateExists = false;
-  //bool spreadProbLaterExists = true;
   int initialLoci = int(loci_ind(0));
   int sequenceInitialLoci = int_1;
   int nCells = HabitatMap.ncol() * HabitatMap.nrow();
-  //bool allowOverlapOrReturnDistances = allowOverlap | returnDistances;
-  //bool useMatrixVersionSpreads = allowOverlapOrReturnDistances | spreadStateExists;
-  //IntegerVector spreadsDT_spreads(nCells);
   int n = int_1;
-  //spreadsDT_spreads(initialLoci - 1) = n; // as cpp starts at 0
-  //IntegerVector spreadIndices(100); spreadIndices(0) = 1;
-  //IntegerVector prevSpreadIndicesActiveLen(1); prevSpreadIndicesActiveLen(0) = 1;
-  //int prevSpreadIndicesFullLen = spreadIndices.size();
-  //int size = int_1;
-  //bool noMaxSize = false;
-  // sanity check var def
-  //Rcout << "Rcout 1.1 loci : " << std::endl << loci_ind << std::endl;
-  //Rcout << "Rcout 1.2 nCells : " << std::endl << nCells << std::endl;
-  //Rcout << "Rcout 1.3 prevSpreadIndicesFullLen : " << std::endl << prevSpreadIndicesFullLen << std::endl;
-  //Rcout << "Rcout 1.4 spreadsDT_spreads : " << std::endl << spreadsDT_spreads << std::endl;
-  //Rcout << "Rcout 1.5 spreadIndices : " << std::endl << spreadIndices << std::endl;
-  //stop("beginning check");
-  // List L_return_1 = List::create(Named("where") = "base def parameters",
-  //                              _["loci_ind"] = loci_ind,
-  //                              _["prevSpreadIndicesFullLen"] = prevSpreadIndicesFullLen,
-  //                              _["spreadsDT_spreads"] = spreadsDT_spreads,
-  //                              _["spreadIndices"] = spreadIndices);
-  // return L_return_1;
   
   //// now get within while loop
   int iterations =  int_20;//int_1e6;
