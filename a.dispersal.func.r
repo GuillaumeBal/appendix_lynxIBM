@@ -388,3 +388,5 @@ sim$lynx <- sortOn(agents = sim$lynx, var = "who")
 #} # end of number of steps during the day
 #}
 
+
+

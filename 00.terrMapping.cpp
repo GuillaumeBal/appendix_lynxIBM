@@ -221,6 +221,8 @@ List TerrMapping(
   
   for(int c = 0; c<terrCentreCellNum.size(); c++){
     
+    //Rcout << "cell treated " << std::endl << c << std::endl;
+    
     int Xcurrent = TerrCentreFullX(c);
     int Ycurrent = TerrCentreFullY(c);
     
@@ -230,19 +232,27 @@ List TerrMapping(
                                    terrSizeMax);
     
     IntegerVector potTerrCellNum = potTerrSpread["CellNum"];
-    Rcout << "potTerrCellNum" << std::endl << potTerrCellNum << std::endl;
+    List potTerrFullCoords = CellNumtoRowCol(potTerrCellNum, availCellsMat);
+    IntegerVector potTerrX = potTerrFullCoords["x_coords"];
+    IntegerVector potTerrY = potTerrFullCoords["y_coords"];
+    
+    //Rcout << "potTerrCellNum" << std::endl << potTerrCellNum << std::endl;
+    
+    //Rcout << "Spread done " << std::endl << c << std::endl;
     
     if(potTerrCellNum.size() >= terrSizeMin){ // if at least 9km2
+      //Rcout << "Terr big enough " << std::endl << c << std::endl;
       for(int n = 0; n < potTerrCellNum.size(); n++){
         terrMap(c, n) = potTerrCellNum(n);
-        availCellsMat(Ycurrent, Xcurrent) = 0;
+        availCellsMat(potTerrY(n), potTerrX(n)) = 0;
       }
     }
+    
+    //Rcout << "Terr rec done " << std::endl << c << std::endl;
     
   }  
   
   List L_return_terrMap = List::create(Named("terrMap") = terrMap,
-                                       _["TerrCentreFullCoords"] = TerrCentreFullCoords,
                                        _["availCellsMat"] = availCellsMat 
   );
   

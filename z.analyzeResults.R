@@ -1,3 +1,5 @@
+rm(list = ls())
+
 library(NetLogoR)
 library(colorspace)
 library(ggplot2)
@@ -8,13 +10,16 @@ library(mapview)
 library(viridis)
 library(wesanderson)
 library(rgeos)
+require(magrittr)
 
 #############################
 ## Analyze the simulations ##
 #############################
 # Read all simulated files
-pathFiles <- "appendix_lynxIBM/module/outputs"
+wd <- "C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/" %T>% setwd()
+pathFiles <- "C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/module/calibration/calibr5"
 listSim <- list.files(pathFiles)[2:201] # remove the first file (cache)
+listSim <- listSim[!is.na(listSim)] # in case that there is less than 200
 nSim <- length(listSim)
 lastYear <- 50
 
@@ -24,6 +29,10 @@ gg_color <- function(n) {
   hcl(h = hues, l = 65, c = 100)[1:n]
 }
 
+# GB, results of interest
+results.gb <- list()
+#results.gb$test <- 1
+#results.gb$other.test <- 2
 
 #######################
 ## Model calibration ##
@@ -160,6 +169,12 @@ mean(rCollAll[1:3])
 mean(rCollRes[1:3])
 mean(rCollDisp[1:3])
 
+results.gb$mort <- 
+  matrix(c(mean(rCollDisp[1:3]), mean(rNoCollDisp[1:3]), mean(rCollDisp[1:3]) + mean(rNoCollDisp[1:3]),
+           mean(rCollRes[1:3]), mean(rNoCollRes[1:3]), mean(rCollRes[1:3]) + mean(rNoCollRes[1:3])),
+          dimnames = list(c('disp', 'res'), c('natural', "road", "combined")), 
+         nrow = 2,
+         byrow = TRUE) %>% round(., 3)
 
 ### Reproduction rate
 pRepro <- numeric()
@@ -189,7 +204,8 @@ for(i in 1:length(listSim)){ # for each simulation run
 }
 
 summary(pRepro)
-
+# GB, proportion of female having juv
+results.gb$prob.juv <- pRepro
 
 #############################
 ## Population growth rates ##
@@ -272,7 +288,8 @@ for(i in 1:length(listSim)){ # for each simulation run
 }
 
 # Transfer the data from the worldMatrix map to a raster format
-mapLynxAbundRas <- raster("appendix_lynxIBM/module/inputs/habMap.tif")
+#mapLynxAbundRas <- raster("appendix_lynxIBM/module/inputs/habMap.tif")
+mapLynxAbundRas <- raster("module/inputs/habMap.tif")
 # Rescale the value to obtain a mean over all simulations
 mapLynxAbundRas[] <- of(world = mapLynxAbund, agents = patches(mapLynxAbund)) / nSim
 # The map before was of 1 km2, transform it into 100 km2
@@ -281,7 +298,8 @@ mapLynxAbund100km2 <- aggregate(mapLynxAbundRas, fact = 10, fun = sum)
 mapLynxAbund100km2[mapLynxAbund100km2 == 0] <- NA
 # Plot the density with the country borders
 plot(mapLynxAbund100km2)
-pays <- shapefile("appendix_lynxIBM/module/inputs/countryBorders.shp")
+#pays <- shapefile("appendix_lynxIBM/module/inputs/countryBorders.shp")
+pays <- shapefile("module/inputs/countryBorders.shp")
 plot(pays, add = TRUE)
 
 
@@ -384,6 +402,8 @@ ggplot(movePopLongDTSum2, aes(x = year, y = Cum.Sum, colour = Populations)) +
   scale_fill_manual(values = colRainbow) +
   annotate("rect", xmin = -Inf, xmax = 10, ymin = -Inf, ymax = Inf, alpha = .7)
 
+# gb, baes to compute migration rates
+results.gb$mig.rough <- movePopLongDTSum2
 
 #########################
 ## Territory occupancy ##
@@ -405,18 +425,21 @@ for(i in 1:length(listSim)){ # for each simulation run
 }
 
 # Transfer the data from the worldMatrix map to a raster format
-terrOccMapRas <- raster("appendix_lynxIBM/module/inputs/habMap.tif")
+#terrOccMapRas <- raster("appendix_lynxIBM/module/inputs/habMap.tif")
+terrOccMapRas <- raster("module/inputs/habMap.tif")
 # Rescale the value to obtain a mean over all simulations
 terrOccMapRas[] <- of(world = terrOccMap, agents = patches(terrOccMap)) / nSim
 # Give NA where there were no female lynx territory simulated
 terrOccMapRas[terrOccMapRas == 0] <- NA
 # Plot the territory occupancy with the country borders
 plot(terrOccMapRas)
-pays <- shapefile("appendix_lynxIBM/module/inputs/countryBorders.shp")
+#pays <- shapefile("appendix_lynxIBM/module/inputs/countryBorders.shp")
+pays <- shapefile("module/inputs/countryBorders.shp")
 plot(pays, add = TRUE)
 
 # Include the non-used breeding habitat
-habMapSpaDES <- raster("appendix_lynxIBM/module/inputs/habMap.tif")
+#habMapSpaDES <- raster("appendix_lynxIBM/module/inputs/habMap.tif")
+habMapSpaDES <- raster("module/inputs/habMap.tif")
 habMapSpaDES[habMapSpaDES %in% c(0, 1, 2, 3)] <- NA
 habMapSpaDES[habMapSpaDES == 4] <- 1
 habMapSpaDES[!is.na(terrOccMapRas)] <- NA
@@ -434,7 +457,8 @@ plot(pays, add = TRUE)
 dispDistList <- list()
 popList <- 1
 # Use a raster to transfer the territories on it to extract the centroid
-habMapSpaDES <- raster("appendix_lynxIBM/module/inputs/habMap.tif")
+#habMapSpaDES <- raster("appendix_lynxIBM/module/inputs/habMap.tif")
+habMapSpaDES <- raster("module/inputs/habMap.tif")
 
 for(popName in c("Alps", "Jura", "Vosges-Palatinate", "BlackForest")){
   dispDist <- c()
@@ -529,10 +553,10 @@ for(i in 1:length(listSim)){ # for each simulation run
     bornResInd <- na.omit(bornResInd)
     if(nrow(bornResInd) != 0){
       bornResInd$dist <- spDists(x = spTransform(SpatialPoints(coords = cbind(pxcor = bornResInd$xcor, pycor = bornResInd$ycor),
-                                                               proj4string = habMapSpaDES@crs),
+                                                               proj4string = raster::crs(habMapSpaDES)),#habMapSpaDES@crs),
                                                  "+proj=longlat +ellps=WGS84"),
                                  y = spTransform(SpatialPoints(coords = cbind(pxcor = bornResInd$xcor2, pycor = bornResInd$ycor2),
-                                                               proj4string = habMapSpaDES@crs),
+                                                               proj4string = raster::crs(habMapSpaDES)),#habMapSpaDES@crs),
                                                  "+proj=longlat +ellps=WGS84"),
                                  diagonal = TRUE)
       dispDist <- c(dispDist, bornResInd$dist[!is.na(bornResInd$dist)])
