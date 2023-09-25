@@ -63,8 +63,8 @@ for(i in 1:length(cell.index)){
   )
   #print(outputs.terr)
   if(length(outputs.terr[[i]]) == 2){
-  gb.avail.matrix <- outputs.terr[[i]]$availCellsMat
-  write.table(gb.avail.matrix, file = 'gb.avail.matrix.txt')
+    gb.avail.matrix <- outputs.terr[[i]]$availCellsMat
+    write.table(gb.avail.matrix, file = 'gb.avail.matrix.txt')
   }else{
     break()
   }

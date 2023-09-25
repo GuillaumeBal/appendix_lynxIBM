@@ -47,6 +47,7 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   int nColMat = Matrix.ncol();
   int nRowMat = Matrix.nrow();
   int int_1 = 1;
+  int int_2 = 2;
   IntegerVector AdjX(0);
   IntegerVector AdjY(0);
   IntegerVector CellNum(0);
@@ -54,7 +55,12 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   int new_x;
   int new_index;
   // change cell num into XY
+  List L_1 = List::create(Named("int_1") = int_1);
+  //return(L_1);
+  //Rcout << "Rcout before cellnum " << std::endl << int_1 << std::endl;
   List all_coords = CellNumtoRowCol(cellNum = cellNum, Matrix = Matrix);
+  List L_2 = List::create(Named("all_coords") = all_coords);
+  //return(L_2);
   IntegerVector x_coords = all_coords["x_coords"];
   IntegerVector y_coords = all_coords["y_coords"];
   //Rcout << "Rcout 1 inits" << std::endl << CellNum << std::endl;
@@ -67,14 +73,20 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
         //HabitatMap.ncol() * (HabitatMap.nrow() - YCoordinate) +XCoordinate;
         //ncol(my.mat) * (nrow(my.mat) - my.coords[1]) + my.coords[2]
         new_index = nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1); // plus one because starts 0 in cpp
+        // if(new_index<0){
+        //List L_3 = List::create(Named("new_index") = new_index);
+        //return(L_3);
+        // }
         bool new_index_exist = IntInSet(new_index, cellNum); // check does not already exist
-        if((new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) & 
-           new_index_exist == false &
-           //availCellsUpdatedRas.nrow() - 1 - potentials_AdjY(j)
-           Matrix(nRowMat - 1 - new_y, new_x) == int_1){ // add to keep only unoccupied cells
-          AdjX.push_back(new_x);
-          AdjY.push_back(new_y);
-          CellNum.push_back(new_index);
+        if(
+          (new_index>=0) &
+            (new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) & 
+            (new_index_exist == false)){ // add to keep only unoccupied cells
+          if((Matrix(nRowMat - 1 - new_y, new_x) == int_1)){
+            AdjX.push_back(new_x);
+            AdjY.push_back(new_y);
+            CellNum.push_back(new_index);
+          }
         }
       }
     }
@@ -227,9 +239,9 @@ List TerrMapping(
     int Ycurrent = TerrCentreFullY(c);
     
     List potTerrSpread = spreadGB(availCellsMat,
-                                   Ycurrent,
-                                   Xcurrent,
-                                   terrSizeMax);
+                                  Ycurrent,
+                                  Xcurrent,
+                                  terrSizeMax);
     
     IntegerVector potTerrCellNum = potTerrSpread["CellNum"];
     List potTerrFullCoords = CellNumtoRowCol(potTerrCellNum, availCellsMat);
