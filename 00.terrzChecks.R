@@ -1,24 +1,22 @@
-issue <- 41 + 1
-issue.range <- seq(issue - 5, issue + 5, 1)
-cell.index.pb.range <- cell.index[issue.range]
-issue.range.XY <- CellNumtoRowCol(cell.index.pb.range - 1, sim$availCellsRas %>% as.matrix)
+cell.to.check <- sample.int(n = length(cell.index), size = 1000, replace = FALSE)
+gb.cells.coord <- CellNumtoRowCol(cellNum = cell.to.check, Matrix = avail.mat.check,
+                                  cpp_as_input = TRUE, cpp_as_output = 0) %>% as.data.frame()
+gb.cells.coord %>% head
+cell.to.check - gb.cells.coord$cellNum
 
-plot(sim$availCellsRas)
-points(x = issue.range.XY$x_coords - 1, 
-       y = issue.range.XY$y_coords - 1, 
-       col = 'red', lwd = 2)
+terra.cells.coord <- terra::xyFromCell(cell = cell.to.check + 1, object = sim$availCellsRas) %>% 
+  as.data.frame()
+
+checking.xy.df <- data.frame(
+  gb = paste(gb.cells.coord$x_coords, gb.cells.coord$y_coords, sep = '_'), 
+  terra = paste(terra.cells.coord$x, terra.cells.coord$y, sep = '_')
+)
+
+checking.xy.df %>% head(5)
+
+table(terra.cells.coord$y == gb.cells.coord$y_coords)
+table(terra.cells.coord$x == gb.cells.coord$x_coords)
 
 
-
-for(i in 1:length(cell.index.pb.range)){
-  outputs.spread <- try(
-    spreadGB(
-      availCellsMat = sim$availCellsRas %>% as.matrix,
-      XCoordinate = issue.range.XY$x_coords[i],#cell.map.max - 1,
-      YCoordinate = issue.range.XY$y_coords[i],#terrSize.max, # in full cpp
-      terrSizeMax = terrSize.max
-    )
-  )
-  print(i)
-  print(outputs.spread)
-}
+checking.xy.df$gb %>% 
+ `==` (checking.xy.df$terra) %>% table

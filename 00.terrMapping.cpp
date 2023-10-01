@@ -28,27 +28,33 @@ List CellNumtoRowCol(IntegerVector cellNum, IntegerMatrix Matrix, LogicalVector 
   int nRowMat = Matrix.nrow();
   int nColMat = Matrix.ncol();
   int base_rowNum = -100;
+  IntegerVector cellNumRC(cellNum.size()); 
   for(int i = 0; i<cellNum.size(); i++){
-    if(cpp_as_input(0) == 1){// is boolean
-      cellNum(i) = cellNum(i) + 1;
+    if(cpp_as_input(0) == FALSE){
+      cellNumRC(i) = cellNum(i);
+    }else{
+      //Rcout << "Rcout cpp_as_input cell bef " << std::endl << cellNum(i) << std::endl;
+      cellNumRC(i) = cellNum(i) + 1;
+      //Rcout << "Rcout cpp_as_input " << std::endl << cpp_as_input(0) << std::endl;
+      //Rcout << "Rcout cpp_as_input cell after " << std::endl << cellNum(i) << std::endl;
     }
-    base_rowNum =  round(cellNum(i) / nColMat) ; // +0.5 allows ro round up, and that is what I need
+    base_rowNum =  round(cellNumRC(i) / nColMat) ;
     rowNum_xy(i) = (nRowMat - base_rowNum + 1); 
-    colNum_xy(i) = (cellNum(i) - (base_rowNum - 1) * nColMat); // same, correction to compute regular, and then substract 1
-    //cellNum(i) - (rowNum(i) * nColMat + 1);
+    colNum_xy(i) = (cellNumRC(i) - (base_rowNum - 1) * nColMat); // same, correction to compute regular, and then substract 1
     if(colNum_xy(i) > nColMat){ // issue with constant rounding down whatever function used
       base_rowNum = base_rowNum + 1;
       rowNum_xy(i) = (nRowMat - base_rowNum + 1); // correction to make computations with regular space and then some substraction at the end for c++ scale
-      colNum_xy(i) = (cellNum(i) - ((base_rowNum - 1) * nColMat)); // same, correction to compute regular, and then substract 1
+      colNum_xy(i) = (cellNumRC(i) - (base_rowNum - 1) * nColMat); // same, correction to compute regular, and then substract 1
     }
-    if(cpp_as_output(0) == 1){// is boolean
+    if(cpp_as_output(0) == TRUE){// is boolean
       rowNum_xy(i) = rowNum_xy(i) - 1 ; // correction to make computations with regular space and then some substraction at the end for c++ scale
       colNum_xy(i) = colNum_xy(i) - 1 ;
-      cellNum(i) = cellNum(i) - 1;
+      cellNumRC(i) = cellNumRC(i) - 1;
+      //Rcout << "Rcout cpp_as_output " << std::endl << cpp_as_output(0) << std::endl;
     }
   }
-  List coordsRC = List::create(Named("cellNum") = cellNum,
-                               _["base_rowNum"] = base_rowNum,
+  List coordsRC = List::create(Named("cellNum") = cellNumRC,
+                               //_["base_rowNum"] = base_rowNum,
                                _["x_coords"] = colNum_xy,
                                _["y_coords"] = rowNum_xy);
   return coordsRC;

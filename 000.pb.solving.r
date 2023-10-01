@@ -21,7 +21,7 @@ UniqFreeAdjCellsRandOrd(
 
 spreadGB.outputs <-
   spreadGB(
-    availCellsMat = avail.mat.check,#IntegerMatrix availCellsMat,
+    availCellsMat = sim$habitatMap %>% as.matrix(),#avail.mat.check,#IntegerMatrix availCellsMat,
     YCoordinate = coords.crash$y_coords,
     XCoordinate = coords.crash$x_coords,
     terrSizeMax = terrSize.max,
@@ -30,60 +30,25 @@ spreadGB.outputs <-
   )
 spreadGB.outputs$CellNum %>% length
 
-
-
-
-
-
-
-
-
-
-
-check.spread.coord <- CellNumtoRowCol(spreadGB.outputs$CellNum, Matrix = avail.mat.check) # some pb of negative x_coords that should not happen
-check.spread.coord %<>% do.call(., what = 'rbind')
-check.spread.coord[, check.spread.coord['x_coords', ] < 0]
-check.spread.coord
-dim(avail.mat.check)
-
-nRowMat <- nrow(avail.mat.check)
-nColMat <- ncol(avail.mat.check)
-cellNum <- check.spread.coord[, check.spread.coord['x_coords', ] < 0][1]
-rowNum = (nRowMat - (max(0, floor((cellNum  + 1)) / nColMat)) + 1) - 1
-colNum = ((cellNum + 1) - (nRowMat - (rowNum + 1)) * nColMat) - 1 
-
-points(spreadGB.outputs$)
-
 check.spread <- 
   spread(landscape = avail.mat.check,# sim$availCellsRas,
          loci = cellFromPxcorPycor(world = sim$habitatMap,
                                    pxcor = coords.crash$x_coords + 1,
                                    pycor = coords.crash$y_coords + 1),
-         spreadProb = avail.mat.check,#sim$availCellsUpdatedRas, 
+         spreadProb = sim$availCellsRas, #avail.mat.check,# 
          maxSize = terrSize.max, returnIndices = TRUE,
          quick = TRUE)
 check.spread %>% dim()
 
+check.spread.xy <- terra::xyFromCell(cell = check.spread$indices, object = sim$availCellsRas)
+
+plot(sim$availCellsRas,
+     xlim = c(coords.crash$x_coords + 1 - 7, coords.crash$x_coords + 1 + 7),
+     ylim = c(coords.crash$y_coords + 1 - 7, coords.crash$y_coords + 1 + 7))
+points(check.spread.xy,  pch = 16, col = 'blue', cex = 2)
+points(coords.crash$x_coord +1 , coords.crash$y +1, pch = 16, col = 'red', cex = 2)
 
 
 
 
-
-nColMat <- ncol(avail.mat.check)
-nRowMat <- nrow(avail.mat.check)
-base_rowNum =  ceiling((cell.crash.cpp + 1) / nColMat);
-rowNum_xy = (nRowMat - base_rowNum + 1) - 1 ; 
-colNum_xy = ((cell.crash.cpp + 1) - ((base_rowNum - 1) * nColMat)) - 1
-rowNum_xy
-colNum_xy
-
-#terr.updated <- 
-sapply(outputs.terr, FUN = 
-         function(x){
-           x$terrMap %>% `==`(-100) %>% table
-         }) %>% do.call(., what = cbind)
-outputs.terr[[3]]$terrMap[, 1] %>% `==`(-100) %>% table
-
-
-225225
 197337
