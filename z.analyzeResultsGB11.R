@@ -10,7 +10,7 @@ library(viridis)
 library(wesanderson)
 library(rgeos)
 require(magrittr)
-wd <- "C:/Users/gbal/Desktop/lynx.ibm/appendix_lynxIBM/" %T>% setwd()
+wd <- "C:/Users/gbal/Desktop/calib.2023.09.26" %T>% setwd()
 #dir() %>% `[`(grep(., pattern = 'RData'))
 load('sarah.before analysis.RData')
 
@@ -58,15 +58,14 @@ for(s in sex.dich){
     
     # some gn pop corrections
     lynxIBMrun$popDist <- pop.dist.gb
-    
     lynxIBMrun.gb <- lynxIBMrun
-    lynxIBMrun.gb$resLynx %>% sapply(class)
-    lynxIBMrun.gb
+    #lynxIBMrun.gb$resLynx %>% sapply(class)
+    #lynxIBMrun.gb
     
     for(l in 1:lastYear){
       if(length(lynxIBMrun.gb$resLynx[[l]][,'pop']) != 0)
         lynxIBMrun.gb$resLynx[[l]][,'pop'] <- 
-          pop[lynxIBMrun.gb$popDist[cbind(lynxIBMrun.gb$resLynx[[l]][,'lastDispY'],
+          pop[lynxIBMrun.gb$popDist[cbind(dim(pop.dist.gb)[1] - lynxIBMrun.gb$resLynx[[l]][,'lastDispY'] + 1,
                                           lynxIBMrun.gb$resLynx[[l]][,'lastDispX'])]] 
     }
     
@@ -133,15 +132,13 @@ movePopLongDT[['M']] %<>% as.data.frame()
 movePopLongDT[['M']][ , c('from', 'to')] <- movePopLongDT[['M']]$variable %>% as.character() %>%
   strsplit(x = ., split = '.TO.') %>% do.call(., what = 'rbind') 
 
-from.to.male <- tapply(movePopLongDT[['F']]$value, INDEX = list(movePopLongDT[['F']]$from, movePopLongDT[['F']]$to), FUN = sum, na.rm = TRUE) %>% prop.table(., margin = 1) %>% round(., 3)
-from.to.female <-  tapply(movePopLongDT[['M']]$value, INDEX = list(movePopLongDT[['M']]$from, movePopLongDT[['M']]$to), FUN = sum, na.rm = TRUE) %>% prop.table(., margin = 1) %>% round(., 3)
+from.to.female <- tapply(movePopLongDT[['F']]$value, INDEX = list(movePopLongDT[['F']]$from, movePopLongDT[['F']]$to), FUN = sum, na.rm = TRUE) %>% prop.table(., margin = 1) %>% round(., 3)
+from.to.male <-  tapply(movePopLongDT[['M']]$value, INDEX = list(movePopLongDT[['M']]$from, movePopLongDT[['M']]$to), FUN = sum, na.rm = TRUE) %>% prop.table(., margin = 1) %>% round(., 3)
 
 
-write.table(from.to.male, 'from.to.male.csv', sep = ';')
-write.table(from.to.female, 'from.to.female.csv', sep = ';')
-
+# write.table(from.to.male, 'from.to.male.csv', sep = ';')
+# write.table(from.to.female, 'from.to.female.csv', sep = ';')
 require(openxlsx)
-
 write.xlsx(x = from.to.male %>% as.data.frame(), file =  'from.to.male.xlsx',
            sheetName = 'male.from.row.to.column', asTable = TRUE, rowNames = TRUE)
 write.xlsx(x = from.to.female %>% as.data.frame(), file =  'from.to.female.xlsx',

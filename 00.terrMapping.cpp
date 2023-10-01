@@ -22,26 +22,41 @@ bool IntInSet(int ToCheck, IntegerVector pool) {
 
 // [[Rcpp::export]]
 // cell number to coords on map in cpp
-List CellNumtoRowCol(IntegerVector cellNum, IntegerMatrix Matrix){
-  IntegerVector rowNum(cellNum.size());
-  IntegerVector colNum(cellNum.size());
+List CellNumtoRowCol(IntegerVector cellNum, IntegerMatrix Matrix, LogicalVector cpp_as_input, LogicalVector cpp_as_output){
+  IntegerVector rowNum_xy(cellNum.size());
+  IntegerVector colNum_xy(cellNum.size());
   int nRowMat = Matrix.nrow();
   int nColMat = Matrix.ncol();
+  int base_rowNum = -100;
   for(int i = 0; i<cellNum.size(); i++){
-    rowNum(i) = nRowMat - trunc(cellNum(i) / nColMat) - 1;
-    //trunc(cellNum(i) / nColMat);
-    colNum(i) = cellNum(i) - nColMat * (nRowMat - rowNum(i) - 1) - 1 ; 
+    if(cpp_as_input(0) == 1){// is boolean
+      cellNum(i) = cellNum(i) + 1;
+    }
+    base_rowNum =  round(cellNum(i) / nColMat) ; // +0.5 allows ro round up, and that is what I need
+    rowNum_xy(i) = (nRowMat - base_rowNum + 1); 
+    colNum_xy(i) = (cellNum(i) - (base_rowNum - 1) * nColMat); // same, correction to compute regular, and then substract 1
     //cellNum(i) - (rowNum(i) * nColMat + 1);
+    if(colNum_xy(i) > nColMat){ // issue with constant rounding down whatever function used
+      base_rowNum = base_rowNum + 1;
+      rowNum_xy(i) = (nRowMat - base_rowNum + 1); // correction to make computations with regular space and then some substraction at the end for c++ scale
+      colNum_xy(i) = (cellNum(i) - ((base_rowNum - 1) * nColMat)); // same, correction to compute regular, and then substract 1
+    }
+    if(cpp_as_output(0) == 1){// is boolean
+      rowNum_xy(i) = rowNum_xy(i) - 1 ; // correction to make computations with regular space and then some substraction at the end for c++ scale
+      colNum_xy(i) = colNum_xy(i) - 1 ;
+      cellNum(i) = cellNum(i) - 1;
+    }
   }
   List coordsRC = List::create(Named("cellNum") = cellNum,
-                               _["x_coords"] = colNum,
-                               _["y_coords"] = rowNum);
+                               _["base_rowNum"] = base_rowNum,
+                               _["x_coords"] = colNum_xy,
+                               _["y_coords"] = rowNum_xy);
   return coordsRC;
 }
 
 // [[Rcpp::export]]
 // adjacent cells coordinates
-List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
+List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix, LogicalVector cpp_as_input, LogicalVector cpp_as_output){
   IntegerVector deltaX = {-1, 0, 1};
   IntegerVector deltaY = {-1, 0, 1};
   int nColMat = Matrix.ncol();
@@ -50,20 +65,25 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   int int_2 = 2;
   IntegerVector AdjX(0);
   IntegerVector AdjY(0);
-  IntegerVector CellNum(0);
+  IntegerVector cellIndex(0);
   int new_y;
   int new_x;
   int new_index;
+  if(cpp_as_input(0) == 0){
+    for(int i = 0; i < cellNum.size(); i++){
+      cellNum(i) = cellNum(i) - 1;
+    }
+  }
   // change cell num into XY
-  List L_1 = List::create(Named("int_1") = int_1);
+  //List L_1 = List::create(Named("int_1") = int_1);
   //return(L_1);
-  //Rcout << "Rcout before cellnum " << std::endl << int_1 << std::endl;
-  List all_coords = CellNumtoRowCol(cellNum = cellNum, Matrix = Matrix);
-  List L_2 = List::create(Named("all_coords") = all_coords);
+  //Rcout << "Rcout before cellIndex " << std::endl << int_1 << std::endl;
+  List all_coords = CellNumtoRowCol(cellNum = cellIndex, Matrix = Matrix, cpp_as_input = 0, cpp_as_output = 0);
+  //List L_2 = List::create(Named("all_coords") = all_coords);
   //return(L_2);
   IntegerVector x_coords = all_coords["x_coords"];
   IntegerVector y_coords = all_coords["y_coords"];
-  //Rcout << "Rcout 1 inits" << std::endl << CellNum << std::endl;
+  //Rcout << "Rcout 1 inits" << std::endl << cellIndex << std::endl;
   for(int z = 0; z<x_coords.size(); z++){
     //Rcout << "Rcout z" << std::endl << z << std::endl;
     for(int l = 0; l<deltaY.size(); l++){
@@ -77,7 +97,7 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
         //List L_3 = List::create(Named("new_index") = new_index);
         //return(L_3);
         // }
-        bool new_index_exist = IntInSet(new_index, cellNum); // check does not already exist
+        bool new_index_exist = IntInSet(new_index, cellIndex); // check does not already exist
         if(
           (new_index>=0) &
             (new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) & 
@@ -85,21 +105,21 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
           if((Matrix(nRowMat - 1 - new_y, new_x) == int_1)){
             AdjX.push_back(new_x);
             AdjY.push_back(new_y);
-            CellNum.push_back(new_index);
+            cellIndex.push_back(new_index);
           }
         }
       }
     }
   }
-  //Rcout << "Rcout cells with duplicates" << std::endl << CellNum << std::endl;
+  //Rcout << "Rcout cells with duplicates" << std::endl << cellIndex << std::endl;
   // find unique index and then pick just one of each
-  IntegerVector UniqCell = unique(CellNum);
+  IntegerVector UniqCell = unique(cellIndex);
   //Rcout << "Rcout UniqCell" << std::endl << UniqCell << std::endl;
   int nUniqCell = UniqCell.size();
   IntegerVector keptCells(nUniqCell);
   for(int i = 0; i<nUniqCell; i++){
-    for(int j = 0; j<CellNum.size(); j++){
-      if(CellNum(j) == UniqCell(i)){
+    for(int j = 0; j<cellIndex.size(); j++){
+      if(cellIndex(j) == UniqCell(i)){
         keptCells(i) = j; // this is a position
         //break;
       }
@@ -110,9 +130,16 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix){
   IntegerVector keptCellsRandOrder = keptCells[randorder];
   IntegerVector AdjX_left = AdjX[keptCellsRandOrder];
   IntegerVector AdjY_left = AdjY[keptCellsRandOrder];
-  IntegerVector CellNum_left = CellNum[keptCellsRandOrder];
-  //Rcout << "Rcout CellNum_left" << std::endl << CellNum_left << std::endl;
-  List L_return = List::create(Named("CellNum") = CellNum_left,
+  IntegerVector cellIndex_left = cellIndex[keptCellsRandOrder];
+  //Rcout << "Rcout cellIndex_left" << std::endl << cellIndex_left << std::endl;
+  if(cpp_as_output(0) == 0){
+    for(int i = 0; i < cellIndex_left.size(); i++){
+      cellIndex_left(i) = cellIndex_left(i) + 1;
+      AdjX_left(i) = AdjX_left(i) + 1;
+      AdjY_left(i) = AdjY_left(i) + 1;
+    }
+  }
+  List L_return = List::create(Named("CellNum") = cellIndex_left,
                                _["AdjX"] = AdjX_left,
                                _["AdjY"] = AdjY_left);
   // return L_return;
@@ -128,11 +155,18 @@ List spreadGB(// DataFrame, NumericVector
     IntegerMatrix availCellsMat,
     int YCoordinate,
     int XCoordinate,
-    int terrSizeMax
+    int terrSizeMax,
+    LogicalVector cpp_as_input,
+    LogicalVector cpp_as_output
 ){
   
   ///////////////////////////////////////////////////////////////////////////////////////
   // TRICKS AND FUNCTIONS FOR CODE
+  
+  if(cpp_as_input(0) == 0){
+    XCoordinate = XCoordinate - 1;
+    YCoordinate = YCoordinate - 1;
+  }
   
   IntegerMatrix HabitatMap = clone(availCellsMat);
   
@@ -148,9 +182,11 @@ List spreadGB(// DataFrame, NumericVector
   // some inits
   IntegerVector loci_ind(1); 
   //nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1)
-  loci_ind(0) = HabitatMap.ncol() * (HabitatMap.nrow() - (YCoordinate + 1)) + (XCoordinate + 1);
+  loci_ind(0) = (HabitatMap.nrow() - 
+    (YCoordinate + 1)) *  // would be + 0 if not cpp 
+    HabitatMap.ncol() + XCoordinate + 1; // plus 1 because Xcoord cpp 
   IntegerVector loci_y(1); loci_y(0) = YCoordinate;
-  IntegerVector loci_x(1); loci_x(0) =XCoordinate;
+  IntegerVector loci_x(1); loci_x(0) = XCoordinate;
   int initialLoci = int(loci_ind(0));
   int nCells = HabitatMap.ncol() * HabitatMap.nrow();
   
@@ -170,7 +206,7 @@ List spreadGB(// DataFrame, NumericVector
     
     //loci_x and loci_y, before when was based on XY coord
     //Rcout << "Rcout loci_ind start while: " << std::endl << loci_ind << std::endl;
-    List potentials = UniqFreeAdjCellsRandOrd(loci_ind, availCellsMat);
+    List potentials = UniqFreeAdjCellsRandOrd(loci_ind, availCellsMat, 1, 1);
     // sanity check
     //return(potentials);
     IntegerVector potentials_AdjX = potentials["AdjX"];
@@ -201,7 +237,14 @@ List spreadGB(// DataFrame, NumericVector
   
   //loci_ind.erase(loci_ind.begin());// # in fact keep first cell that is female location
   
-  //Rcout << "Rcout n" << std::endl << n << std::endl;
+  Rcout << "Rcout loci_ind" << std::endl << loci_ind << std::endl;
+  if(cpp_as_output(0) == 0){
+    //initialLoci = initialLoci + 1;
+    for(int i = 0; loci_ind.size(); i++){
+      loci_ind(i) = loci_ind(i) + 1;
+    }
+  }
+  
   List L_return_spreadCpp = List::create(Named("initialLoci") = initialLoci,
                                          _["CellNum"] = loci_ind 
   );
@@ -221,12 +264,20 @@ List TerrMapping(
     int terrSizeMax,
     int terrSizeMin,
     IntegerVector terrCentreCellNum,
-    IntegerMatrix terrMap
+    IntegerMatrix terrMap,
+    LogicalVector cpp_as_input,
+    LogicalVector cpp_as_output
 ){
+  
+  if(cpp_as_input(0) == 0){
+    for(int i = 0; i<terrCentreCellNum.size(); i++){
+      terrCentreCellNum(i) = terrCentreCellNum(i) - 1;
+    }
+  }
   
   int int_0 = 0;
   
-  List TerrCentreFullCoords = CellNumtoRowCol(terrCentreCellNum, availCellsMat);
+  List TerrCentreFullCoords = CellNumtoRowCol(terrCentreCellNum, availCellsMat, 1, 1);
   IntegerVector TerrCentreFullX = TerrCentreFullCoords["x_coords"];
   IntegerVector TerrCentreFullY = TerrCentreFullCoords["y_coords"];
   //Rcout << "TerrCentreFullCoords" << std::endl << TerrCentreFullCoords << std::endl;
@@ -241,10 +292,12 @@ List TerrMapping(
     List potTerrSpread = spreadGB(availCellsMat,
                                   Ycurrent,
                                   Xcurrent,
-                                  terrSizeMax);
+                                  terrSizeMax,
+                                  1, 
+                                  1);
     
     IntegerVector potTerrCellNum = potTerrSpread["CellNum"];
-    List potTerrFullCoords = CellNumtoRowCol(potTerrCellNum, availCellsMat);
+    List potTerrFullCoords = CellNumtoRowCol(potTerrCellNum, availCellsMat, 1, 1);
     IntegerVector potTerrX = potTerrFullCoords["x_coords"];
     IntegerVector potTerrY = potTerrFullCoords["y_coords"];
     
