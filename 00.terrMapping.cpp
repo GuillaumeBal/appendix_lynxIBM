@@ -63,30 +63,31 @@ List CellNumtoRowCol(IntegerVector cellNum, IntegerMatrix Matrix, LogicalVector 
 // [[Rcpp::export]]
 // adjacent cells coordinates
 List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix, LogicalVector cpp_as_input, LogicalVector cpp_as_output){
+  int int_1 = 1;
+  int int_2 = 2;
   IntegerVector deltaX = {-1, 0, 1};
   IntegerVector deltaY = {-1, 0, 1};
   int nColMat = Matrix.ncol();
   int nRowMat = Matrix.nrow();
-  int int_1 = 1;
-  int int_2 = 2;
   IntegerVector AdjX(0);
   IntegerVector AdjY(0);
   IntegerVector cellIndex(0);
   int new_y;
   int new_x;
   int new_index;
-  if(cpp_as_input(0) == 0){
+  IntegerVector cellNumUniq(cellNum.size());
+  if(cpp_as_input(0) == 0){ // if not cpp then value higher of 1
     for(int i = 0; i < cellNum.size(); i++){
-      cellNum(i) = cellNum(i) - 1;
+      cellNumUniq(i) = cellNum(i) - 1;
+    }
+  }
+  if(cpp_as_input(0) == 1){
+    for(int i = 0; i < cellNum.size(); i++){
+      cellNumUniq(i) = cellNum(i);
     }
   }
   // change cell num into XY
-  //List L_1 = List::create(Named("int_1") = int_1);
-  //return(L_1);
-  //Rcout << "Rcout before cellIndex " << std::endl << int_1 << std::endl;
-  List all_coords = CellNumtoRowCol(cellNum = cellIndex, Matrix = Matrix, cpp_as_input = 0, cpp_as_output = 0);
-  //List L_2 = List::create(Named("all_coords") = all_coords);
-  //return(L_2);
+  List all_coords = CellNumtoRowCol(cellNum = cellNumUniq, Matrix = Matrix, cpp_as_input = 1, cpp_as_output = 1);
   IntegerVector x_coords = all_coords["x_coords"];
   IntegerVector y_coords = all_coords["y_coords"];
   //Rcout << "Rcout 1 inits" << std::endl << cellIndex << std::endl;
@@ -96,19 +97,21 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix, Logica
       for(int c = 0; c<deltaX.size(); c++){
         new_y = y_coords(z) + deltaY(l);
         new_x = x_coords(z) + deltaX(c);
-        //HabitatMap.ncol() * (HabitatMap.nrow() - YCoordinate) +XCoordinate;
-        //ncol(my.mat) * (nrow(my.mat) - my.coords[1]) + my.coords[2]
         new_index = nColMat * (nRowMat -  (new_y + 1)) + (new_x + 1); // plus one because starts 0 in cpp
         // if(new_index<0){
         //List L_3 = List::create(Named("new_index") = new_index);
         //return(L_3);
         // }
         bool new_index_exist = IntInSet(new_index, cellIndex); // check does not already exist
-        if(
-          (new_index>=0) &
-            (new_y>=0) & (new_y<nRowMat) & (new_x>=0) & (new_x<nColMat) & 
-            (new_index_exist == false)){ // add to keep only unoccupied cells
-          if((Matrix(nRowMat - 1 - new_y, new_x) == int_1)){
+        if((new_index>=0) &
+           (new_y>=0) & (new_y<nRowMat) & 
+           (new_x>=0) & (new_x<nColMat) //& 
+           //(new_index_exist == false) # duplicate stuff further down function
+        ){ // add to keep only unoccupied cells
+          Rcout << "Rcout almost saved" << std::endl << new_index << std::endl;
+          Rcout << "Rcout almost mat" << std::endl << Matrix(nRowMat - new_y, new_x) << std::endl;
+          int row_cpp = nRowMat - (new_y + 1) + 1; //nRowMat - new_y
+          if((Matrix(row_cpp, new_x) == int_1)){ 
             AdjX.push_back(new_x);
             AdjY.push_back(new_y);
             cellIndex.push_back(new_index);
@@ -117,7 +120,7 @@ List UniqFreeAdjCellsRandOrd(IntegerVector cellNum, IntegerMatrix Matrix, Logica
       }
     }
   }
-  //Rcout << "Rcout cells with duplicates" << std::endl << cellIndex << std::endl;
+  Rcout << "Rcout cells with duplicates" << std::endl << cellIndex << std::endl;
   // find unique index and then pick just one of each
   IntegerVector UniqCell = unique(cellIndex);
   //Rcout << "Rcout UniqCell" << std::endl << UniqCell << std::endl;
@@ -169,7 +172,7 @@ List spreadGB(// DataFrame, NumericVector
   ///////////////////////////////////////////////////////////////////////////////////////
   // TRICKS AND FUNCTIONS FOR CODE
   
-  if(cpp_as_input(0) == 0){
+  if(cpp_as_input(0) == 0){ // back to cpp indices
     XCoordinate = XCoordinate - 1;
     YCoordinate = YCoordinate - 1;
   }
@@ -243,10 +246,10 @@ List spreadGB(// DataFrame, NumericVector
   
   //loci_ind.erase(loci_ind.begin());// # in fact keep first cell that is female location
   
-  Rcout << "Rcout loci_ind" << std::endl << loci_ind << std::endl;
+  //Rcout << "Rcout loci_ind" << std::endl << loci_ind << std::endl;
   if(cpp_as_output(0) == 0){
-    //initialLoci = initialLoci + 1;
-    for(int i = 0; loci_ind.size(); i++){
+    initialLoci = initialLoci + 1;
+    for(int i = 0; i<loci_ind.size(); i++){
       loci_ind(i) = loci_ind(i) + 1;
     }
   }

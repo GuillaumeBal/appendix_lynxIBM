@@ -5,14 +5,11 @@ crash.point <- read.table('crash.index.txt') %>% unlist
 
 sim$availCellsRas %>% plot()
 
-cell.crash.cpp <- cell.index[crash.point %>% unlist() %>% `+`(0)]
+cell.crash.cpp <- cell.index[crash.point %>% unlist()]
 coords.crash <- CellNumtoRowCol(cellNum = cell.crash.cpp, Matrix = avail.mat.check,
-                                cpp_as_input =  1, cpp_as_output = 0)
+                                cpp_as_input =  1, cpp_as_output = 1)
 coords.crash
-points(coords.crash$x_coords, coords.crash$y, pch = 16, col = 'red')
-
-terra::xyFromCell(cell = cell.crash.cpp + 1, object = sim$availCellsRas)
-
+points(coords.crash$x_coords + 1, coords.crash$y + 1, pch = 16, col = 'red')
 
 UniqFreeAdjCellsRandOrd(
   cellNum = cell.crash.cpp, Matrix = avail.mat.check,
@@ -22,8 +19,8 @@ UniqFreeAdjCellsRandOrd(
 spreadGB.outputs <-
   spreadGB(
     availCellsMat = sim$habitatMap %>% as.matrix(),#avail.mat.check,#IntegerMatrix availCellsMat,
-    YCoordinate = coords.crash$y_coords,
-    XCoordinate = coords.crash$x_coords,
+    YCoordinate = coords.crash$y_coords + 1,
+    XCoordinate = coords.crash$x_coords + 1,
     terrSizeMax = terrSize.max,
     cpp_as_input = 0,
     cpp_as_output = 1
@@ -47,8 +44,3 @@ plot(sim$availCellsRas,
      ylim = c(coords.crash$y_coords + 1 - 7, coords.crash$y_coords + 1 + 7))
 points(check.spread.xy,  pch = 16, col = 'blue', cex = 2)
 points(coords.crash$x_coord +1 , coords.crash$y +1, pch = 16, col = 'red', cex = 2)
-
-
-
-
-197337
